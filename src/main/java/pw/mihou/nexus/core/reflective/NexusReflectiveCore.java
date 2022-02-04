@@ -51,9 +51,9 @@ public class NexusReflectiveCore {
                                             InjectGlobal injectGlobal = field.getAnnotation(InjectGlobal.class);
 
                                             if (injectGlobal.middleware()) {
-                                                ((List<String>) o).addAll(core.getGlobalMiddlewares());
+                                                ((List) o).addAll(core.getGlobalMiddlewares());
                                             } else {
-                                                ((List<String>) o).addAll(core.getGlobalAfterwares());
+                                                ((List) o).addAll(core.getGlobalAfterwares());
                                             }
 
                                         }
