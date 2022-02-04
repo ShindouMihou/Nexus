@@ -63,4 +63,10 @@ public interface NexusCommandManager {
      */
     Optional<NexusCommand> getCommandByName(String name, long server);
 
+    /**
+     * This indexes all the commands whether it'd be global or server commands to increase
+     * performance and precision of slash commands.
+     */
+    void index();
+
 }

@@ -128,10 +128,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
         return getCommandByName(interaction.getCommandName());
     }
 
-    /**
-     * This indexes all the commands whether it'd be global or server commands to increase
-     * performance and precision of slash commands.
-     */
+    @Override
     public void index() {
         logger.info("Nexus is now performing command indexing, this will delay your boot time by a few seconds but improve performance and precision in look-ups...");
         long start = System.currentTimeMillis();

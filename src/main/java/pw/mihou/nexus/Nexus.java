@@ -55,4 +55,12 @@ public interface Nexus extends SlashCommandCreateListener {
      */
     NexusCommand createCommandFrom(Object model);
 
+    /**
+     * This starts the Nexus instance and allow it to perform its
+     * necessary executions such as indexing.
+     *
+     * @return The {@link  Nexus} instance.
+     */
+    Nexus start();
+
 }

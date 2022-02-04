@@ -32,6 +32,9 @@ public class NexusCore implements Nexus {
     public static final Logger logger = LoggerFactory.getLogger("Nexus.Core");
     private final NexusMessageConfiguration messageConfiguration;
 
+    private final DiscordApiBuilder builder;
+    private final Consumer<DiscordApi> onShardLogin;
+
     /**
      * Creates a new Nexus Core with a customized {@link NexusMessageConfiguration} and
      * default specifications.
@@ -45,31 +48,15 @@ public class NexusCore implements Nexus {
             DiscordApiBuilder builder,
             Consumer<DiscordApi> onShardLogin
     ) {
-        List<DiscordApi> shards = new ArrayList<>();
-        builder.addListener(this)
-                .loginAllShards()
-                .forEach(future ->
-                                future.thenAccept(api -> {
-                                    shards.add(api);
-                                    onShardLogin.accept(api);
-                                }).join()
-                );
-
-        this.shardManager = new NexusShardManager(
-                shards.stream()
-                        .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
-                        .toArray(DiscordApi[]::new)
-        );
+        this.builder = builder;
+        this.onShardLogin = onShardLogin;
 
         if (messageConfiguration == null) {
             this.messageConfiguration = new NexusDefaultMessageConfiguration();
         } else {
             this.messageConfiguration = messageConfiguration;
         }
-
-       // commandManager.index();
     }
-
 
     @Override
     public NexusCommandManager getCommandManager() {
@@ -89,6 +76,28 @@ public class NexusCore implements Nexus {
     @Override
     public NexusCommand createCommandFrom(Object model) {
         return NexusReflectiveCore.accept(model, NexusCommandCore.class, this);
+    }
+
+    @Override
+    public Nexus start() {
+        List<DiscordApi> shards = new ArrayList<>();
+        builder.addListener(this)
+                .loginAllShards()
+                .forEach(future ->
+                        future.thenAccept(api -> {
+                            shards.add(api);
+                            onShardLogin.accept(api);
+                        }).join()
+                );
+
+        this.shardManager = new NexusShardManager(
+                shards.stream()
+                        .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
+                        .toArray(DiscordApi[]::new)
+        );
+
+        commandManager.index();
+        return this;
     }
 
 
