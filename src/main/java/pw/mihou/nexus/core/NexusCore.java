@@ -20,6 +20,7 @@ import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -31,6 +32,8 @@ public class NexusCore implements Nexus {
     private NexusShardManager shardManager;
     public static final Logger logger = LoggerFactory.getLogger("Nexus.Core");
     private final NexusMessageConfiguration messageConfiguration;
+    private final List<String> globalMiddlewares = new ArrayList<>();
+    private final List<String> globalAfterwares = new ArrayList<>();
 
     private final DiscordApiBuilder builder;
     private final Consumer<DiscordApi> onShardLogin;
@@ -76,6 +79,38 @@ public class NexusCore implements Nexus {
     @Override
     public NexusCommand createCommandFrom(Object model) {
         return NexusReflectiveCore.accept(model, NexusCommandCore.class, this);
+    }
+
+    /**
+     * Gets the list of global middlewares that are pre-appended into
+     * commands that are registered.
+     *
+     * @return The list of global middlewares.
+     */
+    public List<String> getGlobalMiddlewares() {
+        return globalMiddlewares;
+    }
+
+    /**
+     * Gets the list of global afterwares that are pre-appended into
+     * commands that are registered.
+     *
+     * @return The list of global afterwares.
+     */
+    public List<String> getGlobalAfterwares() {
+        return globalAfterwares;
+    }
+
+    @Override
+    public Nexus addGlobalMiddlewares(String... middlewares) {
+        globalMiddlewares.addAll(Arrays.asList(middlewares));
+        return this;
+    }
+
+    @Override
+    public Nexus addGlobalAfterwares(String... afterwares) {
+        globalAfterwares.addAll(Arrays.asList(afterwares));
+        return this;
     }
 
     @Override

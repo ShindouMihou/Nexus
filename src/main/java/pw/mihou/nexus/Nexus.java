@@ -56,6 +56,24 @@ public interface Nexus extends SlashCommandCreateListener {
     NexusCommand createCommandFrom(Object model);
 
     /**
+     * Adds a set of middlewares into the global middleware list which are pre-appended into
+     * the commands that are created after.
+     *
+     * @param middlewares The middlewares to add.
+     * @return {@link  Nexus} for chain-calling methods.
+     */
+    Nexus addGlobalMiddlewares(String... middlewares);
+
+    /**
+     * Adds a set of afterwares into the global afterware list which are pre-appended into
+     * the commands that are created after.
+     *
+     * @param afterwares The afterwares to add.
+     * @return {@link  Nexus} for chain-calling methods.
+     */
+    Nexus addGlobalAfterwares(String... afterwares);
+
+    /**
      * This starts the Nexus instance and allow it to perform its
      * necessary executions such as indexing.
      *

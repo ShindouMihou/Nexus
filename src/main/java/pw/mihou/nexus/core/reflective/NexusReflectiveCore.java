@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class NexusReflectiveCore {
@@ -46,6 +47,16 @@ public class NexusReflectiveCore {
                             } else {
                                 facade.getWithType(field.getName(), fromPrimitiveToNonPrimitive(field.getType())).ifPresent(o -> {
                                     try {
+                                        if (field.isAnnotationPresent(InjectGlobal.class)) {
+                                            InjectGlobal injectGlobal = field.getAnnotation(InjectGlobal.class);
+
+                                            if (injectGlobal.middleware()) {
+                                                ((List<String>) o).addAll(core.getGlobalMiddlewares());
+                                            } else {
+                                                ((List<String>) o).addAll(core.getGlobalAfterwares());
+                                            }
+
+                                        }
                                         field.set(r, o);
                                     } catch (IllegalAccessException e) {
                                         e.printStackTrace();
