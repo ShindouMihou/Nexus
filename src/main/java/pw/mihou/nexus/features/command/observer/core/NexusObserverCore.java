@@ -97,6 +97,18 @@ public class NexusObserverCore implements NexusObserver {
                         }
                     }
 
+                    if (mode.isDelete()) {
+                        for (SlashCommand command : getNoMatches(slashCommands)) {
+                            long start = System.currentTimeMillis();
+                            command.deleteGlobal().thenAccept(unused -> NexusCore.logger.info(
+                                    "Application command was deleted. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                    command.getName(),
+                                    command.getDescription(),
+                                    command.getId(),
+                                    System.currentTimeMillis() - start)).exceptionally(ExceptionLogger.get());
+                        }
+                    }
+
                     if (mode.isUpdate()) {
                         getChanges(slashCommands).forEach((aLong, nexusCommand) -> {
                             long start = System.currentTimeMillis();
@@ -113,10 +125,10 @@ public class NexusObserverCore implements NexusObserver {
                         });
                     }
 
-                    if (!mode.isUpdate() && !mode.isCreate()) {
+                    if (!mode.isUpdate() && !mode.isCreate() && !mode.isDelete()) {
                         for (NexusCommand nexusCommand : getNotRegistered(slashCommands)) {
                             NexusCore.logger.warn(
-                                    "Application command is not registered on Discord's database. [name={}]",
+                                    "Application command is not registered on Discord's database. [command={}]",
                                     nexusCommand.toString()
                             );
                         }
@@ -126,6 +138,13 @@ public class NexusObserverCore implements NexusObserver {
                                 aLong,
                                 nexusCommand.getName()
                         ));
+
+                        for (SlashCommand command : getNoMatches(slashCommands)) {
+                            NexusCore.logger.warn(
+                                    "Application command is not registered on Nexus's repository. [name={}, id={}]",
+                                    command.getName(), command.getId()
+                            );
+                        }
                     }
 
                 }).exceptionally(ExceptionLogger.get());
@@ -223,6 +242,22 @@ public class NexusObserverCore implements NexusObserver {
                 .filter(nexusCommand -> slashCommands.stream()
                         .map(SlashCommand::getName)
                         .anyMatch(s1 -> s1.equalsIgnoreCase(nexusCommand.getName())))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Filters everything that does not match the repository of Nexus. This is
+     * used to handle commands that were detached.
+     *
+     * @param slashCommands The slash commands to validate.
+     * @return A list of commands that have been registered to the Discord API.
+     */
+    private List<SlashCommand> getNoMatches(List<SlashCommand> slashCommands) {
+        return slashCommands.stream()
+                .filter(slashCommand -> nexusCore.getCommandManager().getCommands()
+                        .stream()
+                        .map(NexusCommand::getName)
+                        .noneMatch(s -> s.equalsIgnoreCase(slashCommand.getName())))
                 .collect(Collectors.toList());
     }
 
@@ -395,6 +430,19 @@ public class NexusObserverCore implements NexusObserver {
             }
         }
 
+        if (mode.isDelete()) {
+            for (SlashCommand command : getNoMatches(slashCommands)) {
+                long start = System.currentTimeMillis();
+                command.deleteForServer(server).thenAccept(unused -> NexusCore.logger.info(
+                        "Application command was deleted for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
+                        server.getId(),
+                        command.getName(),
+                        command.getDescription(),
+                        command.getId(),
+                        System.currentTimeMillis() - start)).exceptionally(ExceptionLogger.get());
+            }
+        }
+
         if (mode.isUpdate()) {
             getChanges(slashCommands).forEach((aLong, nexusCommand) -> {
                 long start = System.currentTimeMillis();
@@ -415,16 +463,27 @@ public class NexusObserverCore implements NexusObserver {
         if (!mode.isUpdate() && !mode.isCreate()) {
             for (NexusCommand nexusCommand : getNotRegistered(slashCommands)) {
                 NexusCore.logger.warn(
-                        "Application command is not registered on Discord's database. [name={}]",
+                        "Application command is not registered on Discord's database for server {}. [name={}]",
+                        server.getId(),
                         nexusCommand.toString()
                 );
             }
 
             getChanges(slashCommands).forEach((aLong, nexusCommand) -> NexusCore.logger.warn(
-                    "Application command requires updating. [id={}, name={}]",
+                    "Application command requires updating for server {}. [id={}, name={}]",
+                    server.getId(),
                     aLong,
                     nexusCommand.getName()
             ));
+
+            for (SlashCommand command : getNoMatches(slashCommands)) {
+                NexusCore.logger.warn(
+                        "Application command is not registered on Nexus's repository for server {}. [name={}, id={}]",
+                        server.getId(),
+                        command.getName(),
+                        command.getId()
+                );
+            }
         }
     }
 

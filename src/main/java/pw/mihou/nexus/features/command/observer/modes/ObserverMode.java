@@ -8,30 +8,37 @@ public enum ObserverMode {
      * This mode tells {@link NexusObserverCore} to only send a log
      * for every commands that needs to be updated or created, it will not do anything else.
      */
-    WATCHDOG(false, false),
+    WATCHDOG(false, false, false),
 
     /**
      * This mode tells {@link NexusObserverCore} to only update
      * the commands that needs to be updated to the Discord API, it will not create any new
      * commands.
      */
-    UPDATE(true, false),
+    UPDATE(true, false, false),
 
     /**
      * This mode tells {@link NexusObserverCore} to only register
      * the commands that needs to be registered to the Discord API, it will not update existing
      * commands.
      */
-    CREATE(false, true),
+    CREATE(false, true, false),
+
+    /**
+     * This mode tells {@link  NexusObserverCore} to only delete
+     * the commands that needs to be deleted from the Discord API.
+     */
+    DELETE(false, false, true),
 
     /**
      * This mode tells {@link NexusObserverCore} that it should
-     * update or create any commands that needs to be created or updated.
+     * update or create any commands that needs to be created, updated or deleted.
      */
-    MASTER(true, true);
+    MASTER(true, true, true);
 
     private final boolean update;
     private final boolean create;
+    private final boolean delete;
 
     /**
      * Creates a new Observer Mode that either allows creation or
@@ -40,9 +47,10 @@ public enum ObserverMode {
      * @param update To allow updating of commands?
      * @param create To allow creating of commands?
      */
-    ObserverMode(boolean update, boolean create) {
+    ObserverMode(boolean update, boolean create, boolean delete) {
         this.update = update;
         this.create = create;
+        this.delete = delete;
     }
 
     /**
@@ -61,6 +69,15 @@ public enum ObserverMode {
      */
     public boolean isCreate() {
         return create;
+    }
+
+    /**
+     * Does this observer mode allow deleting of commands?
+     *
+     * @return {@link Boolean}
+     */
+    public boolean isDelete() {
+        return delete;
     }
     
 }
