@@ -118,12 +118,7 @@ public class NexusCore implements Nexus {
         List<DiscordApi> shards = new ArrayList<>();
         builder.addListener(this)
                 .loginAllShards()
-                .forEach(future ->
-                        future.thenAccept(api -> {
-                            shards.add(api);
-                            onShardLogin.accept(api);
-                        }).join()
-                );
+                .forEach(future -> future.thenAccept(shards::add).join());
 
         this.shardManager = new NexusShardManager(
                 shards.stream()
@@ -132,6 +127,8 @@ public class NexusCore implements Nexus {
         );
 
         commandManager.index();
+        // The shard startup should only happen once all the shards are connected.
+        getShardManager().asStream().forEachOrdered(onShardLogin);
         return this;
     }
 
