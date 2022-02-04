@@ -46,11 +46,9 @@ public class NexusCommandCore implements NexusCommand {
     @WithDefault
     public List<PermissionType> requiredPermissions = Collections.emptyList();
 
-    @InjectGlobal(middleware = true)
     @WithDefault
     public List<String> middlewares = Collections.emptyList();
 
-    @InjectGlobal(middleware = false)
     @WithDefault
     public List<String> afterwares = Collections.emptyList();
 

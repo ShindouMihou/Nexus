@@ -47,16 +47,6 @@ public class NexusReflectiveCore {
                             } else {
                                 facade.getWithType(field.getName(), fromPrimitiveToNonPrimitive(field.getType())).ifPresent(o -> {
                                     try {
-                                        if (field.isAnnotationPresent(InjectGlobal.class)) {
-                                            InjectGlobal injectGlobal = field.getAnnotation(InjectGlobal.class);
-
-                                            if (injectGlobal.middleware()) {
-                                                ((List) o).addAll(core.getGlobalMiddlewares());
-                                            } else {
-                                                ((List) o).addAll(core.getGlobalAfterwares());
-                                            }
-
-                                        }
                                         field.set(r, o);
                                     } catch (IllegalAccessException e) {
                                         e.printStackTrace();

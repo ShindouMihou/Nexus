@@ -13,6 +13,8 @@ import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimitData;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -103,7 +105,15 @@ public class NexusBaseCommandImplementation {
 
     public void dispatch(SlashCommandCreateEvent event) {
         NexusCommandEvent nexusEvent = new NexusCommandEventCore(event, instance);
-        NexusMiddlewareGateCore middlewareGate = (NexusMiddlewareGateCore) NexusCommandInterceptorCore.interceptWithMany(instance.middlewares, nexusEvent);
+        List<String> middlewares = new ArrayList<>();
+        middlewares.addAll(instance.core.getGlobalMiddlewares());
+        middlewares.addAll(instance.middlewares);
+
+        List<String> afterwares = new ArrayList<>();
+        afterwares.addAll(instance.core.getGlobalAfterwares());
+        afterwares.addAll(instance.afterwares);
+
+        NexusMiddlewareGateCore middlewareGate = (NexusMiddlewareGateCore) NexusCommandInterceptorCore.interceptWithMany(middlewares, nexusEvent);
 
         if (!middlewareGate.isAllowed()) {
             if (middlewareGate.getResponse() != null) {
@@ -148,7 +158,7 @@ public class NexusBaseCommandImplementation {
                         .exceptionally(ExceptionLogger.get());
             }
         }, nexusRatelimitData -> CompletableFuture.runAsync(() -> instance.handler.onEvent(nexusEvent), NexusThreadPool.executorService)
-                .thenAcceptAsync(unused -> NexusCommandInterceptorCore.interceptWithMany(instance.afterwares, nexusEvent)));
+                .thenAcceptAsync(unused -> NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent)));
     }
 
 }
