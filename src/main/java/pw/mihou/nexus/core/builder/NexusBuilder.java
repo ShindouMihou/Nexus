@@ -70,12 +70,6 @@ public class NexusBuilder {
      * @return The new {@link Nexus} instance.
      */
     public Nexus build() {
-
-        if (builder == null || onShardLogin == null)
-            throw new IllegalArgumentException(
-                    "Nexus couldn't continue creating a new instance: DiscordAPIBuilder and onShardLogin must not be null."
-            );
-
         return new NexusCore(messageConfiguration, builder, onShardLogin);
     }
 }

@@ -53,6 +53,7 @@ public class NexusCore implements Nexus {
     ) {
         this.builder = builder;
         this.onShardLogin = onShardLogin;
+        this.shardManager = new NexusShardManager();
 
         if (messageConfiguration == null) {
             this.messageConfiguration = new NexusDefaultMessageConfiguration();
@@ -115,28 +116,37 @@ public class NexusCore implements Nexus {
 
     @Override
     public Nexus start() {
-        List<DiscordApi> shards = new ArrayList<>();
-        builder.addListener(this)
-                .loginAllShards()
-                .forEach(future -> future.thenAccept(shards::add).join());
+        if (builder != null && onShardLogin != null) {
+            List<DiscordApi> shards = new ArrayList<>();
+            builder.addListener(this)
+                    .loginAllShards()
+                    .forEach(future -> future.thenAccept(shards::add).join());
 
-        this.shardManager = new NexusShardManager(
-                shards.stream()
-                        .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
-                        .toArray(DiscordApi[]::new)
-        );
+            this.shardManager = new NexusShardManager(
+                    shards.stream()
+                            .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
+                            .toArray(DiscordApi[]::new)
+            );
+
+            // The shard startup should only happen once all the shards are connected.
+            getShardManager().asStream().forEachOrdered(onShardLogin);
+        }
 
         commandManager.index();
-        // The shard startup should only happen once all the shards are connected.
-        getShardManager().asStream().forEachOrdered(onShardLogin);
         return this;
     }
 
 
     @Override
     public void onSlashCommandCreate(SlashCommandCreateEvent event) {
-        commandManager.acceptEvent(event).map(nexusCommand -> (NexusCommandCore) nexusCommand).ifPresent(nexusCommand -> NexusThreadPool
-                .executorService.submit(() -> new NexusBaseCommandImplementation(nexusCommand).dispatch(event)));
+        commandManager
+                .acceptEvent(event)
+                .map(nexusCommand -> (NexusCommandCore) nexusCommand)
+                .ifPresent(nexusCommand ->
+                        NexusThreadPool.executorService.submit(() ->
+                                new NexusBaseCommandImplementation(nexusCommand).dispatch(event)
+                        )
+                );
     }
 
     /**

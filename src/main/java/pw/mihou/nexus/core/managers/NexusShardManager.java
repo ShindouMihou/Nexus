@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 public class NexusShardManager {
 
-    private final ConcurrentHashMap<Integer, DiscordApi> shards = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, DiscordApi> shards;
 
     /**
      * This creates a new Shard Manager that is then utilized by
@@ -17,8 +17,17 @@ public class NexusShardManager {
      * @param shards The shards to utilize.
      */
     public NexusShardManager(DiscordApi... shards) {
+        this();
         Arrays.stream(shards)
                 .forEach(discordApi -> this.shards.put(discordApi.getCurrentShard(), discordApi));
+    }
+
+    /**
+     * Creates a new {@link  NexusShardManager} without any shards. This allows more
+     * flexibility over how the shards are added.
+     */
+    public NexusShardManager() {
+        this.shards = new ConcurrentHashMap<>();
     }
 
     /**
