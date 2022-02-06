@@ -1,6 +1,7 @@
 package pw.mihou.nexus.core.reflective;
 
 import pw.mihou.nexus.core.NexusCore;
+import pw.mihou.nexus.core.assignment.NexusUuidAssigner;
 import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.core.reflective.core.NexusReflectiveVariableCore;
 import pw.mihou.nexus.core.reflective.facade.NexusReflectiveFacade;
@@ -41,7 +42,7 @@ public class NexusReflectiveCore {
                             if (field.isAnnotationPresent(InjectReferenceClass.class)) {
                                 field.set(r, object);
                             } else if (field.isAnnotationPresent(InjectUUID.class)) {
-                                field.set(r, UUID.randomUUID().toString());
+                                field.set(r, NexusUuidAssigner.request());
                             } else if (field.isAnnotationPresent(InjectNexusCore.class)) {
                                 field.set(r, core);
                             } else {
