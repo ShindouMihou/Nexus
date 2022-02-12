@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.core;
 
 import org.javacord.api.entity.permission.PermissionType;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.SlashCommandOption;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
@@ -8,6 +9,7 @@ import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 import pw.mihou.nexus.features.command.observer.facade.NexusObserver;
+import pw.mihou.nexus.features.command.observer.modes.ObserverMode;
 
 import java.time.Duration;
 import java.util.*;
@@ -114,12 +116,54 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public NexusCommand addSupportFor(Long... serverIds) {
         this.serverIds.addAll(Arrays.asList(serverIds));
+
+        if (core.getConfiguration().autoApplySupportedServerChangesForServers()) {
+            applyChangesOnSupportedServers(NexusObserver.createForWith(core, ObserverMode.MASTER));
+        }
+
         return this;
     }
 
     @Override
     public NexusCommand removeSupportFor(Long... serverIds) {
         this.serverIds.removeAll(Arrays.asList(serverIds));
+
+        if (core.getConfiguration().autoApplySupportedServerChangesForServers()) {
+            CompletableFuture.runAsync(() -> {
+                for (Long serverId : serverIds) {
+                    Optional<Server> optionalServer = core.getShardManager()
+                            .getShardOf(serverId)
+                            .flatMap(api -> api.getServerById(serverId));
+
+                    if (optionalServer.isEmpty()) {
+                        NexusCore.logger.warn(
+                                "A command failed to apply changes for a server since no shard on this JVM is handling the server... " +
+                                        "please ignore if this is normal." +
+                                        "[server={}, command={}]",
+                                serverId, getName()
+                        );
+                        return;
+                    }
+
+                    Server server = optionalServer.orElseThrow(AssertionError::new);
+                    server.getSlashCommands().join().forEach(slashCommand -> {
+                        if (slashCommand.getName().equalsIgnoreCase(name)) {
+                            long start = System.currentTimeMillis();
+                            slashCommand.deleteForServer(server).join();
+                            NexusCore.logger.info(
+                                    "Application command was deleted for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                    server.getId(),
+                                    getName(),
+                                    getDescription(),
+                                    slashCommand.getId(),
+                                    System.currentTimeMillis() - start
+                            );
+                        }
+                    });
+                }
+            });
+        }
+
         return null;
     }
 

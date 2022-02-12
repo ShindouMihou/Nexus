@@ -103,7 +103,7 @@ public class NexusObserverCore implements NexusObserver {
                 if (update) {
                     long start = System.currentTimeMillis();
                     command.asSlashCommand().createForServer(server).thenAccept(slashCommand1 -> NexusCore.logger.info(
-                            "Application command was created for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
+                            "Application command was updated for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
                             server.getId(),
                             slashCommand1.getName(),
                             slashCommand1.getDescription(),
