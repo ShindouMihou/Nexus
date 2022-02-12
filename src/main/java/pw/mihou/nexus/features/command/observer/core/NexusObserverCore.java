@@ -145,19 +145,18 @@ public class NexusObserverCore implements NexusObserver {
         return shard.getGlobalSlashCommands().thenAcceptAsync(slashCommands -> {
 
                     if (mode.isCreate()) {
-                        long start = System.currentTimeMillis();
-                        shard.bulkOverwriteGlobalApplicationCommands(
-                                getNotRegistered(slashCommands)
-                                        .stream()
-                                        .map(NexusCommand::asSlashCommand)
-                                        .toList()
-                        ).thenAccept(commands -> commands.forEach(slashCommand -> NexusCore.logger.info(
-                                "Application command was created. [name={}, description={}, id={}]. It took {} milliseconds.",
-                                slashCommand.getName(),
-                                slashCommand.getDescription(),
-                                slashCommand.getId(),
-                                System.currentTimeMillis() - start
-                        ))).exceptionally(ExceptionLogger.get());
+                        for (NexusCommand nexusCommand : getNotRegistered(slashCommands)) {
+                            long start = System.currentTimeMillis();
+                            nexusCommand.asSlashCommand().createGlobal(shard).thenAccept(
+                                    slashCommand -> NexusCore.logger.info(
+                                            "Application command was created. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                            slashCommand.getName(),
+                                            slashCommand.getDescription(),
+                                            slashCommand.getId(),
+                                            System.currentTimeMillis() - start
+                                    )
+                            ).exceptionally(ExceptionLogger.get());
+                        }
                     }
 
                     if (mode.isDelete()) {
@@ -173,20 +172,19 @@ public class NexusObserverCore implements NexusObserver {
                     }
 
                     if (mode.isUpdate()) {
-                        long start = System.currentTimeMillis();
-                        shard.bulkOverwriteGlobalApplicationCommands(
-                                getChanges(slashCommands)
-                                        .values()
-                                        .stream()
-                                        .map(NexusCommand::asSlashCommand)
-                                        .toList()
-                        ).thenAccept(commands -> commands.forEach(slashCommand -> NexusCore.logger.info(
-                                "Application command was updated. [name={}, description={}, id={}]. It took {} milliseconds.",
-                                slashCommand.getName(),
-                                slashCommand.getDescription(),
-                                slashCommand.getId(),
-                                System.currentTimeMillis() - start
-                        ))).exceptionally(ExceptionLogger.get());
+                        getChanges(slashCommands).forEach((aLong, nexusCommand) -> {
+                            long start = System.currentTimeMillis();
+                            nexusCommand.asSlashCommandUpdater(aLong).updateGlobal(shard).thenAccept(
+                                    slashCommand -> NexusCore.logger.info(
+                                            "Application command was updated. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                            slashCommand.getName(),
+                                            slashCommand.getDescription(),
+                                            slashCommand.getId(),
+                                            System.currentTimeMillis() - start
+                                    )
+                            ).exceptionally(ExceptionLogger.get());
+
+                        });
                     }
 
                     if (!mode.isUpdate() && !mode.isCreate() && !mode.isDelete()) {
@@ -477,19 +475,19 @@ public class NexusObserverCore implements NexusObserver {
      */
     private void doFinalizationFor(Server server, List<SlashCommand> slashCommands, List<NexusCommand> commands) {
         if (mode.isCreate()) {
-            long start = System.currentTimeMillis();
-            server.getApi().bulkOverwriteServerApplicationCommands(server, getNotRegistered(slashCommands)
-                    .stream()
-                    .map(NexusCommand::asSlashCommand)
-                    .toList()
-            ).thenAccept(applicationCommands -> applicationCommands.forEach(slashCommand -> NexusCore.logger.info(
-                    "Application command was created for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
-                    server.getId(),
-                    slashCommand.getName(),
-                    slashCommand.getDescription(),
-                    slashCommand.getId(),
-                    System.currentTimeMillis() - start
-            ))).exceptionally(ExceptionLogger.get());
+            for (NexusCommand nexusCommand : getNotRegistered(slashCommands)) {
+                long start = System.currentTimeMillis();
+                nexusCommand.asSlashCommand().createForServer(server).thenAccept(
+                        slashCommand -> NexusCore.logger.info(
+                                "Application command was created for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                server.getId(),
+                                slashCommand.getName(),
+                                slashCommand.getDescription(),
+                                slashCommand.getId(),
+                                System.currentTimeMillis() - start
+                        )
+                ).exceptionally(ExceptionLogger.get());
+            }
         }
 
         if (mode.isDelete()) {
@@ -506,20 +504,20 @@ public class NexusObserverCore implements NexusObserver {
         }
 
         if (mode.isUpdate()) {
-            long start = System.currentTimeMillis();
-            server.getApi().bulkOverwriteServerApplicationCommands(server, getChanges(slashCommands)
-                    .values()
-                    .stream()
-                    .map(NexusCommand::asSlashCommand)
-                    .toList()
-            ).thenAccept(applicationCommands -> applicationCommands.forEach(slashCommand -> NexusCore.logger.info(
-                    "Application command was updated for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
-                    server.getId(),
-                    slashCommand.getName(),
-                    slashCommand.getDescription(),
-                    slashCommand.getId(),
-                    System.currentTimeMillis() - start
-            ))).exceptionally(ExceptionLogger.get());
+            getChanges(slashCommands).forEach((aLong, nexusCommand) -> {
+                long start = System.currentTimeMillis();
+                nexusCommand.asSlashCommandUpdater(aLong).updateForServer(server).thenAccept(
+                        slashCommand -> NexusCore.logger.info(
+                                "Application command was updated for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
+                                server.getId(),
+                                slashCommand.getName(),
+                                slashCommand.getDescription(),
+                                slashCommand.getId(),
+                                System.currentTimeMillis() - start
+                        )
+                ).exceptionally(ExceptionLogger.get());
+
+            });
         }
 
         if (!mode.isUpdate() && !mode.isCreate()) {
