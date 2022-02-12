@@ -54,7 +54,7 @@ public interface NexusCommandManager {
     Optional<NexusCommand> getCommandByName(String name);
 
     /**
-     * Gets the command that matches the {@link NexusCommand#getName()} and {@link NexusCommand#getServerId()}. This is a precise
+     * Gets the command that matches the {@link NexusCommand#getName()} and {@link NexusCommand#getServerIds()}. This is a precise
      * method that fetches a server-only command, this will always return empty if there are no server slash commands.
      *
      * @param name The name of the command to look for.

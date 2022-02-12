@@ -7,10 +7,11 @@ import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
+import pw.mihou.nexus.features.command.observer.facade.NexusObserver;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Nexus Command Core is the core implementation of a Nexus Command.
@@ -59,7 +60,7 @@ public class NexusCommandCore implements NexusCommand {
     public boolean privateChannelOnly = false;
 
     @WithDefault
-    public long serverId = 0L;
+    public List<Long> serverIds = new ArrayList<>();
 
     @WithDefault
     public boolean defaultPermission = true;
@@ -106,6 +107,23 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
+    public List<Long> getServerIds() {
+        return serverIds;
+    }
+
+    @Override
+    public NexusCommand addSupportFor(Long... serverIds) {
+        this.serverIds.addAll(Arrays.asList(serverIds));
+        return this;
+    }
+
+    @Override
+    public NexusCommand removeSupportFor(Long... serverIds) {
+        this.serverIds.removeAll(Arrays.asList(serverIds));
+        return null;
+    }
+
+    @Override
     public boolean isServerOnly() {
         return serverOnly;
     }
@@ -122,7 +140,12 @@ public class NexusCommandCore implements NexusCommand {
 
     @Override
     public long getServerId() {
-        return serverId;
+        return serverIds.get(0);
+    }
+
+    @Override
+    public CompletableFuture<Void> applyChangesOnSupportedServers(NexusObserver observer) {
+        return observer.applyChangesOnCommand(this);
     }
 
     @Override
@@ -136,7 +159,7 @@ public class NexusCommandCore implements NexusCommand {
                 ", requiredUsers=" + requiredUsers +
                 ", requiredPermissions=" + requiredPermissions +
                 ", serverOnly=" + serverOnly +
-                ", serverId=" + serverId +
+                ", serverId=" + getServerIds().toString() +
                 '}';
     }
 }

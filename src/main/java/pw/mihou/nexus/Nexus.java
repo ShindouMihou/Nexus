@@ -1,7 +1,10 @@
 package pw.mihou.nexus;
 
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
+import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.builder.NexusBuilder;
+import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
+import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
@@ -17,6 +20,15 @@ public interface Nexus extends SlashCommandCreateListener {
      */
     static NexusBuilder builder() {
         return new NexusBuilder();
+    }
+
+    /**
+     * Sets the logging adapter that Nexus should use.
+     *
+     * @param adapter The logging adapter that Nexus should use.
+     */
+    static void setLogger(NexusLoggingAdapter adapter) {
+        NexusCore.logger = adapter;
     }
 
     /**
@@ -45,6 +57,15 @@ public interface Nexus extends SlashCommandCreateListener {
      * {@link Nexus} instance.
      */
     NexusRatelimiter getRatelimiter();
+
+    /**
+     * Retrieves the {@link NexusConfiguration} that is being utilized by
+     * this {@link Nexus} instance.
+     *
+     * @return The {@link NexusConfiguration} that is being utilized by this
+     * {@link Nexus} instance.
+     */
+    NexusConfiguration getConfiguration();
 
      /**
      * This creates a new command and attaches them if the annotation {@link pw.mihou.nexus.features.command.annotation.NexusAttach} is

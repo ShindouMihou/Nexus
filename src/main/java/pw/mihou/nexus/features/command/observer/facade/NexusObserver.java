@@ -2,6 +2,7 @@ package pw.mihou.nexus.features.command.observer.facade;
 
 import org.javacord.api.entity.server.Server;
 import pw.mihou.nexus.Nexus;
+import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.observer.core.NexusObserverCore;
 import pw.mihou.nexus.features.command.observer.modes.ObserverMode;
 
@@ -30,6 +31,15 @@ public interface NexusObserver {
     static NexusObserver createForWith(Nexus nexus, ObserverMode mode) {
         return new NexusObserverCore(nexus, mode);
     }
+
+    /**
+     * Retrieves and performs either an update, removal or creation of the slash command on the
+     * server if it exists otherwise ignores the command change application.
+     *
+     * @param command   The command to apply changes towards.
+     * @return The {@link CompletableFuture} that indicates the progress of this task.
+     */
+    CompletableFuture<Void> applyChangesOnCommand(NexusCommand command);
 
     /**
      * Retrieves and performs an observation check for all slash commands of all the servers.

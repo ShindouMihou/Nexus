@@ -6,9 +6,9 @@ import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.util.logging.ExceptionLogger;
-import org.slf4j.Logger;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.NexusCore;
+import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
@@ -24,7 +24,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     private Map<String, Long> indexMap;
 
     private final NexusCore nexusCore;
-    private static final Logger logger = NexusCore.logger;
+    private static final NexusLoggingAdapter logger = NexusCore.logger;
 
     /**
      * Creates a new Nexus Command Manager that is utilized to manage commands,
@@ -77,7 +77,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     public Optional<NexusCommand> getCommandByName(String name, long server) {
         return commands.stream()
                 .filter(nexusCommand ->
-                        nexusCommand.getName().equalsIgnoreCase(name) && nexusCommand.getServerId() == server
+                        nexusCommand.getName().equalsIgnoreCase(name) && nexusCommand.getServerIds().contains(server)
                 )
                 .findFirst();
     }
@@ -165,22 +165,22 @@ public class NexusCommandManagerCore implements NexusCommandManager {
 
                     Map<Long, Map<String, Long>> serverIndexes = new HashMap<>();
 
-                    for (NexusCommand command : commands.stream().filter(NexusCommand::isServerOnly).collect(Collectors.toList())) {
-                        long id = command.getServerId();
+                    for (NexusCommand command : commands.stream().filter(NexusCommand::isServerOnly).toList()) {
+                        command.getServerIds().forEach(id -> {
+                            if (!serverIndexes.containsKey(id)) {
+                                Server server = nexusCore.getShardManager()
+                                        .getShardOf(id)
+                                        .flatMap(discordApi -> discordApi.getServerById(id))
+                                        .orElseThrow(AssertionError::new);
+                                serverIndexes.put(server.getId(), new HashMap<>());
 
-                        if (!serverIndexes.containsKey(id)) {
-                            Server server = nexusCore.getShardManager()
-                                    .getShardOf(id)
-                                    .flatMap(discordApi -> discordApi.getServerById(id))
-                                    .orElseThrow(AssertionError::new);
-                            serverIndexes.put(server.getId(), new HashMap<>());
-
-                            for (SlashCommand slashCommand : server.getSlashCommands().join()) {
-                                serverIndexes.get(server.getId()).put(slashCommand.getName().toLowerCase(), slashCommand.getId());
+                                for (SlashCommand slashCommand : server.getSlashCommands().join()) {
+                                    serverIndexes.get(server.getId()).put(slashCommand.getName().toLowerCase(), slashCommand.getId());
+                                }
                             }
-                        }
 
-                        indexes.put(serverIndexes.get(id).get(command.getName().toLowerCase()), command);
+                            indexes.put(serverIndexes.get(id).get(command.getName().toLowerCase()), command);
+                        });
                     }
 
                     logger.info("All global and server slash commands are now indexed. It took {} milliseconds to complete indexing.", System.currentTimeMillis() - start);

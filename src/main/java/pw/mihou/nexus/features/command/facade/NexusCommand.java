@@ -6,9 +6,11 @@ import org.javacord.api.interaction.SlashCommandBuilder;
 import org.javacord.api.interaction.SlashCommandOption;
 import org.javacord.api.interaction.SlashCommandUpdater;
 import pw.mihou.nexus.commons.Pair;
+import pw.mihou.nexus.features.command.observer.facade.NexusObserver;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface NexusCommand {
 
@@ -64,6 +66,35 @@ public interface NexusCommand {
     List<PermissionType> getPermissions();
 
     /**
+     * Gets all the servers that this command is for.
+     *
+     * @return A list of server ids that this command is for.
+     */
+    List<Long> getServerIds();
+
+    /**
+     * Adds the specified server to the list of servers to
+     * register this command with. If {@link pw.mihou.nexus.Nexus} has the
+     * <b>autoApplySupportedServersChangesOnCommands</b> option enabled then it
+     * will automatically update this change.
+     *
+     * @param serverIds The server ids to add support for this command.
+     * @return {@link NexusCommand} instance for chain-calling methods.
+     */
+    NexusCommand addSupportFor(Long... serverIds);
+
+    /**
+     * Removes the specified server to the list of servers to
+     * register this command with. If {@link pw.mihou.nexus.Nexus} has the
+     * <b>autoApplySupportedServersChangesOnCommands</b> option enabled then it
+     * will automatically update this change.
+     *
+     * @param serverIds The server ids to remove support for this command.
+     * @return {@link NexusCommand} instance for chain-calling methods.
+     */
+    NexusCommand removeSupportFor(Long... serverIds);
+
+    /**
      * Is this command for a specific server only?
      *
      * @return Is this command for a specific server only?
@@ -90,7 +121,18 @@ public interface NexusCommand {
      *
      * @return The server ID of the command.
      */
+    @Deprecated
     long getServerId();
+
+    /**
+     * Applies the recently new server changes for this command. If a server id was
+     * removed from the supported list then it will remove this command from the list
+     * and if a new server id was added then it will add this command.
+     *
+     * @param observer  The {@link NexusObserver} to use.
+     * @return The {@link CompletableFuture} to mark the progress of this task.
+     */
+    CompletableFuture<Void> applyChangesOnSupportedServers(NexusObserver observer);
 
     /**
      * Transforms this into a slash command builder that can be used to create
@@ -99,14 +141,15 @@ public interface NexusCommand {
      *
      * @return The server id of the server this is intended (nullable) and the slash command builder.
      */
-    default Pair<Long, SlashCommandBuilder> asSlashCommand() {
+    default SlashCommandBuilder asSlashCommand() {
         SlashCommandBuilder builder = SlashCommand.with(getName().toLowerCase(), getDescription())
                 .setDefaultPermission(isDefaultPermissionEnabled());
 
-        if (!getOptions().isEmpty())
-            return Pair.of(getServerId(), builder.setOptions(getOptions()));
+        if (!getOptions().isEmpty()) {
+            return builder.setOptions(getOptions());
+        }
 
-        return Pair.of(getServerId(), builder);
+        return builder;
     }
 
     /**
@@ -117,7 +160,7 @@ public interface NexusCommand {
      * @param commandId The ID of the command to update.
      * @return The server id of the server this is intended (nullable) and the slash command updater.
      */
-    default Pair<Long, SlashCommandUpdater> asSlashCommandUpdater(long commandId) {
+    default SlashCommandUpdater asSlashCommandUpdater(long commandId) {
         SlashCommandUpdater updater = new SlashCommandUpdater(commandId)
                 .setName(getName())
                 .setDescription(getDescription())
@@ -127,7 +170,7 @@ public interface NexusCommand {
             updater.setSlashCommandOptions(getOptions());
         }
 
-        return Pair.of(getServerId(), updater);
+        return updater;
     }
 
 }

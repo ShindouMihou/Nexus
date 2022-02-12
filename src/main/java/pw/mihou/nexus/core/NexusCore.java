@@ -3,9 +3,10 @@ package pw.mihou.nexus.core;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pw.mihou.nexus.Nexus;
+import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
+import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusDefaultLoggingAdapter;
 import pw.mihou.nexus.core.managers.core.NexusCommandManagerCore;
 import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
@@ -19,10 +20,7 @@ import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class NexusCore implements Nexus {
@@ -30,13 +28,13 @@ public class NexusCore implements Nexus {
     private final NexusRatelimiterCore ratelimiter = new NexusRatelimiterCore();
     private final NexusCommandManagerCore commandManager = new NexusCommandManagerCore(this);
     private NexusShardManager shardManager;
-    public static final Logger logger = LoggerFactory.getLogger("Nexus.Core");
+    public static NexusLoggingAdapter logger = new NexusDefaultLoggingAdapter();
     private final NexusMessageConfiguration messageConfiguration;
     private final List<String> globalMiddlewares = new ArrayList<>();
     private final List<String> globalAfterwares = new ArrayList<>();
-
     private final DiscordApiBuilder builder;
     private final Consumer<DiscordApi> onShardLogin;
+    private final NexusConfiguration nexusConfiguration;
 
     /**
      * Creates a new Nexus Core with a customized {@link NexusMessageConfiguration} and
@@ -49,17 +47,14 @@ public class NexusCore implements Nexus {
     public NexusCore(
             NexusMessageConfiguration messageConfiguration,
             DiscordApiBuilder builder,
-            Consumer<DiscordApi> onShardLogin
+            Consumer<DiscordApi> onShardLogin,
+            NexusConfiguration nexusConfiguration
     ) {
         this.builder = builder;
         this.onShardLogin = onShardLogin;
         this.shardManager = new NexusShardManager();
-
-        if (messageConfiguration == null) {
-            this.messageConfiguration = new NexusDefaultMessageConfiguration();
-        } else {
-            this.messageConfiguration = messageConfiguration;
-        }
+        this.nexusConfiguration = nexusConfiguration;
+        this.messageConfiguration = Objects.requireNonNullElseGet(messageConfiguration, NexusDefaultMessageConfiguration::new);
     }
 
     @Override
@@ -75,6 +70,11 @@ public class NexusCore implements Nexus {
     @Override
     public NexusRatelimiter getRatelimiter() {
         return ratelimiter;
+    }
+
+    @Override
+    public NexusConfiguration getConfiguration() {
+        return nexusConfiguration;
     }
 
     @Override
