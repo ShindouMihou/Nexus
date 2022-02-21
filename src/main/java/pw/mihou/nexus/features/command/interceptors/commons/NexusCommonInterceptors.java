@@ -16,6 +16,7 @@ public class NexusCommonInterceptors {
     public static final String NEXUS_AUTH_BOT_OWNER_MIDDLEWARE = "nexus.auth.bot.owner";
     public static final String NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE = "nexus.auth.server.owner";
     public static final String NEXUS_GATE_SERVER = "nexus.gate.server";
+    private static final String NEXUS_GATE_DMS = "nexus.gate.dms";
 
     static {
         addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event ->
@@ -38,6 +39,7 @@ public class NexusCommonInterceptors {
                 )
         );
         addMiddleware(NEXUS_GATE_SERVER, event -> event.getServer().isPresent() ? NexusMiddlewareGate.next() : NexusMiddlewareGate.stop());
+        addMiddleware(NEXUS_GATE_DMS, event -> event.getServer().isEmpty() ? NexusMiddlewareGate.next() : NexusMiddlewareGate.stop());
     }
 
 }

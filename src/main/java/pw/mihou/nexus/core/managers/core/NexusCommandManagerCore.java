@@ -45,7 +45,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     public Nexus addCommand(NexusCommand command) {
         commands.add(command);
 
-        if (indexMap == null || command.isServerOnly() || !indexMap.containsKey(command.getName().toLowerCase()))
+        if (indexMap == null || !command.getServerIds().isEmpty() || !indexMap.containsKey(command.getName().toLowerCase()))
             return nexusCore;
 
         indexes.put(indexMap.get(command.getName().toLowerCase()), command);
@@ -156,7 +156,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
                     // Perform indexing which is basically mapping the ID of the slash command
                     // to the Nexus Command that will be called everytime the command executes.
                     commands.stream()
-                            .filter(nexusCommand -> !nexusCommand.isServerOnly())
+                            .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
                             .forEach(nexusCommand -> indexes.put(
                                     newIndexes.get(
                                             nexusCommand.getName().toLowerCase()
@@ -165,7 +165,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
 
                     Map<Long, Map<String, Long>> serverIndexes = new HashMap<>();
 
-                    for (NexusCommand command : commands.stream().filter(NexusCommand::isServerOnly).toList()) {
+                    for (NexusCommand command : commands.stream().filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty()).toList()) {
                         command.getServerIds().forEach(id -> {
                             if (!serverIndexes.containsKey(id)) {
                                 Server server = nexusCore.getShardManager()

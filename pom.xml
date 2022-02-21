@@ -6,7 +6,7 @@
 
     <groupId>pw.mihou</groupId>
     <artifactId>Nexus</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-ALPHA4</version>
     <name>Nexus</name>
     <description>Nexus is the next-generation Javacord framework that aims to create Discord bots with less code, dynamic, more simplicity and beauty.</description>
     <url>https://github.com/ShindouMihou/Nexus</url>

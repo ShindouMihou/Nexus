@@ -5,6 +5,8 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
+import pw.mihou.nexus.core.enginex.core.NexusEngineXCore;
+import pw.mihou.nexus.core.enginex.facade.NexusEngineX;
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.logger.adapters.defaults.NexusDefaultLoggingAdapter;
 import pw.mihou.nexus.core.managers.core.NexusCommandManagerCore;
@@ -15,6 +17,7 @@ import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 import pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
+import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
@@ -35,6 +38,8 @@ public class NexusCore implements Nexus {
     private final DiscordApiBuilder builder;
     private final Consumer<DiscordApi> onShardLogin;
     private final NexusConfiguration nexusConfiguration;
+    private final NexusEngineX engineX = new NexusEngineXCore(this);
+    private final NexusSynchronizer synchronizer = new NexusSynchronizer(this);
 
     /**
      * Creates a new Nexus Core with a customized {@link NexusMessageConfiguration} and
@@ -52,7 +57,7 @@ public class NexusCore implements Nexus {
     ) {
         this.builder = builder;
         this.onShardLogin = onShardLogin;
-        this.shardManager = new NexusShardManager();
+        this.shardManager = new NexusShardManager(this);
         this.nexusConfiguration = nexusConfiguration;
         this.messageConfiguration = Objects.requireNonNullElseGet(messageConfiguration, NexusDefaultMessageConfiguration::new);
     }
@@ -60,6 +65,11 @@ public class NexusCore implements Nexus {
     @Override
     public NexusCommandManager getCommandManager() {
         return commandManager;
+    }
+
+    @Override
+    public NexusSynchronizer getSynchronizer() {
+        return synchronizer;
     }
 
     @Override
@@ -75,6 +85,15 @@ public class NexusCore implements Nexus {
     @Override
     public NexusConfiguration getConfiguration() {
         return nexusConfiguration;
+    }
+
+    /**
+     * Gets the queueing engine for this {@link Nexus} instance.
+     *
+     * @return  The queueing engine of this instance.
+     */
+    public NexusEngineX getEngineX() {
+        return engineX;
     }
 
     @Override
@@ -123,6 +142,7 @@ public class NexusCore implements Nexus {
                     .forEach(future -> future.thenAccept(shards::add).join());
 
             this.shardManager = new NexusShardManager(
+                    this,
                     shards.stream()
                             .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
                             .toArray(DiscordApi[]::new)

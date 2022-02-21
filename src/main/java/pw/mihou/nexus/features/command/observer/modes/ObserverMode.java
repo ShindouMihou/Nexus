@@ -2,6 +2,7 @@ package pw.mihou.nexus.features.command.observer.modes;
 
 import pw.mihou.nexus.features.command.observer.core.NexusObserverCore;
 
+@Deprecated(forRemoval = true)
 public enum ObserverMode {
 
     /**

@@ -7,6 +7,7 @@ import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -15,7 +16,9 @@ public class NexusBuilder {
     private NexusMessageConfiguration messageConfiguration;
     private DiscordApiBuilder builder;
     private Consumer<DiscordApi> onShardLogin;
-    private NexusConfiguration nexusConfiguration = new NexusConfiguration(true);
+    private NexusConfiguration nexusConfiguration = new NexusConfiguration(
+            Duration.ofMinutes(10)
+    );
 
     /**
      * Sets the {@link NexusMessageConfiguration} that {@link Nexus} uses whenever

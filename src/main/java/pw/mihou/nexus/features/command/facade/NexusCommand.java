@@ -6,11 +6,9 @@ import org.javacord.api.interaction.SlashCommandBuilder;
 import org.javacord.api.interaction.SlashCommandOption;
 import org.javacord.api.interaction.SlashCommandUpdater;
 import pw.mihou.nexus.commons.Pair;
-import pw.mihou.nexus.features.command.observer.facade.NexusObserver;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public interface NexusCommand {
 
@@ -94,19 +92,6 @@ public interface NexusCommand {
      */
     NexusCommand removeSupportFor(Long... serverIds);
 
-    /**
-     * Is this command for a specific server only?
-     *
-     * @return Is this command for a specific server only?
-     */
-    boolean isServerOnly();
-
-    /**
-     * Is this command for a private channel only?
-     *
-     * @return Is this command for a private channel only?
-     */
-    boolean isPrivateChannelOnly();
 
     /**
      * Is the default permission configuration of Discord enabled?
@@ -123,16 +108,6 @@ public interface NexusCommand {
      */
     @Deprecated
     long getServerId();
-
-    /**
-     * Applies the recently new server changes for this command. If a server id was
-     * removed from the supported list then it will remove this command from the list
-     * and if a new server id was added then it will add this command.
-     *
-     * @param observer  The {@link NexusObserver} to use.
-     * @return The {@link CompletableFuture} to mark the progress of this task.
-     */
-    CompletableFuture<Void> applyChangesOnSupportedServers(NexusObserver observer);
 
     /**
      * Transforms this into a slash command builder that can be used to create

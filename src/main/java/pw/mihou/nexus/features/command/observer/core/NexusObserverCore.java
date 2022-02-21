@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * registry of Nexus. This also checks for differences in slash commands which allows the feature to be pretty
  * advanced.
  */
+@Deprecated(forRemoval = true)
 public class NexusObserverCore implements NexusObserver {
 
     private final NexusCore nexusCore;
@@ -119,7 +120,6 @@ public class NexusObserverCore implements NexusObserver {
     public CompletableFuture<Void> observeOnServer(Server server) {
         List<NexusCommand> commands = nexusCore.getCommandManager().getCommands()
                 .stream()
-                .filter(NexusCommand::isServerOnly)
                 .filter(nexusCommand ->  nexusCommand.getServerIds().contains(server.getId()))
                 .collect(Collectors.toList());
 
@@ -249,7 +249,7 @@ public class NexusObserverCore implements NexusObserver {
     private CompletableFuture<Void> softObserveForAllShards() {
         List<NexusCommand> commands = nexusCore.getCommandManager().getCommands()
                 .stream()
-                .filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty() && nexusCommand.isServerOnly())
+                .filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty())
                 .collect(Collectors.toList());
 
         Map<Long, List<SlashCommand>> serverSlashCommands = new HashMap<>();

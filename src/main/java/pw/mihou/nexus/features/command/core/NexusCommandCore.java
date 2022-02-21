@@ -1,19 +1,16 @@
 package pw.mihou.nexus.features.command.core;
 
 import org.javacord.api.entity.permission.PermissionType;
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.SlashCommandOption;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
-import pw.mihou.nexus.features.command.observer.facade.NexusObserver;
-import pw.mihou.nexus.features.command.observer.modes.ObserverMode;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 /**
  * Nexus Command Core is the core implementation of a Nexus Command.
@@ -54,12 +51,6 @@ public class NexusCommandCore implements NexusCommand {
 
     @WithDefault
     public List<String> afterwares = Collections.emptyList();
-
-    @WithDefault
-    public boolean serverOnly = false;
-
-    @WithDefault
-    public boolean privateChannelOnly = false;
 
     @WithDefault
     public List<Long> serverIds = new ArrayList<>();
@@ -115,66 +106,17 @@ public class NexusCommandCore implements NexusCommand {
 
     @Override
     public NexusCommand addSupportFor(Long... serverIds) {
-        this.serverIds.addAll(Arrays.asList(serverIds));
-
-        if (core.getConfiguration().autoApplySupportedServerChangesForServers()) {
-            applyChangesOnSupportedServers(NexusObserver.createForWith(core, ObserverMode.MASTER));
-        }
-
+        this.serverIds = Stream.concat(this.serverIds.stream(), Stream.of(serverIds)).toList();
         return this;
     }
 
     @Override
     public NexusCommand removeSupportFor(Long... serverIds) {
-        this.serverIds.removeAll(Arrays.asList(serverIds));
+        List<Long> mutableList = new ArrayList<>(this.serverIds);
+        mutableList.removeAll(Arrays.stream(serverIds).toList());
 
-        if (core.getConfiguration().autoApplySupportedServerChangesForServers()) {
-            CompletableFuture.runAsync(() -> {
-                for (Long serverId : serverIds) {
-                    Optional<Server> optionalServer = core.getShardManager()
-                            .getShardOf(serverId)
-                            .flatMap(api -> api.getServerById(serverId));
-
-                    if (optionalServer.isEmpty()) {
-                        NexusCore.logger.warn(
-                                "A command failed to apply changes for a server since no shard on this JVM is handling the server... " +
-                                        "please ignore if this is normal." +
-                                        "[server={}, command={}]",
-                                serverId, getName()
-                        );
-                        return;
-                    }
-
-                    Server server = optionalServer.orElseThrow(AssertionError::new);
-                    server.getSlashCommands().join().forEach(slashCommand -> {
-                        if (slashCommand.getName().equalsIgnoreCase(name)) {
-                            long start = System.currentTimeMillis();
-                            slashCommand.deleteForServer(server).join();
-                            NexusCore.logger.info(
-                                    "Application command was deleted for server {}. [name={}, description={}, id={}]. It took {} milliseconds.",
-                                    server.getId(),
-                                    getName(),
-                                    getDescription(),
-                                    slashCommand.getId(),
-                                    System.currentTimeMillis() - start
-                            );
-                        }
-                    });
-                }
-            });
-        }
-
-        return null;
-    }
-
-    @Override
-    public boolean isServerOnly() {
-        return serverOnly;
-    }
-
-    @Override
-    public boolean isPrivateChannelOnly() {
-        return privateChannelOnly;
+        this.serverIds = mutableList.stream().toList();
+        return this;
     }
 
     @Override
@@ -188,11 +130,6 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
-    public CompletableFuture<Void> applyChangesOnSupportedServers(NexusObserver observer) {
-        return observer.applyChangesOnCommand(this);
-    }
-
-    @Override
     public String toString() {
         return "NexusCommandCore{" +
                 "name='" + name + '\'' +
@@ -202,7 +139,6 @@ public class NexusCommandCore implements NexusCommand {
                 ", requiredRoles=" + requiredRoles +
                 ", requiredUsers=" + requiredUsers +
                 ", requiredPermissions=" + requiredPermissions +
-                ", serverOnly=" + serverOnly +
                 ", serverId=" + getServerIds().toString() +
                 '}';
     }

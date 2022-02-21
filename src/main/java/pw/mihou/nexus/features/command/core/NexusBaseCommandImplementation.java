@@ -71,20 +71,13 @@ public class NexusBaseCommandImplementation {
      * @return Can the user use this command?
      */
     public boolean applyRestraints(SlashCommandCreateEvent event) {
-        if (instance.isServerOnly() && !event.getSlashCommandInteraction().getServer().isPresent())
-            return false;
-
-        if (instance.isPrivateChannelOnly() && event.getSlashCommandInteraction().getServer().isPresent())
-            return false;
-
         // We need this condition in case Discord decides to go through with their
         // optional channel thing which sounds odd.
-        if (!event.getSlashCommandInteraction().getChannel().isPresent())
+        if (event.getSlashCommandInteraction().getChannel().isEmpty())
             throw new IllegalStateException("The channel is somehow not present; this is possibly a change in Discord's side " +
                     "and may need to be addressed, please send an issue @ https://github.com/ShindouMihou/Nexus");
 
-        if (!instance.getRequiredUsers().isEmpty() && !instance.getRequiredUsers()
-                .contains(event.getInteraction().getUser().getId()))
+        if (!instance.getRequiredUsers().isEmpty() && !instance.getRequiredUsers().contains(event.getInteraction().getUser().getId()))
             return false;
 
         return true;
@@ -120,7 +113,7 @@ public class NexusBaseCommandImplementation {
                 ((NexusMessageCore) middlewareGate.getResponse())
                         .convertTo(nexusEvent.respondNow())
                         .respond()
-                        .exceptionally(ExceptionLogger.get());;
+                        .exceptionally(ExceptionLogger.get());
             }
             return;
         }

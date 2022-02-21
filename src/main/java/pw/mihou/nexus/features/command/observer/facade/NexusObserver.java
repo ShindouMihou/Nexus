@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * registry of Nexus. This also checks for differences in slash commands which allows the feature to be pretty
  * advanced.
  */
+@Deprecated(forRemoval = true)
 public interface NexusObserver {
 
     /**
