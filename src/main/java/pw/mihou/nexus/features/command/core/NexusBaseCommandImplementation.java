@@ -19,9 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class NexusBaseCommandImplementation {
-
-    private final NexusCommandCore instance;
+public record NexusBaseCommandImplementation(NexusCommandCore instance) {
 
     /**
      * Creates a new Base Command instance that is used to handle all the command
@@ -29,8 +27,7 @@ public class NexusBaseCommandImplementation {
      *
      * @param instance The command instance.
      */
-    public NexusBaseCommandImplementation(NexusCommandCore instance) {
-        this.instance = instance;
+    public NexusBaseCommandImplementation {
     }
 
     /**
@@ -38,7 +35,7 @@ public class NexusBaseCommandImplementation {
      * the required permissions.
      *
      * @param server The server instance to use, nullable.
-     * @param user The user instance to use.
+     * @param user   The user instance to use.
      * @return Can the user use this command?
      */
     public boolean applyPermissionRestraint(Server server, User user) {
@@ -51,7 +48,7 @@ public class NexusBaseCommandImplementation {
      * required roles.
      *
      * @param server The server instance to use, nullable.
-     * @param user The user instance to use.
+     * @param user   The user instance to use.
      * @return Can the user use this command?
      */
     public boolean applyRoleRestraints(Server server, User user) {
@@ -86,8 +83,8 @@ public class NexusBaseCommandImplementation {
     /**
      * Applies the rate-limiter.
      *
-     * @param user The user to rate-limit.
-     * @param server The server where the command was executed.
+     * @param user      The user to rate-limit.
+     * @param server    The server where the command was executed.
      * @param onLimited If the user is rate-limited.
      * @param onSuccess If the command can be executed.
      */
@@ -108,9 +105,10 @@ public class NexusBaseCommandImplementation {
 
         NexusMiddlewareGateCore middlewareGate = (NexusMiddlewareGateCore) NexusCommandInterceptorCore.interceptWithMany(middlewares, nexusEvent);
 
-        if (!middlewareGate.isAllowed()) {
-            if (middlewareGate.getResponse() != null) {
-                ((NexusMessageCore) middlewareGate.getResponse())
+        if (middlewareGate != null) {
+            NexusMessageCore middlewareResponse = ((NexusMessageCore) middlewareGate.response());
+            if (middlewareResponse != null) {
+                middlewareResponse
                         .convertTo(nexusEvent.respondNow())
                         .respond()
                         .exceptionally(ExceptionLogger.get());
