@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.messages.facade;
 
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 
@@ -20,6 +21,16 @@ public interface NexusMessage {
     }
 
     /**
+     * Creates a new {@link NexusMessage} that utilizes the {@link EmbedBuilder} specified with ephemereal flag.
+     *
+     * @param builder The {@link EmbedBuilder} to send to the end-user.
+     * @return The new {@link NexusMessage} instance.
+     */
+    static NexusMessage fromEphemeral(EmbedBuilder builder) {
+        return new NexusMessageCore(builder).setBuilder(responseBuilder -> responseBuilder.setFlags(InteractionCallbackDataFlag.EPHEMERAL));
+    }
+
+    /**
      * Creates a new {@link NexusMessage} that utilizes the {@link EmbedBuilder} specified.
      *
      * @param builder The {@link EmbedBuilder} to send to the end-user.
@@ -30,6 +41,16 @@ public interface NexusMessage {
     }
 
     /**
+     * Creates a new {@link NexusMessage} that utilizes the {@link EmbedBuilder} specified with ephemereal flag.
+     *
+     * @param builder The {@link EmbedBuilder} to send to the end-user.
+     * @return The new {@link NexusMessage} instance.
+     */
+    static NexusMessage fromEphemereal(Function<EmbedBuilder, EmbedBuilder> builder) {
+        return fromEphemeral(builder.apply(new EmbedBuilder()));
+    }
+
+    /**
      * Creates a new {@link NexusMessage} that utilizes the {@link String} specified.
      *
      * @param text The {@link String} to send to the end-user.
@@ -37,6 +58,16 @@ public interface NexusMessage {
      */
     static NexusMessage from(String text) {
         return new NexusMessageCore(text);
+    }
+
+    /**
+     * Creates a new {@link NexusMessage} that utilizes the {@link String} specified with ephemereal flag.
+     *
+     * @param text The {@link String} to send to the end-user.
+     * @return The new {@link NexusMessage} instance.
+     */
+    static NexusMessage fromEphemereal(String text) {
+        return new NexusMessageCore(text).setBuilder(builder -> builder.setFlags(InteractionCallbackDataFlag.EPHEMERAL));
     }
 
     /**
