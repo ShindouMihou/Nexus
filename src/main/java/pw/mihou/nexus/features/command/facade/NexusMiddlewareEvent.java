@@ -55,6 +55,31 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * {@link Boolean#FALSE}.
      *
      * @param predicate The predicate to evaluate.
+     * @param response  The response to send if the evaluation is false.
+     */
+    default void stopIf(boolean predicate, NexusMessage response) {
+        if (predicate) {
+            stop(response);
+        }
+    }
+
+    /**
+     * Stops further command execution if the predicate returns a value
+     * of {@link Boolean#TRUE} and allows execution if the predicate is a
+     * {@link Boolean#FALSE}.
+     *
+     * @param predicate The predicate to evaluate.
+     */
+    default void stopIf(boolean predicate) {
+        stopIf(predicate, null);
+    }
+
+    /**
+     * Stops further command execution if the predicate returns a value
+     * of {@link Boolean#TRUE} and allows execution if the predicate is a
+     * {@link Boolean#FALSE}.
+     *
+     * @param predicate The predicate to evaluate.
      */
     default void stopIf(@Nonnull Predicate<Void> predicate) {
         stopIf(predicate, null);
@@ -69,9 +94,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * @param response  The response to send if the evaluation is false.
      */
     default void stopIf(@Nonnull Predicate<Void> predicate, @Nullable NexusMessage response) {
-        if (predicate.test(null)) {
-            stop(response);
-        }
+        stopIf(predicate.test(null), response);
     }
 
 
