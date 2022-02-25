@@ -69,12 +69,9 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * @param response  The response to send if the evaluation is false.
      */
     default void stopIf(@Nonnull Predicate<Void> predicate, @Nullable NexusMessage response) {
-        if (!predicate.test(null)) {
-            next();
-            return;
+        if (predicate.test(null)) {
+            stop(response);
         }
-
-        stop(response);
     }
 
 
