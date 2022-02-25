@@ -71,10 +71,12 @@ public class NexusCommandInterceptorCore {
         for (String name : names) {
             interceptWith(name, event);
             if (!gate.allowed()) {
+                NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
                 return gate;
             }
         }
 
+        NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
         return null;
     }
 
