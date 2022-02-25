@@ -29,11 +29,11 @@ public class NexusMiddlewareGateRepository {
      * specific interaction.
      */
     public static NexusMiddlewareGateCore get(Interaction interaction) {
-        if (gates.containsKey(interaction.getId())) {
-            return gates.get(interaction.getId());
+        if (!gates.containsKey(interaction.getId())) {
+            gates.put(interaction.getId(), new NexusMiddlewareGateCore());
         }
 
-        return gates.put(interaction.getId(), new NexusMiddlewareGateCore());
+        return gates.get(interaction.getId());
     }
 
 }
