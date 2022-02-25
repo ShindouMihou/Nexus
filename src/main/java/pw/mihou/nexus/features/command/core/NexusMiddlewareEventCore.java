@@ -16,5 +16,4 @@ public record NexusMiddlewareEventCore(NexusCommandEvent event) implements Nexus
     public NexusCommand getCommand() {
         return event.getCommand();
     }
-
 }

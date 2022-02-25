@@ -6,6 +6,7 @@ import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddlewareGate;
+import pw.mihou.nexus.features.command.interceptors.repositories.NexusMiddlewareGateRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,22 +42,19 @@ public class NexusCommandInterceptorCore {
      *
      * @param name The name of the command interceptor.
      * @param event The event being intercepted.
-     * @return Is the command allowed to execute further?
      */
-    private static NexusMiddlewareGate interceptWith(String name, NexusCommandEvent event) {
+    private static void interceptWith(String name, NexusCommandEvent event) {
         NexusCommandInterceptor interceptor = interceptors.getOrDefault(name, null);
 
         if (interceptor == null) {
-            return NexusMiddlewareGate.next();
+            return;
         }
 
         if (interceptor instanceof NexusMiddleware) {
-            return ((NexusMiddleware) interceptor).onBeforeCommand(new NexusMiddlewareEventCore(event));
+            ((NexusMiddleware) interceptor).onBeforeCommand(new NexusMiddlewareEventCore(event));
         } else if (interceptor instanceof NexusAfterware){
             ((NexusAfterware) interceptor).onAfterCommandExecution(event);
         }
-
-        return NexusMiddlewareGate.next();
     }
 
     /**
@@ -69,14 +67,17 @@ public class NexusCommandInterceptorCore {
      */
     public static NexusMiddlewareGate interceptWithMany(List<String> names, NexusCommandEvent event) {
         // This is intentionally a for-loop since we want to stop at a specific point.
+        NexusMiddlewareGateCore gate = NexusMiddlewareGateRepository.get(event.getBaseEvent().getInteraction());
         for (String name : names) {
-            NexusMiddlewareGate gate = interceptWith(name, event);
-            if (!((NexusMiddlewareGateCore) gate).isAllowed()) {
+            interceptWith(name, event);
+            if (!gate.allowed()) {
+                NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
                 return gate;
             }
         }
 
-        return NexusMiddlewareGate.next();
+        NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
+        return null;
     }
 
 }

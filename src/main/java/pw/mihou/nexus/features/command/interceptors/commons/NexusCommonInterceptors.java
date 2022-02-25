@@ -1,7 +1,5 @@
 package pw.mihou.nexus.features.command.interceptors.commons;
 
-import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
-import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddlewareGate;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
 
 import static pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor.addMiddleware;
@@ -19,27 +17,18 @@ public class NexusCommonInterceptors {
     private static final String NEXUS_GATE_DMS = "nexus.gate.dms";
 
     static {
-        addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event ->
-                event.getUser().isBotOwner() ?
-                        NexusMiddlewareGate.next() : NexusMiddlewareGate.stop(
-                        NexusMessage.fromWith(
-                                "**PERMISSION DENIED**\nYou need to be the bot owner to execute this command.",
-                                builder -> builder.setFlags(InteractionCallbackDataFlag.EPHEMERAL)
-                        )
-                )
-        );
+        addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event -> event.stopIf(
+                !event.getUser().isBotOwner(),
+                NexusMessage.fromEphemereal("**PERMISSION DENIED**\nYou need to be the bot owner to execute this command.")
+        ));
 
-        addMiddleware(NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE, event ->
-                (event.getServer().isPresent() && event.getServer().get().isOwner(event.getUser())) ?
-                        NexusMiddlewareGate.next() : NexusMiddlewareGate.stop(
-                                NexusMessage.fromWith(
-                                        "**PERMISSION DENIED**\nYou need to be the server owner to execute this command.",
-                                        builder -> builder.setFlags(InteractionCallbackDataFlag.EPHEMERAL)
-                                )
-                )
-        );
-        addMiddleware(NEXUS_GATE_SERVER, event -> event.getServer().isPresent() ? NexusMiddlewareGate.next() : NexusMiddlewareGate.stop());
-        addMiddleware(NEXUS_GATE_DMS, event -> event.getServer().isEmpty() ? NexusMiddlewareGate.next() : NexusMiddlewareGate.stop());
+        addMiddleware(NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE, event -> event.stopIf(
+                event.getServer().isPresent() && event.getServer().get().isOwner(event.getUser()),
+                NexusMessage.fromEphemereal("**PERMISSION DENIED**\nYou need to be the server owner to execute this command.")
+        ));
+
+        addMiddleware(NEXUS_GATE_SERVER, event -> event.stopIf(event.getServer().isEmpty()));
+        addMiddleware(NEXUS_GATE_DMS, event -> event.stopIf(event.getServer().isPresent()));
     }
 
 }
