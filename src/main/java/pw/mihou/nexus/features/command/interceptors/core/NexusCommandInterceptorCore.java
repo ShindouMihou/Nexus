@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.interceptors.core;
 
+import pw.mihou.nexus.features.command.core.NexusMiddlewareEventCore;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor;
@@ -50,7 +51,7 @@ public class NexusCommandInterceptorCore {
         }
 
         if (interceptor instanceof NexusMiddleware) {
-            return ((NexusMiddleware) interceptor).onBeforeCommand(event);
+            return ((NexusMiddleware) interceptor).onBeforeCommand(new NexusMiddlewareEventCore(event));
         } else if (interceptor instanceof NexusAfterware){
             ((NexusAfterware) interceptor).onAfterCommandExecution(event);
         }

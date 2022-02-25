@@ -8,6 +8,7 @@ import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
+import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
@@ -49,6 +50,15 @@ public interface Nexus extends SlashCommandCreateListener {
      * {@link Nexus} instance.
      */
     NexusSynchronizer getSynchronizer();
+
+    /**
+     * Retrieves the command responder repository that is responsible for
+     * handling cross-middleware and command responders.
+     *
+     * @return  The command responder repository reasonable for this shard's
+     * cross-middleware and command responders.
+     */
+    NexusResponderRepository getResponderRepository();
 
     /**
      * Retrieves the shard manager that is being utilized by

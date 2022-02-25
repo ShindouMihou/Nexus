@@ -185,7 +185,9 @@ public interface NexusCommandEvent {
      * @return The {@link InteractionOriginalResponseUpdater}.
      */
     default CompletableFuture<InteractionOriginalResponseUpdater> respondLater() {
-        return getInteraction().respondLater();
+        return getNexus()
+                .getResponderRepository()
+                .get(getBaseEvent().getInteraction());
     }
 
     /**
@@ -195,7 +197,9 @@ public interface NexusCommandEvent {
      * @return The {@link InteractionOriginalResponseUpdater} with the ephemeral flag attached.
      */
     default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral() {
-        return getInteraction().respondLater(true);
+        return getNexus()
+                .getResponderRepository()
+                .getEphemereal(getBaseEvent().getInteraction());
     }
 
 }

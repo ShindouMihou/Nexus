@@ -1,6 +1,6 @@
 package pw.mihou.nexus.features.command.interceptors.facades;
 
-import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
+import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent;
 
 public interface NexusMiddleware extends NexusCommandInterceptor {
 
@@ -12,6 +12,6 @@ public interface NexusMiddleware extends NexusCommandInterceptor {
      * @param event The event that was received by Nexus.
      * @return A boolean that indicates whether to allow the command to execute any further.
      */
-    NexusMiddlewareGate onBeforeCommand(NexusCommandEvent event);
+    NexusMiddlewareGate onBeforeCommand(NexusMiddlewareEvent event);
 
 }

@@ -17,6 +17,7 @@ import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 import pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
+import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
@@ -40,6 +41,7 @@ public class NexusCore implements Nexus {
     private final NexusConfiguration nexusConfiguration;
     private final NexusEngineX engineX = new NexusEngineXCore(this);
     private final NexusSynchronizer synchronizer = new NexusSynchronizer(this);
+    private final NexusResponderRepository responderRepository = new NexusResponderRepository();
 
     /**
      * Creates a new Nexus Core with a customized {@link NexusMessageConfiguration} and
@@ -70,6 +72,11 @@ public class NexusCore implements Nexus {
     @Override
     public NexusSynchronizer getSynchronizer() {
         return synchronizer;
+    }
+
+    @Override
+    public NexusResponderRepository getResponderRepository() {
+        return responderRepository;
     }
 
     @Override
