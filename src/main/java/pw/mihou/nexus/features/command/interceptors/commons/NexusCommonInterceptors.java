@@ -18,17 +18,17 @@ public class NexusCommonInterceptors {
 
     static {
         addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event -> event.stopIf(
-                unused -> !event.getUser().isBotOwner(),
+                !event.getUser().isBotOwner(),
                 NexusMessage.fromEphemereal("**PERMISSION DENIED**\nYou need to be the bot owner to execute this command.")
         ));
 
         addMiddleware(NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE, event -> event.stopIf(
-                unused -> event.getServer().isPresent() && event.getServer().get().isOwner(event.getUser()),
+                event.getServer().isPresent() && event.getServer().get().isOwner(event.getUser()),
                 NexusMessage.fromEphemereal("**PERMISSION DENIED**\nYou need to be the server owner to execute this command.")
         ));
 
-        addMiddleware(NEXUS_GATE_SERVER, event -> event.stopIf(unused -> event.getServer().isEmpty()));
-        addMiddleware(NEXUS_GATE_DMS, event -> event.stopIf(unused -> event.getServer().isPresent()));
+        addMiddleware(NEXUS_GATE_SERVER, event -> event.stopIf(event.getServer().isEmpty()));
+        addMiddleware(NEXUS_GATE_DMS, event -> event.stopIf(event.getServer().isPresent()));
     }
 
 }
