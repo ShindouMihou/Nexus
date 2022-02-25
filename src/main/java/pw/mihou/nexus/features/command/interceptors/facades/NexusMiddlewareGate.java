@@ -6,9 +6,11 @@ import pw.mihou.nexus.features.messages.facade.NexusMessage;
 public interface NexusMiddlewareGate {
 
     /**
-     * Allows the command to execute forward.
+     * Tells the command interceptor handler to move forward with the next
+     * middleware if there is any, otherwise executes the command code.
      *
-     * @return The middleware gate to use.
+     * @return  The {@link NexusMiddlewareGate} that should be returned
+     * in the function.
      */
     static NexusMiddlewareGate next() {
         return new NexusMiddlewareGateCore(true, null);
