@@ -29,7 +29,10 @@ public class NexusResponderRepository {
         }
 
         return interaction.respondLater()
-                .thenApply(responseUpdater -> responders.put(interaction.getId(), responseUpdater));
+                .thenApply(responseUpdater -> {
+                    responders.put(interaction.getId(), responseUpdater);
+                    return responseUpdater;
+                });
     }
 
     /**
@@ -46,7 +49,10 @@ public class NexusResponderRepository {
         }
 
         return interaction.respondLater()
-                .thenApply(responseUpdater -> responders.put(interaction.getId(), responseUpdater));
+                .thenApply(responseUpdater -> {
+                    responders.put(interaction.getId(), responseUpdater);
+                    return responseUpdater;
+                });
     }
 
     /**
@@ -63,7 +69,10 @@ public class NexusResponderRepository {
         }
 
         return interaction.respondLater(true)
-                .thenApply(responseUpdater -> responders.put(interaction.getId(), responseUpdater));
+                .thenApply(responseUpdater -> {
+                    responders.put(interaction.getId(), responseUpdater);
+                    return responseUpdater;
+                });
     }
 
 }
