@@ -70,15 +70,6 @@ public interface Nexus extends SlashCommandCreateListener {
      NexusShardManager getShardManager();
 
     /**
-     * Retrieves the rate-limiter that is being utilized by this
-     * {@link Nexus} instance.
-     *
-     * @return The {@link NexusRatelimiter} that is being utilized by this
-     * {@link Nexus} instance.
-     */
-    NexusRatelimiter getRatelimiter();
-
-    /**
      * Retrieves the {@link NexusConfiguration} that is being utilized by
      * this {@link Nexus} instance.
      *

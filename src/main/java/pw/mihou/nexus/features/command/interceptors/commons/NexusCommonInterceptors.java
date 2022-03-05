@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.interceptors.commons;
 
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
+import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
 
 import static pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor.addMiddleware;
 
@@ -15,6 +16,7 @@ public class NexusCommonInterceptors {
     public static final String NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE = "nexus.auth.server.owner";
     public static final String NEXUS_GATE_SERVER = "nexus.gate.server";
     private static final String NEXUS_GATE_DMS = "nexus.gate.dms";
+    private static final String NEXUS_RATELIMITER = "nexus.ratelimiter";
 
     static {
         addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event -> event.stopIf(
@@ -29,6 +31,7 @@ public class NexusCommonInterceptors {
 
         addMiddleware(NEXUS_GATE_SERVER, event -> event.stopIf(event.getServer().isEmpty()));
         addMiddleware(NEXUS_GATE_DMS, event -> event.stopIf(event.getServer().isPresent()));
+        addMiddleware(NEXUS_RATELIMITER, new NexusRatelimiterCore());
     }
 
 }

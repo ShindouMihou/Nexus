@@ -22,14 +22,12 @@ import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
-import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 public class NexusCore implements Nexus {
 
-    private final NexusRatelimiterCore ratelimiter = new NexusRatelimiterCore();
     private final NexusCommandManagerCore commandManager = new NexusCommandManagerCore(this);
     private NexusShardManager shardManager;
     public static NexusLoggingAdapter logger = new NexusDefaultLoggingAdapter();
@@ -82,11 +80,6 @@ public class NexusCore implements Nexus {
     @Override
     public NexusShardManager getShardManager() {
         return shardManager;
-    }
-
-    @Override
-    public NexusRatelimiter getRatelimiter() {
-        return ratelimiter;
     }
 
     @Override
