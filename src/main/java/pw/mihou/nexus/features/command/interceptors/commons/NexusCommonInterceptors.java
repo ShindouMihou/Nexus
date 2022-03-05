@@ -15,8 +15,8 @@ public class NexusCommonInterceptors {
     public static final String NEXUS_AUTH_BOT_OWNER_MIDDLEWARE = "nexus.auth.bot.owner";
     public static final String NEXUS_AUTH_SERVER_OWNER_MIDDLEWARE = "nexus.auth.server.owner";
     public static final String NEXUS_GATE_SERVER = "nexus.gate.server";
-    private static final String NEXUS_GATE_DMS = "nexus.gate.dms";
-    private static final String NEXUS_RATELIMITER = "nexus.ratelimiter";
+    public static final String NEXUS_GATE_DMS = "nexus.gate.dms";
+    public static final String NEXUS_RATELIMITER = "nexus.ratelimiter";
 
     static {
         addMiddleware(NEXUS_AUTH_BOT_OWNER_MIDDLEWARE, event -> event.stopIf(
