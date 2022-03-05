@@ -1,10 +1,11 @@
 package pw.mihou.nexus.features.ratelimiter.facade;
 
 import pw.mihou.nexus.features.command.facade.NexusCommand;
+import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware;
 
 import java.util.Optional;
 
-public interface NexusRatelimiter {
+public interface NexusRatelimiter extends NexusMiddleware {
 
     /**
      * Retrieves the rate-limit data for the specific user, if present.

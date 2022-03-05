@@ -80,19 +80,6 @@ public record NexusBaseCommandImplementation(NexusCommandCore instance) {
         return true;
     }
 
-    /**
-     * Applies the rate-limiter.
-     *
-     * @param user      The user to rate-limit.
-     * @param server    The server where the command was executed.
-     * @param onLimited If the user is rate-limited.
-     * @param onSuccess If the command can be executed.
-     */
-    public void applyRatelimiter(long user, long server, Consumer<Long> onLimited, Consumer<NexusRatelimitData> onSuccess) {
-        ((NexusRatelimiterCore) instance.core.getRatelimiter())
-                .ratelimit(user, server, instance, onLimited, onSuccess);
-    }
-
     public void dispatch(SlashCommandCreateEvent event) {
         NexusCommandEvent nexusEvent = new NexusCommandEventCore(event, instance);
         List<String> middlewares = new ArrayList<>();
@@ -140,16 +127,8 @@ public record NexusBaseCommandImplementation(NexusCommandCore instance) {
             }
         }
 
-        applyRatelimiter(nexusEvent.getUserId(), nexusEvent.getServerId().orElse(nexusEvent.getUserId()), remaining -> {
-            if (remaining > 0) {
-                ((NexusMessageCore) instance.core.getMessageConfiguration()
-                        .onRatelimited(nexusEvent, remaining))
-                        .convertTo(nexusEvent.respondNow())
-                        .respond()
-                        .exceptionally(ExceptionLogger.get());
-            }
-        }, nexusRatelimitData -> CompletableFuture.runAsync(() -> instance.handler.onEvent(nexusEvent), NexusThreadPool.executorService)
-                .thenAcceptAsync(unused -> NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent)));
+        CompletableFuture.runAsync(() -> instance.handler.onEvent(nexusEvent), NexusThreadPool.executorService)
+                .thenAcceptAsync(unused -> NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent));
     }
 
 }

@@ -1,25 +1,32 @@
 package pw.mihou.nexus.features.ratelimiter.core;
 
-import pw.mihou.nexus.commons.Pair;
+import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
+import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimitData;
 import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class NexusRatelimiterCore implements NexusRatelimiter {
 
     private final Map<Entity, NexusRatelimitData> ratelimits = new ConcurrentHashMap<>();
 
-    public void ratelimit(long user, long server, NexusCommandCore command, Consumer<Long> onRatelimited, Consumer<NexusRatelimitData> onSuccess) {
+    /**
+     * Ratelimits a user on a specific server, or on their private channel for a
+     * specific command.
+     *
+     * @param user      The user to rate-limit.
+     * @param server    The server or private channel to rate-limit on.
+     * @param command   The command to rate-limit on.
+     * @return          The results from the rate-limit attempt.
+     */
+    private AccessorRatelimitData ratelimit(long user, long server, NexusCommandCore command) {
         Entity key = new Entity(command.uuid, user);
 
         if (!ratelimits.containsKey(key)) {
@@ -32,11 +39,11 @@ public class NexusRatelimiterCore implements NexusRatelimiter {
             // is rate-limited.
             if (getRemainingSecondsFrom(server, entity, command) > 0) {
                 if (!entity.isNotifiedOn(server)) {
-                    onRatelimited.accept(getRemainingSecondsFrom(server, entity, command));
                     entity.notified(server);
+                    return new AccessorRatelimitData(false, true, getRemainingSecondsFrom(server, entity, command));
                 }
 
-                return;
+                return new AccessorRatelimitData(true, true, getRemainingSecondsFrom(server, entity, command));
             }
 
             // This statement means that the user is still regarded as rate-limited by the
@@ -45,7 +52,7 @@ public class NexusRatelimiterCore implements NexusRatelimiter {
         }
 
         entity.ratelimit(server);
-        onSuccess.accept(entity);
+        return new AccessorRatelimitData(false, false, -1);
     }
 
     /**
@@ -69,21 +76,28 @@ public class NexusRatelimiterCore implements NexusRatelimiter {
         return Optional.ofNullable(ratelimits.getOrDefault(new Entity(((NexusCommandCore) command).uuid, user), null));
     }
 
-    public static class Entity {
-        private final String commandUUID;
-        private final long user;
+    @Override
+    public void onBeforeCommand(NexusMiddlewareEvent event) {
+        AccessorRatelimitData ratelimitData = ratelimit(event.getUserId(), event.getServerId().orElse(event.getUserId()),
+                (NexusCommandCore) event.getCommand());
 
-        /**
-         * Creates an {@link Entity} which is used internally as a user-command
-         * mapping key.
-         *
-         * @param commandUUID The UUID of the command, pre-generated.
-         * @param user The ID of the user.
-         */
-        public Entity(String commandUUID, long user) {
-            this.commandUUID = commandUUID;
-            this.user = user;
+        if (ratelimitData.ratelimited()) {
+            if (!ratelimitData.notified()) {
+                event.stop
+                        (((NexusCore) event.getNexus())
+                                .getMessageConfiguration().onRatelimited(event, ratelimitData.remaining())
+                );
+                return;
+            }
+
+            event.stop();
         }
+    }
+
+    private record AccessorRatelimitData(boolean notified, boolean ratelimited, long remaining) {
+    }
+
+    private record Entity(String commandUUID, long user) {
 
         @Override
         public boolean equals(Object o) {
@@ -97,6 +111,7 @@ public class NexusRatelimiterCore implements NexusRatelimiter {
         public int hashCode() {
             return Objects.hash(commandUUID, user);
         }
+
     }
 
 }
