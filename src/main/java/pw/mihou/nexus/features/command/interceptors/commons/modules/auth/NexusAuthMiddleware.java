@@ -44,7 +44,7 @@ public class NexusAuthMiddleware {
         }
 
         event.stopIf(
-                !permissionTypes.isEmpty() && !server.getPermissions(event.getUser()).getAllowedPermission().containsAll(permissionTypes),
+                !server.getPermissions(event.getUser()).getAllowedPermission().containsAll(permissionTypes),
                 ((NexusCore) event.getNexus()).getMessageConfiguration().onMissingPermission(event, permissionTypes)
         );
     }
@@ -82,7 +82,6 @@ public class NexusAuthMiddleware {
         }
 
         event.stopIf(
-                !roles.isEmpty() &&
                 roles.stream().noneMatch(roleId ->
                         server.getRoles(event.getUser())
                         .stream()
@@ -125,7 +124,7 @@ public class NexusAuthMiddleware {
             );
         }
 
-        event.stopIf(!users.isEmpty() && !users.contains(event.getUserId()));
+        event.stopIf( !users.contains(event.getUserId()));
     }
 
     /**
