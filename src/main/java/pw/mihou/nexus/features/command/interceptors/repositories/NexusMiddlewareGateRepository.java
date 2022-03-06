@@ -17,8 +17,8 @@ public class NexusMiddlewareGateRepository {
      * @param interaction   The interaction whose {@link NexusMiddlewareGateCore} should
      *                      be released.
      */
-    public static void release(Interaction interaction) {
-        gates.remove(interaction.getId());
+    public static NexusMiddlewareGateCore release(Interaction interaction) {
+        return gates.remove(interaction.getId());
     }
 
     /**

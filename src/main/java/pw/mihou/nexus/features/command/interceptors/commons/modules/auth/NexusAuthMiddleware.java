@@ -106,7 +106,7 @@ public class NexusAuthMiddleware {
             return;
         }
 
-        Object field = event.getCommand().get("requiredUser").orElseThrow(() -> new IllegalStateException(
+        Object field = event.getCommand().get("requiredUsers").orElseThrow(() -> new IllegalStateException(
                 event.getCommand().getName() + " has user authentication middleware but doesn't have requiredUsers shared field."
         ));
 
@@ -125,7 +125,7 @@ public class NexusAuthMiddleware {
             );
         }
 
-        event.stopIf(!users.isEmpty() && users.contains(event.getUserId()));
+        event.stopIf(!users.isEmpty() && !users.contains(event.getUserId()));
     }
 
     /**
