@@ -51,16 +51,20 @@ public class NexusCommandInterceptorCore {
      * @param event The event being intercepted.
      */
     private static void interceptWith(String name, NexusCommandEvent event) {
-        NexusCommandInterceptor interceptor = interceptors.getOrDefault(name, null);
+        try {
+            NexusCommandInterceptor interceptor = interceptors.getOrDefault(name, null);
 
-        if (interceptor == null) {
-            return;
-        }
+            if (interceptor == null) {
+                return;
+            }
 
-        if (interceptor instanceof NexusMiddleware) {
-            ((NexusMiddleware) interceptor).onBeforeCommand(new NexusMiddlewareEventCore(event));
-        } else if (interceptor instanceof NexusAfterware){
-            ((NexusAfterware) interceptor).onAfterCommandExecution(event);
+            if (interceptor instanceof NexusMiddleware) {
+                ((NexusMiddleware) interceptor).onBeforeCommand(new NexusMiddlewareEventCore(event));
+            } else if (interceptor instanceof NexusAfterware){
+                ((NexusAfterware) interceptor).onAfterCommandExecution(event);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 
@@ -78,8 +82,7 @@ public class NexusCommandInterceptorCore {
         for (String name : names) {
             interceptWith(name, event);
             if (!gate.allowed()) {
-                NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
-                return gate;
+                return NexusMiddlewareGateRepository.release(event.getBaseEvent().getInteraction());
             }
         }
 
