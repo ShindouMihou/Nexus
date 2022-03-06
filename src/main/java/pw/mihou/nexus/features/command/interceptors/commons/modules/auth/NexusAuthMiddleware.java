@@ -25,7 +25,7 @@ public class NexusAuthMiddleware {
         }
 
         Object field = event.getCommand().get("requiredPermissions").orElseThrow(() -> new IllegalStateException(
-                event.getCommand().getName() + " has role authentication middleware but doesn't have requiredPermissions shared field."
+                event.getCommand().getName() + " has permission authentication middleware but doesn't have requiredPermissions shared field."
         ));
 
         List<PermissionType> permissionTypes = null;
