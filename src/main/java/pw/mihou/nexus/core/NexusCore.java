@@ -18,13 +18,11 @@ import pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore;
-import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor;
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
-import pw.mihou.nexus.features.ratelimiter.core.NexusRatelimiterCore;
 
 import java.util.*;
 import java.util.function.Consumer;

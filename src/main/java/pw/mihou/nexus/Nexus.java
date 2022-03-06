@@ -10,7 +10,6 @@ import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
-import pw.mihou.nexus.features.ratelimiter.facade.NexusRatelimiter;
 
 public interface Nexus extends SlashCommandCreateListener {
 
