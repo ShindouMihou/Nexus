@@ -1,7 +1,4 @@
-import commands.FilledRequiredTestCommand;
-import commands.HasMiddlewaresCommand;
-import commands.HasSharedFieldsCommand;
-import commands.RequiredTestCommand;
+import commands.*;
 import org.junit.jupiter.api.*;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
@@ -117,7 +114,7 @@ public class CommandGenerationTests {
     @DisplayName("Has Middleware Test")
     @Order(8)
     void hasAfterwareTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new HasMiddlewaresCommand());
+        NexusCommand command = NEXUS.createCommandFrom(new HasAfterwareCommand());
         assertFalse(
                 ((NexusCommandCore) command).afterwares.isEmpty(),
                 "The afterwares field which shouldn't be empty is somehow empty."
