@@ -17,8 +17,9 @@ import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 import pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
-import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors;
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore;
+import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
+import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor;
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
@@ -62,7 +63,7 @@ public class NexusCore implements Nexus {
         this.shardManager = new NexusShardManager(this);
         this.nexusConfiguration = nexusConfiguration;
         this.messageConfiguration = Objects.requireNonNullElseGet(messageConfiguration, NexusDefaultMessageConfiguration::new);
-        NexusCommonInterceptorsCore.addAll();
+        NexusCommandInterceptor.addRepository(new NexusCommonInterceptorsCore());
     }
 
     @Override

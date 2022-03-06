@@ -2,10 +2,7 @@ package pw.mihou.nexus.features.command.interceptors.core;
 
 import pw.mihou.nexus.features.command.core.NexusMiddlewareEventCore;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
-import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware;
-import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor;
-import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware;
-import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddlewareGate;
+import pw.mihou.nexus.features.command.interceptors.facades.*;
 import pw.mihou.nexus.features.command.interceptors.repositories.NexusMiddlewareGateRepository;
 
 import java.util.HashMap;
@@ -24,6 +21,16 @@ public class NexusCommandInterceptorCore {
      */
     public static void addMiddleware(String name, NexusMiddleware middleware) {
         interceptors.put(name, middleware);
+    }
+
+    /**
+     * Adds a repository of command interceptors to the command interceptor
+     * storage.
+     *
+     * @param repository    The repository to add.
+     */
+    public static void addRepository(NexusInterceptorRepository repository) {
+        repository.define();
     }
 
     /**

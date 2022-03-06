@@ -20,8 +20,18 @@ public interface NexusCommandInterceptor {
      * @param name The name of the afterware to add.
      * @param afterware The afterware functionality.
      */
-     static void addAfterware(String name, NexusAfterware afterware) {
+    static void addAfterware(String name, NexusAfterware afterware) {
         NexusCommandInterceptorCore.addAfterware(name, afterware);
+    }
+
+    /**
+     * Adds a repository of command interceptors to the command interceptor
+     * storage.
+     *
+     * @param repository    The repository to add.
+     */
+    static void addRepository(NexusInterceptorRepository repository) {
+        NexusCommandInterceptorCore.addRepository(repository);
     }
 
 }
