@@ -124,7 +124,7 @@ public class NexusAuthMiddleware {
             );
         }
 
-        event.stopIf( !users.contains(event.getUserId()));
+        event.stopIf(!users.contains(event.getUserId()));
     }
 
     /**
