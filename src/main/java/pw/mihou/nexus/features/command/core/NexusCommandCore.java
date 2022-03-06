@@ -1,6 +1,5 @@
 package pw.mihou.nexus.features.command.core;
 
-import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.SlashCommandOption;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
@@ -41,15 +40,6 @@ public class NexusCommandCore implements NexusCommand {
     public Duration cooldown = Duration.ofSeconds(5);
 
     @WithDefault
-    public List<Long> requiredRoles = Collections.emptyList();
-
-    @WithDefault
-    public List<Long> requiredUsers = Collections.emptyList();
-
-    @WithDefault
-    public List<PermissionType> requiredPermissions = Collections.emptyList();
-
-    @WithDefault
     public List<String> middlewares = Collections.emptyList();
 
     @WithDefault
@@ -85,21 +75,6 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public Duration getCooldown() {
         return cooldown;
-    }
-
-    @Override
-    public List<Long> getRequiredRoles() {
-        return requiredRoles;
-    }
-
-    @Override
-    public List<Long> getRequiredUsers() {
-        return requiredUsers;
-    }
-
-    @Override
-    public List<PermissionType> getPermissions() {
-        return requiredPermissions;
     }
 
     @Override
@@ -155,9 +130,6 @@ public class NexusCommandCore implements NexusCommand {
                 ", description='" + description + '\'' +
                 ", options=" + options +
                 ", cooldown=" + cooldown +
-                ", requiredRoles=" + requiredRoles +
-                ", requiredUsers=" + requiredUsers +
-                ", requiredPermissions=" + requiredPermissions +
                 ", serverId=" + getServerIds().toString() +
                 '}';
     }

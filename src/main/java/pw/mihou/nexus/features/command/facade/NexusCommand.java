@@ -1,6 +1,5 @@
 package pw.mihou.nexus.features.command.facade;
 
-import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import org.javacord.api.interaction.SlashCommandOption;
@@ -40,29 +39,6 @@ public interface NexusCommand {
      * @return The cooldown of the command.
      */
     Duration getCooldown();
-
-    /**
-     * Gets the required roles of the user to be able to execute
-     * this command.
-     *
-     * @return The list of required roles that a user must have to be able
-     * to execute the command.
-     */
-    List<Long> getRequiredRoles();
-
-    /**
-     * Gets the list of users who are only able to execute this command.
-     *
-     * @return The list of users that can execute this command.
-     */
-    List<Long> getRequiredUsers();
-
-    /**
-     * Gets the required permissions needed to execute this command.
-     *
-     * @return The list of required permissions needed to execute this command.
-     */
-    List<PermissionType> getPermissions();
 
     /**
      * Gets all the servers that this command is for.
