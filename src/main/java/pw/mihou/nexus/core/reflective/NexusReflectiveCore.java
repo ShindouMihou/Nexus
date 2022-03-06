@@ -9,10 +9,7 @@ import pw.mihou.nexus.core.reflective.facade.NexusReflectiveVariableFacade;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class NexusReflectiveCore {
 
@@ -45,6 +42,8 @@ public class NexusReflectiveCore {
                                 field.set(r, NexusUuidAssigner.request());
                             } else if (field.isAnnotationPresent(InjectNexusCore.class)) {
                                 field.set(r, core);
+                            } else if (field.isAnnotationPresent(Stronghold.class)){
+                                field.set(r, facade.getSharedFields());
                             } else {
                                 facade.getWithType(field.getName(), fromPrimitiveToNonPrimitive(field.getType())).ifPresent(o -> {
                                     try {

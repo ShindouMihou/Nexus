@@ -9,6 +9,7 @@ import pw.mihou.nexus.commons.Pair;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 public interface NexusCommand {
 
@@ -92,6 +93,25 @@ public interface NexusCommand {
      */
     NexusCommand removeSupportFor(Long... serverIds);
 
+    /**
+     * Gets a specific custom field that is annotated with {@link pw.mihou.nexus.core.reflective.annotations.Share} from
+     * the command's object store, this returns empty if the value does not match the type requested.
+     *
+     * @param field The field name to grab, case-insensitive.
+     * @param type  The type that this field should match.
+     * @return      The value of the field, if present and matches the type.
+     */
+    <T> Optional<T> get(String field, Class<T> type);
+
+    /**
+     * Gets a specific custom field that is annotated with {@link pw.mihou.nexus.core.reflective.annotations.Share} from
+     * the command's object store, this returns empty if the value is not present. Not to be confused with
+     * {@link NexusCommand#get(String, Class)} which performs type-checking.
+     *
+     * @param field The field name to grab, case-insensitive.
+     * @return      The value of the field, if present.
+     */
+    Optional<Object> get(String field);
 
     /**
      * Is the default permission configuration of Discord enabled?

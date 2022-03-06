@@ -1,5 +1,6 @@
 package pw.mihou.nexus.core.reflective.facade;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -19,7 +20,15 @@ public interface NexusReflectiveVariableFacade {
     <R> Optional<R> get(String field);
 
     /**
-     * Gets teh value of the field with the specified name that
+     * Gets the map containing all the shared fields.
+     *
+     * @return  An unmodifiable map that contains all the shared
+     * fields that were defined in the class.
+     */
+    Map<String, Object> getSharedFields();
+
+    /**
+     * Gets the value of the field with the specified name that
      * matches the specific type.
      *
      * @param field The field name to fetch.

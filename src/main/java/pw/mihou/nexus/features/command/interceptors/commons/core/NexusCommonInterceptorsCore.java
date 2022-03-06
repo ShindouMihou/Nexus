@@ -18,6 +18,13 @@ public class NexusCommonInterceptorsCore extends NexusCommonInterceptors {
                 NexusMessage.fromEphemereal("**PERMISSION DENIED**\nYou need to be the server owner to execute this command.")
         ));
 
+        NexusCommandInterceptor.addMiddleware("nexus.demo.sharedfields", event ->
+                event.stopIf(
+                        event.getCommand().get("oneSharedField", String.class).isEmpty() ||
+                                event.getCommand().get("onePrivateField", String.class).isPresent()
+                )
+        );
+
         NexusCommandInterceptor.addMiddleware(NEXUS_GATE_SERVER, event -> event.stopIf(event.getServer().isEmpty()));
         NexusCommandInterceptor.addMiddleware(NEXUS_GATE_DMS, event -> event.stopIf(event.getServer().isPresent()));
         NexusCommandInterceptor.addMiddleware(NEXUS_RATELIMITER, new NexusRatelimiterCore());

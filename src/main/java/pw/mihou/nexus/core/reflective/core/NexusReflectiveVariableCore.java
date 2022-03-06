@@ -1,14 +1,17 @@
 package pw.mihou.nexus.core.reflective.core;
 
 import pw.mihou.nexus.core.reflective.annotations.Required;
+import pw.mihou.nexus.core.reflective.annotations.Share;
 import pw.mihou.nexus.core.reflective.annotations.WithDefault;
 import pw.mihou.nexus.core.reflective.facade.NexusReflectiveVariableFacade;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacade {
 
     private final HashMap<String, Object> fields = new HashMap<>();
+    private final HashMap<String, Object> sharedFields = new HashMap<>();
 
     public NexusReflectiveVariableCore(Object object, Class<?> clazz) {
             // We'll collect all the fields with the WithDefault annotation from the reference class first.
@@ -37,8 +40,13 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
 
                 try {
                     Object obj = field.get(object);
-                    
+
                     if (obj == null) {
+                        return;
+                    }
+
+                    if (field.isAnnotationPresent(Share.class)) {
+                        sharedFields.put(field.getName().toLowerCase(), obj);
                         return;
                     }
 
@@ -51,13 +59,14 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                 }
             });
 
-            // This implements the requirements of the Required annotation which tells the
-            // user that a certain field is required before compilation. Field safety.
+            // Handling required fields, the difference between `clazz` and `object.getClass()`
+            // is that `clazz` refers to the NexusCommandImplementation while `object` refers
+            // to the developer-defined object.
             Arrays.stream(clazz.getDeclaredFields())
                     .filter(field -> field.isAnnotationPresent(Required.class))
                     .forEach(field -> {
-                        field.setAccessible(true);
-                        if (!fields.containsKey(field.getName())) {
+                        @Nullable Object obj = fields.get(field.getName().toLowerCase());
+                        if (obj == null) {
                             throw new IllegalStateException(
                                     "Nexus was unable to complete variable reflection stage for class: " + object.getClass().getName() +
                                             " because the field: " + field.getName() + " is required to have a value."
@@ -74,5 +83,10 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
     public <R> Optional<R> get(String field) {
         return fields.containsKey(field.toLowerCase()) ? Optional.of((R) fields.get(field.toLowerCase())) : Optional.empty();
 
+    }
+
+    @Override
+    public Map<String, Object> getSharedFields() {
+        return Collections.unmodifiableMap(sharedFields);
     }
 }

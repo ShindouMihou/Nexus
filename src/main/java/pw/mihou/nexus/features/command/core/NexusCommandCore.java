@@ -25,6 +25,9 @@ public class NexusCommandCore implements NexusCommand {
     @InjectUUID
     public String uuid;
 
+    @Stronghold
+    private Map<String, Object> nexusCustomFields;
+
     @Required
     public String name;
 
@@ -117,6 +120,22 @@ public class NexusCommandCore implements NexusCommand {
 
         this.serverIds = mutableList.stream().toList();
         return this;
+    }
+
+    @Override
+    public <T> Optional<T> get(String field, Class<T> type) {
+        return get(field).map(object -> {
+            if (type.isAssignableFrom(object.getClass())) {
+                return type.cast(object);
+            }
+
+            return null;
+        });
+    }
+
+    @Override
+    public Optional<Object> get(String field) {
+        return Optional.ofNullable(nexusCustomFields.get(field.toLowerCase()));
     }
 
     @Override
