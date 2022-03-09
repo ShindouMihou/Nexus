@@ -1,15 +1,12 @@
 package pw.mihou.nexus.features.command.synchronizer;
 
 import org.javacord.api.entity.server.Server;
-import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
-import org.javacord.api.util.logging.ExceptionLogger;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.enginex.facade.NexusEngineX;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
-import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 
 import java.util.*;
