@@ -96,6 +96,12 @@ public record NexusSynchronizer(
                         api.getCurrentShard(),
                         serverId
                 );
+                future.completeExceptionally(
+                        new IllegalStateException(
+                                "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
+                                        "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
+                        )
+                );
                 return;
             }
 
@@ -140,6 +146,12 @@ public record NexusSynchronizer(
                             "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? [shard={};id={}]",
                             api.getCurrentShard(),
                             serverId
+                    );
+                    serverMappedFutures.get(serverId).completeExceptionally(
+                            new IllegalStateException(
+                                    "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
+                                            "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
+                            )
                     );
                     return;
                 }
@@ -253,6 +265,12 @@ public record NexusSynchronizer(
                             "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? [shard={};id={}]",
                             api.getCurrentShard(),
                             serverId
+                    );
+                    serverMappedFutures.get(serverId).completeExceptionally(
+                            new IllegalStateException(
+                                    "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
+                                            "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
+                            )
                     );
                     return;
                 }
