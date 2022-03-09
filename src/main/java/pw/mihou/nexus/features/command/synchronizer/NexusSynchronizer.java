@@ -40,6 +40,12 @@ public record NexusSynchronizer(
                             api.getCurrentShard(),
                             serverId
                     );
+                    serverMappedFutures.get(serverId).completeExceptionally(
+                            new IllegalStateException(
+                                    "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
+                                            "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
+                            )
+                    );
                     return;
                 }
 
