@@ -8,6 +8,7 @@ import pw.mihou.nexus.core.enginex.event.core.NexusEngineEventCore;
 import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NexusDiscordShardWrapper {
@@ -27,7 +28,7 @@ public class NexusDiscordShardWrapper {
         this.api = api;
 
         NexusEngineXCore engineX = ((NexusEngineXCore) nexus.getEngineX());
-        CompletableFuture.runAsync(() -> {
+        NexusThreadPool.schedule(() -> CompletableFuture.runAsync(() -> {
             while (active.get()) {
                 NexusEngineEventCore globalEvent = (NexusEngineEventCore) engineX.getGlobalQueue().poll();
                 if (globalEvent != null) {
@@ -39,7 +40,7 @@ public class NexusDiscordShardWrapper {
                     localEvent.process(api);
                 }
             }
-        }, NexusThreadPool.executorService);
+        }, NexusThreadPool.executorService), 2, TimeUnit.SECONDS);
     }
 
     /**
