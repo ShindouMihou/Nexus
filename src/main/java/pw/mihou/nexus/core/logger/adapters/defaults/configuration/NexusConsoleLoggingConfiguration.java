@@ -49,7 +49,7 @@ public class NexusConsoleLoggingConfiguration {
     }
 
     /**
-     * Creates a new {@link NexusConsoleLoggingConfiguration} that does not log any date-time but contains the
+     * Creates a new {@link NexusConsoleLoggingConfiguration} that contains the
      * specified format which can be customized accordingly with the following parameters:
      * <ul>
      *     <li><b>$_DATE</b>     :  Displays the date-time of when it was logged, unsupported in this constructor.</li>
@@ -60,7 +60,7 @@ public class NexusConsoleLoggingConfiguration {
      * @param format    The message format to use for this logging adapter.
      */
     public NexusConsoleLoggingConfiguration(@Nonnull String format) {
-        this(format, null);
+        this(format, DEFAULT_DATE_TIME_FORMATTER);
     }
 
     /**
