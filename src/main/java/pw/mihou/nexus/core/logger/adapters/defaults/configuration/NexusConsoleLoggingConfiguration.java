@@ -1,5 +1,6 @@
 package pw.mihou.nexus.core.logger.adapters.defaults.configuration;
 
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusConsoleLoggingAdapter;
 import pw.mihou.nexus.core.logger.adapters.defaults.configuration.enums.NexusConsoleLoggingLevel;
 
 import javax.annotation.Nonnull;
@@ -63,9 +64,37 @@ public class NexusConsoleLoggingConfiguration {
     }
 
     /**
+     * Creates a new {@link NexusConsoleLoggingConfiguration} that has the default logging format which shows the
+     * date-time and a message:
+     * <br>
+     * <br>{@code $_DATE $_LEVEL Nexus $_MESSAGE}
+     * <br>
+     * <br> which can create logs that look similar to:
+     * <br>
+     * <br>{@code 2022-03-09 00:000:00.00+0000 INFO Nexus A command has been pushed to Discord without an issue.}
+     * <br>
+     * <br> and supports the following logging levels:
+     * <br> {@link NexusConsoleLoggingLevel#INFO}, {@link NexusConsoleLoggingLevel#ERROR},
+     * {@link NexusConsoleLoggingLevel#WARN}
+     * <br> but with a specific date format.
+     */
+    public NexusConsoleLoggingConfiguration(@Nullable DateTimeFormatter dateFormat) {
+        this("$_DATE $_LEVEL Nexus $_MESSAGE", dateFormat);
+    }
+
+    /**
      * Creates a new {@link NexusConsoleLoggingConfiguration} that has the default setting which shows the
-     * date-time and a message: <br><br>{@code $_DATE $_LEVEL Nexus $_MESSAGE}<br><br> which can create logs that looks similar
-     * to: <br><br>{@code 2022-03-09 00:000:00.00+0000 INFO Nexus A command has been pushed to Discord without an issue.}
+     * date-time and a message:
+     * <br>
+     * <br>{@code $_DATE $_LEVEL Nexus $_MESSAGE}
+     * <br>
+     * <br> which can create logs that look similar to:
+     * <br>
+     * <br>{@code 2022-03-09 00:000:00.00+0000 INFO Nexus A command has been pushed to Discord without an issue.}
+     * <br>
+     * <br> and supports the following logging levels:
+     * <br> {@link NexusConsoleLoggingLevel#INFO}, {@link NexusConsoleLoggingLevel#ERROR},
+     * {@link NexusConsoleLoggingLevel#WARN}
      */
     public NexusConsoleLoggingConfiguration() {
         this("$_DATE $_LEVEL Nexus $_MESSAGE", DEFAULT_DATE_TIME_FORMATTER);
