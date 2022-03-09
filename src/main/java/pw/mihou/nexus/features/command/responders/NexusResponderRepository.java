@@ -36,6 +36,30 @@ public class NexusResponderRepository {
     }
 
     /**
+     * Gets the current {@link InteractionOriginalResponseUpdater} for the specific interaction
+     * if available from another middleware otherwise requests for a new {@link InteractionOriginalResponseUpdater}
+     * that can be used instead.
+     * <br><br>
+     * Not to be confused with {@link NexusResponderRepository#get(Interaction)} which deliberately
+     * destroys the interaction that is being stored after being requested. This is intended for middlewares to
+     * prevent Discord's Interaction has failed while processing a heavy task.
+     *
+     * @param interaction   The interaction to reference.
+     * @return              The {@link InteractionOriginalResponseUpdater} if present otherwise requests for one.
+     */
+    public CompletableFuture<InteractionOriginalResponseUpdater> peekEphemeral(Interaction interaction) {
+        if (responders.containsKey(interaction.getId())) {
+            return CompletableFuture.completedFuture(responders.get(interaction.getId()));
+        }
+
+        return interaction.respondLater(true)
+                .thenApply(responseUpdater -> {
+                    responders.put(interaction.getId(), responseUpdater);
+                    return responseUpdater;
+                });
+    }
+
+    /**
      * Gets the current {@link InteractionOriginalResponseUpdater} for the specific interaction if
      * available from another middleware otherwise requests for a new {@link InteractionOriginalResponseUpdater}
      * that can be used instead.

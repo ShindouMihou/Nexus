@@ -14,11 +14,52 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * A middleware-only function that tells Discord that the response will be
      * taking more than three-seconds because the middleware has to process tasks
      * that can take more than three-second limit.
+     * @return The future to determine whether the response was accepted or not.
      */
     default CompletableFuture<Void> askDelayedResponse() {
             return CompletableFuture.allOf(
                     getNexus().getResponderRepository().peek(getBaseEvent().getInteraction())
             );
+    }
+
+    /**
+     * A middleware-only function that tells Discord that the response will be
+     * taking more than three-seconds because the middleware has to process tasks
+     * that can take more than three-second limit.
+     * @return The future to determine whether the response was accepted or not.
+     */
+    default CompletableFuture<Void> askDelayedResponseAsEphemeral() {
+        return CompletableFuture.allOf(
+                getNexus().getResponderRepository().peekEphemeral(getBaseEvent().getInteraction())
+        );
+    }
+
+    /**
+     * A middleware-only function that tells Discord that the response will be
+     * taking more than three-seconds because the middleware has to process tasks
+     * that can take more than three-second limit.
+     *
+     * @param predicate The predicate to determine whether the response should be ephemeral or not.
+     * @return The future to determine whether the response was accepted or not.
+     */
+    default CompletableFuture<Void> askDelayedResponseAsEphemeralIf(boolean predicate) {
+        if (predicate) {
+            return askDelayedResponseAsEphemeral();
+        }
+
+        return askDelayedResponse();
+    }
+
+    /**
+     * A middleware-only function that tells Discord that the response will be
+     * taking more than three-seconds because the middleware has to process tasks
+     * that can take more than three-second limit.
+     *
+     * @param predicate The predicate to determine whether the response should be ephemeral or not.
+     * @return The future to determine whether the response was accepted or not.
+     */
+    default CompletableFuture<Void> askDelayedResponseAsEphemeralIf(Predicate<Void> predicate) {
+        return askDelayedResponseAsEphemeralIf(predicate.test(null));
     }
 
     /**
