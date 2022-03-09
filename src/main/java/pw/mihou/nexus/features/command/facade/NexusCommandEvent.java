@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 public interface NexusCommandEvent {
 
@@ -200,6 +201,32 @@ public interface NexusCommandEvent {
         return getNexus()
                 .getResponderRepository()
                 .getEphemereal(getBaseEvent().getInteraction());
+    }
+
+    /**
+     * Gets the {@link InteractionOriginalResponseUpdater} associated with this command with the ephemeral flag
+     * attached if the predicate is true.
+     *
+     * @param predicate The predicate to determine whether to use ephemeral response or not.
+     * @return The {@link InteractionOriginalResponseUpdater} for this interaction.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeralIf(boolean predicate) {
+        if (predicate) {
+            return respondLaterAsEphemeral();
+        }
+
+        return respondLater();
+    }
+
+    /**
+     * Gets the {@link InteractionOriginalResponseUpdater} associated with this command with the ephemeral flag
+     * attached if the predicate is true.
+     *
+     * @param predicate The predicate to determine whether to use ephemeral response or not.
+     * @return The {@link InteractionOriginalResponseUpdater} for this interaction.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeralIf(Predicate<Void> predicate) {
+        return respondLaterAsEphemeralIf(predicate.test(null));
     }
 
 }
