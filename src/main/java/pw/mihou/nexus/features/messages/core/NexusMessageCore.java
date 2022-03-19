@@ -1,9 +1,9 @@
 package pw.mihou.nexus.features.messages.core;
 
+import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
-import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.nexus.features.command.core.NexusCommandDispatcher;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
@@ -16,7 +16,7 @@ public class NexusMessageCore implements NexusMessage {
     private final String textVal;
     private final EmbedBuilder embedVal;
     private Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder> builder =
-            bob -> bob.setFlags(InteractionCallbackDataFlag.EPHEMERAL);
+            bob -> bob.setFlags(MessageFlag.EPHEMERAL);
     private static final AllowedMentions ALLOWED_MENTIONS = new AllowedMentionsBuilder()
             .setMentionRoles(false)
             .setMentionUsers(false)

@@ -3,12 +3,12 @@ package pw.mihou.nexus.features.command.facade;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
-import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import pw.mihou.nexus.Nexus;
@@ -172,13 +172,13 @@ public interface NexusCommandEvent {
 
     /**
      * Gets the immediate response builder for this command and adds the
-     * {@link InteractionCallbackDataFlag#EPHEMERAL} flag ahead of time.
+     * {@link MessageFlag#EPHEMERAL} flag ahead of time.
      *
      * @return The immediate response builder associated with this command with the
      * ephemeral flag added.
      */
     default InteractionImmediateResponseBuilder respondNowAsEphemeral() {
-        return respondNow().setFlags(InteractionCallbackDataFlag.EPHEMERAL);
+        return respondNow().setFlags(MessageFlag.EPHEMERAL);
     }
 
     /**
