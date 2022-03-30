@@ -16,7 +16,7 @@ public interface NexusEngineX {
      * @param event The event to execute for this shard.
      * @return      The controller and status viewer for the event.
      */
-    NexusEngineEvent queue(long shard, NexusEngineQueuedEvent event);
+    NexusEngineEvent queue(int shard, NexusEngineQueuedEvent event);
 
     /**
      * Queues an event to be executed by any specific shard that is available

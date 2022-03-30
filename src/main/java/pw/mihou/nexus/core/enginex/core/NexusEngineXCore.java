@@ -13,12 +13,14 @@ import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class NexusEngineXCore implements NexusEngineX {
 
-    private final ConcurrentLinkedQueue<NexusEngineEvent> globalQueue = new ConcurrentLinkedQueue<>();
-    private final Map<Long, ConcurrentLinkedQueue<NexusEngineEvent>> localQueue = new ConcurrentHashMap<>();
+    private final BlockingQueue<NexusEngineEvent> globalQueue = new LinkedBlockingQueue<>();
+    private final Map<Integer, BlockingQueue<NexusEngineEvent>> localQueue = new ConcurrentHashMap<>();
+    private final AtomicBoolean hasGlobalProcessed = new AtomicBoolean(false);
     private final Nexus nexus;
 
     /**
@@ -37,8 +39,40 @@ public class NexusEngineXCore implements NexusEngineX {
      *
      * @return  The blocking queue that any shard can accept.
      */
-    public ConcurrentLinkedQueue<NexusEngineEvent> getGlobalQueue() {
+    public BlockingQueue<NexusEngineEvent> getGlobalQueue() {
         return globalQueue;
+    }
+
+    /**
+     * An open executable method that is used by {@link pw.mihou.nexus.core.managers.NexusShardManager} to tell the EngineX
+     * to proceed with sending requests to the specific shard.
+     *
+     * @param shard The shard to process the events.
+     */
+    public void onShardReady(DiscordApi shard) {
+        CompletableFuture.runAsync(() -> {
+            while (!getLocalQueue(shard.getCurrentShard()).isEmpty()) {
+                NexusEngineEvent event = getLocalQueue(shard.getCurrentShard()).poll();
+
+                if (event != null) {
+                    ((NexusEngineEventCore) event).process(shard);
+                }
+            }
+        });
+
+        if (!hasGlobalProcessed.get() && !getGlobalQueue().isEmpty()) {
+            hasGlobalProcessed.set(true);
+            CompletableFuture.runAsync(() -> {
+                while (!getGlobalQueue().isEmpty()) {
+                    NexusEngineEvent event = getGlobalQueue().poll();
+
+                    if (event != null) {
+                        ((NexusEngineEventCore) event).process(shard);
+                    }
+                }
+                hasGlobalProcessed.set(false);
+            });
+        }
     }
 
     /**
@@ -48,32 +82,37 @@ public class NexusEngineXCore implements NexusEngineX {
      * @param shard The shard to get the queue of.
      * @return      The blocking queue for this shard.
      */
-    public ConcurrentLinkedQueue<NexusEngineEvent> getLocalQueue(long shard) {
+    public BlockingQueue<NexusEngineEvent> getLocalQueue(int shard) {
         if (!localQueue.containsKey(shard)) {
-            localQueue.put(shard, new ConcurrentLinkedQueue<>());
+            localQueue.put(shard, new LinkedBlockingQueue<>());
         }
 
         return localQueue.get(shard);
     }
 
     @Override
-    public NexusEngineEvent queue(long shard, NexusEngineQueuedEvent event) {
+    public NexusEngineEvent queue(int shard, NexusEngineQueuedEvent event) {
         NexusEngineEventCore engineEvent = new NexusEngineEventCore(event);
-        getLocalQueue(shard).add(engineEvent);
 
-        Duration expiration = nexus.getConfiguration().timeBeforeExpiringEngineRequests();
-        if (!(expiration.isZero() || expiration.isNegative())) {
-            NexusThreadPool.schedule(() -> {
-                if (engineEvent.status() == NexusEngineEventStatus.WAITING) {
-                    boolean removeFromQueue = localQueue.get(shard).remove(engineEvent);
-                    NexusCore.logger.warn(
-                            "An engine request that was specified for a shard was expired because the shard failed to take hold of the request before expiration. " +
-                                    "[shard={};acknowledged={}]",
-                            shard, removeFromQueue
-                    );
-                    engineEvent.expire();
-                }
-            }, expiration.toMillis(), TimeUnit.MILLISECONDS);
+        if (nexus.getShardManager().getShard(shard) == null) {
+            getLocalQueue(shard).add(engineEvent);
+
+            Duration expiration = nexus.getConfiguration().timeBeforeExpiringEngineRequests();
+            if (!(expiration.isZero() || expiration.isNegative())) {
+                NexusThreadPool.schedule(() -> {
+                    if (engineEvent.status() == NexusEngineEventStatus.WAITING) {
+                        boolean removeFromQueue = localQueue.get(shard).remove(engineEvent);
+                        NexusCore.logger.warn(
+                                "An engine request that was specified for a shard was expired because the shard failed to take hold of the request before expiration. " +
+                                        "[shard={};acknowledged={}]",
+                                shard, removeFromQueue
+                        );
+                        engineEvent.expire();
+                    }
+                }, expiration.toMillis(), TimeUnit.MILLISECONDS);
+            }
+        } else {
+            engineEvent.process(nexus.getShardManager().getShard(shard));
         }
 
         return engineEvent;
@@ -81,8 +120,29 @@ public class NexusEngineXCore implements NexusEngineX {
 
     @Override
     public NexusEngineEvent queue(NexusEngineQueuedEvent event) {
-        NexusEngineEvent engineEvent = new NexusEngineEventCore(event);
-        globalQueue.add(engineEvent);
+        NexusEngineEventCore engineEvent = new NexusEngineEventCore(event);
+
+        if (nexus.getShardManager().size() == 0) {
+            globalQueue.add(engineEvent);
+
+            Duration expiration = nexus.getConfiguration().timeBeforeExpiringEngineRequests();
+            if (!(expiration.isZero() || expiration.isNegative())) {
+                NexusThreadPool.schedule(() -> {
+                    if (engineEvent.status() == NexusEngineEventStatus.WAITING) {
+                        boolean removeFromQueue = globalQueue.remove(engineEvent);
+                        NexusCore.logger.warn(
+                                "An engine request that was specified for a shard was expired because the shard failed to take hold of the request before expiration. " +
+                                        "[acknowledged={}]",
+                                removeFromQueue
+                        );
+                        engineEvent.expire();
+                    }
+                }, expiration.toMillis(), TimeUnit.MILLISECONDS);
+            }
+        } else {
+            DiscordApi shard = nexus.getShardManager().asStream().findFirst().orElseThrow();
+            engineEvent.process(shard);
+        }
 
         return engineEvent;
     }

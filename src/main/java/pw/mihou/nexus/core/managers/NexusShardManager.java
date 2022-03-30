@@ -3,7 +3,7 @@ package pw.mihou.nexus.core.managers;
 import org.javacord.api.DiscordApi;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.NexusCore;
-import pw.mihou.nexus.core.managers.wrappers.NexusDiscordShardWrapper;
+import pw.mihou.nexus.core.enginex.core.NexusEngineXCore;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 public class NexusShardManager {
 
-    private final ConcurrentHashMap<Integer, NexusDiscordShardWrapper> shards;
+    private final ConcurrentHashMap<Integer, DiscordApi> shards;
     private final Nexus nexus;
 
     /**
@@ -23,9 +23,7 @@ public class NexusShardManager {
      */
     public NexusShardManager(Nexus nexus, DiscordApi... shards) {
         this(nexus);
-        Arrays.stream(shards)
-                .forEach(discordApi -> this.shards
-                        .put(discordApi.getCurrentShard(), new NexusDiscordShardWrapper((NexusCore) nexus,  discordApi)));
+        Arrays.stream(shards).forEach(this::put);
     }
 
     /**
@@ -45,7 +43,7 @@ public class NexusShardManager {
      */
     @Nullable
     public DiscordApi getShard(int number) {
-        return shards.get(number).api();
+        return shards.get(number);
     }
 
     /**
@@ -67,8 +65,9 @@ public class NexusShardManager {
      * @param api The Discord API to store.
      */
     public void put(DiscordApi api) {
-        remove(api.getCurrentShard());
-        this.shards.put(api.getCurrentShard(), new NexusDiscordShardWrapper((NexusCore) nexus, api));
+        this.shards.put(api.getCurrentShard(), api);
+
+        ((NexusEngineXCore) ((NexusCore) nexus).getEngineX()).onShardReady(api);
     }
 
     /**
@@ -77,10 +76,6 @@ public class NexusShardManager {
      * @param shard The number of the shard to remove.
      */
     public void remove(int shard) {
-        if (this.shards.containsKey(shard)) {
-            this.shards.get(shard).disable();
-        }
-
         this.shards.remove(shard);
     }
 
@@ -91,7 +86,7 @@ public class NexusShardManager {
      * @return A stream of all the shards registered in the shard manager.
      */
     public Stream<DiscordApi> asStream() {
-        return shards.values().stream().map(NexusDiscordShardWrapper::api);
+        return shards.values().stream();
     }
 
     /**
@@ -101,6 +96,15 @@ public class NexusShardManager {
      * @return A {@link Collection} of all the shards registered in the shard manager.
      */
     public Collection<DiscordApi> asCollection() {
-        return shards.values().stream().map(NexusDiscordShardWrapper::api).toList();
+        return shards.values();
+    }
+
+    /**
+     * Gets the current size of the shard manager.
+     *
+     * @return  The current size of the shard manager.
+     */
+    public int size() {
+        return shards.size();
     }
 }
