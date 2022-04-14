@@ -193,6 +193,10 @@ You can rate-limit or add cooldowns to commands by including a simple `Duration 
 Nexus includes a simple pagination implementation which one can use easily, you can view an example implementation of this from the examples below:
 - [Poem Command](https://github.com/ShindouMihou/Nexus/blob/master/examples/PoemCommand.java)
 
+# 🌇 Nexus is used by
+- [Mana](https://manabot.fun): The original reason for Nexus' creation, Mana is an anime Discord bot that brings anime into communities.
+- More to be added, feel free to create an issue if you want to add yours here!
+
 # 📚 License
 Nexus follows Apache 2.0 license which allows the following permissions:
 - ✔ Commercial Use
