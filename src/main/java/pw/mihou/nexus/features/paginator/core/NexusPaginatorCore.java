@@ -101,7 +101,7 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
 
         // This is done to ensure that the buttons we add
         // must not be a URL button.
-        if (!button.getUrl().isPresent()) {
+        if (button.getUrl().isEmpty()) {
             builder.setStyle(button.getStyle());
         } else {
             builder.setStyle(defaultStyle);
@@ -154,12 +154,12 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
                     }
 
                     Optional<Button> buttonOptional = row.getComponents().get(0).asButton();
-                    if (!buttonOptional.isPresent()) {
+                    if (buttonOptional.isEmpty()) {
                         return false;
                     }
 
                     Button button = buttonOptional.get();
-                    if (!button.getCustomId().isPresent()) {
+                    if (button.getCustomId().isEmpty()) {
                         return false;
                     }
 
@@ -173,14 +173,14 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
                 }).findFirst();
 
         Optional<String> uuidOptional = actionRowOptional.map(actionRow ->
-                        actionRow.getComponents()
-                                .get(0)
-                                .asButton()
-                                .orElseThrow(AssertionError::new)
-                                .getCustomId()
-                                .orElseThrow(AssertionError::new)
-                                .split("\\.")[0]
-                );
+                actionRow.getComponents()
+                        .get(0)
+                        .asButton()
+                        .orElseThrow(AssertionError::new)
+                        .getCustomId()
+                        .orElseThrow(AssertionError::new)
+                        .split("\\.")[0]
+        );
 
         uuidOptional.ifPresent(instanceUuid -> {
             MessageUpdater updater = new MessageUpdater(message).removeAllComponents();
@@ -201,11 +201,16 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
     @Override
     public void destroy() {
         instanceKeys.clear();
+
         instances.get(uuid).clear();
+
         listeners.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().containsKey(uuid))
-                .forEach(entry -> entry.getValue().remove(uuid));
+                .forEach(entry -> {
+                    entry.getValue().get(uuid).remove();
+                    entry.getValue().remove(uuid);
+                });
     }
 
     @Override
@@ -297,26 +302,20 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
 
         interaction.acknowledge();
         switch (type) {
-            case NEXT: {
+            case NEXT -> {
                 if (instance.getCursor().get() < items.size() - 1) {
                     events.onPageChange(new NexusPaginatorCursorCore<>(instance.getCursor().incrementAndGet(), instance), event);
                 }
 
-                break;
             }
-            case PREVIOUS: {
+            case PREVIOUS -> {
                 if (instance.getCursor().get() > 0) {
                     events.onPageChange(new NexusPaginatorCursorCore<>(instance.getCursor().decrementAndGet(), instance), event);
                 }
 
-                break;
             }
-            case SELECT:
-                events.onSelect(new NexusPaginatorCursorCore<>(instance.getCursor().get(), instance), event);
-                break;
-            case CANCEL:
-                events.onCancel(new NexusPaginatorCursorCore<>(instance.getCursor().get(), instance), event);
-                break;
+            case SELECT -> events.onSelect(new NexusPaginatorCursorCore<>(instance.getCursor().get(), instance), event);
+            case CANCEL -> events.onCancel(new NexusPaginatorCursorCore<>(instance.getCursor().get(), instance), event);
         }
 
     }
