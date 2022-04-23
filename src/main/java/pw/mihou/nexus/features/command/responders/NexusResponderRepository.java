@@ -72,11 +72,7 @@ public class NexusResponderRepository {
             return CompletableFuture.completedFuture(responders.remove(interaction.getId()));
         }
 
-        return interaction.respondLater()
-                .thenApply(responseUpdater -> {
-                    responders.put(interaction.getId(), responseUpdater);
-                    return responseUpdater;
-                });
+        return interaction.respondLater();
     }
 
     /**
@@ -92,11 +88,7 @@ public class NexusResponderRepository {
             return CompletableFuture.completedFuture(responders.remove(interaction.getId()));
         }
 
-        return interaction.respondLater(true)
-                .thenApply(responseUpdater -> {
-                    responders.put(interaction.getId(), responseUpdater);
-                    return responseUpdater;
-                });
+        return interaction.respondLater(true);
     }
 
 }
