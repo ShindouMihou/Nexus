@@ -5,6 +5,7 @@ import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 
 import javax.swing.text.html.Option;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ public interface NexusCommandManager {
      *
      * @return All the commands stored in Nexus's command registry.
      */
-    List<NexusCommand> getCommands();
+    Collection<NexusCommand> getCommands();
 
     /**
      * Adds a command to the registry.
@@ -39,10 +40,10 @@ public interface NexusCommandManager {
      * Gets the command that matches the special UUID assigned to all {@link NexusCommand}. This is useful
      * for when you want to retrieve a command by only have a UUID which is what most Nexus methods will return.
      *
-     * @param UUID The UUID of the command to look for.
+     * @param uuid The UUID of the command to look for.
      * @return The first command that matches the UUID specified.
      */
-    Optional<NexusCommand> getCommandByUUID(String UUID);
+    Optional<NexusCommand> getCommandByUUID(String uuid);
 
     /**
      * Gets the command that matches the {@link NexusCommand#getName()}. This will only fetch the first one that

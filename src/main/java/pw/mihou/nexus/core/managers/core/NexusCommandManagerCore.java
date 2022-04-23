@@ -1,6 +1,5 @@
 package pw.mihou.nexus.core.managers.core;
 
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
@@ -18,10 +17,9 @@ import java.util.stream.Collectors;
 
 public class NexusCommandManagerCore implements NexusCommandManager {
 
-    private final List<NexusCommand> commands = new ArrayList<>();
+    private final Map<String, NexusCommand> commands = new HashMap<>();
 
-    private final Map<Long, NexusCommand> indexes = new HashMap<>();
-    private Map<String, Long> indexMap;
+    private final Map<Long, String> indexes = new HashMap<>();
 
     private final NexusCore nexusCore;
     private static final NexusLoggingAdapter logger = NexusCore.logger;
@@ -37,45 +35,37 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     }
 
     @Override
-    public List<NexusCommand> getCommands() {
-        return commands;
+    public Collection<NexusCommand> getCommands() {
+        return commands.values();
     }
 
     @Override
     public Nexus addCommand(NexusCommand command) {
-        commands.add(command);
+        commands.put(((NexusCommandCore) command).uuid, command);
 
-        if (indexMap == null || !command.getServerIds().isEmpty() || !indexMap.containsKey(command.getName().toLowerCase()))
-            return nexusCore;
-
-        indexes.put(indexMap.get(command.getName().toLowerCase()), command);
         return nexusCore;
     }
 
     @Override
     public Optional<NexusCommand> getCommandById(long id) {
-        return Optional.ofNullable(indexes.getOrDefault(id, null));
+        return Optional.ofNullable(commands.get(indexes.getOrDefault(id, null)));
     }
 
     @Override
-    public Optional<NexusCommand> getCommandByUUID(String UUID) {
-        return commands.stream()
-                .map(command -> (NexusCommandCore) command)
-                .filter(commandCore -> commandCore.uuid.equals(UUID))
-                .map(command -> (NexusCommand) command)
-                .findFirst();
+    public Optional<NexusCommand> getCommandByUUID(String uuid) {
+        return Optional.ofNullable(commands.get(uuid));
     }
 
     @Override
     public Optional<NexusCommand> getCommandByName(String name) {
-        return commands.stream()
+        return getCommands().stream()
                 .filter(nexusCommand -> nexusCommand.getName().equalsIgnoreCase(name))
                 .findFirst();
     }
 
     @Override
     public Optional<NexusCommand> getCommandByName(String name, long server) {
-        return commands.stream()
+        return getCommands().stream()
                 .filter(nexusCommand ->
                         nexusCommand.getName().equalsIgnoreCase(name) && nexusCommand.getServerIds().contains(server)
                 )
@@ -92,40 +82,25 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     public Optional<NexusCommand> acceptEvent(SlashCommandCreateEvent event) {
         SlashCommandInteraction interaction = event.getSlashCommandInteraction();
 
-        if (getCommandById(interaction.getCommandId()).isPresent())
-            return Optional.of(indexes.get(interaction.getCommandId()));
-
-        // If index map contains the interaction command name and the indexes already has a key with the ID stored.
-        // then that means this is a server slash command.
-        if (
-                indexMap != null &&
-                indexMap.containsKey(interaction.getCommandName()) &&
-                indexes.containsKey(indexMap.get(interaction.getCommandName())) &&
-                interaction.getServer().isPresent()
-        ) {
-            indexes.put(interaction.getCommandId(), getCommandByName(interaction.getCommandName(), interaction.getServer().get().getId())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            "Nexus couldn't find any command with the data. {name:"+ interaction.getCommandName()
-                                    +", id: " + interaction.getCommandId()+"}"
-                    )));
-            return Optional.ofNullable(indexes.getOrDefault(interaction.getCommandId(), null));
+        if (getCommandById(interaction.getCommandId()).isPresent()) {
+            return getCommandById(interaction.getId());
         }
 
-        // If index map contains the slash command name but the indexes is not recorded then we'll use that.
-        if (
-                indexMap != null &&
-                indexMap.containsKey(interaction.getCommandName())
-                && !indexes.containsKey(indexMap.get(interaction.getCommandName()))
-        ) {
-            indexes.put(indexMap.get(interaction.getCommandName()), getCommandByName(interaction.getCommandName())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            "Nexus couldn't find any command with the data. {name:"+ interaction.getCommandName()
-                            +", id: " + interaction.getCommandId()+"}"
-                    )));
-            return Optional.ofNullable(indexes.getOrDefault(interaction.getCommandId(), null));
+        if (interaction.getServer().isPresent()) {
+            return getCommands().stream().filter(nexusCommand ->
+                    nexusCommand.getName().equalsIgnoreCase(interaction.getCommandName()) &&
+                            nexusCommand.getServerIds().contains(interaction.getServer().get().getId())
+            ).findFirst().map(command -> {
+                indexes.put(interaction.getCommandId(), ((NexusCommandCore) command).uuid);
+                return command;
+            });
         }
 
-        return getCommandByName(interaction.getCommandName());
+        return getCommandByName(interaction.getCommandName()).map(command -> {
+            indexes.put(interaction.getCommandId(), ((NexusCommandCore) command).uuid);
+
+            return command;
+        });
     }
 
     @Override
@@ -146,43 +121,43 @@ public class NexusCommandManagerCore implements NexusCommandManager {
                     // Ensure the indexes are clear otherwise we might end up with some wrongly placed commands.
                     indexes.clear();
 
-                    // Store for any future slash commands that will try to use.
-                    indexMap = newIndexes;
-
                     if (commands.isEmpty()) {
                         return;
                     }
 
                     // Perform indexing which is basically mapping the ID of the slash command
                     // to the Nexus Command that will be called everytime the command executes.
-                    commands.stream()
+                    getCommands().stream()
                             .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
                             .forEach(nexusCommand -> indexes.put(
-                                    newIndexes.get(
-                                            nexusCommand.getName().toLowerCase()
-                                    ), nexusCommand)
+                                    newIndexes.get(nexusCommand.getName().toLowerCase()),
+                                    ((NexusCommandCore) nexusCommand).uuid)
                             );
 
                     Map<Long, Map<String, Long>> serverIndexes = new HashMap<>();
 
-                    for (NexusCommand command : commands.stream().filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty()).toList()) {
+                    for (NexusCommand command : getCommands().stream().filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty()).toList()) {
                         command.getServerIds().forEach(id -> {
                             if (!serverIndexes.containsKey(id)) {
-                                Server server = nexusCore.getShardManager()
-                                        .getShardOf(id)
-                                        .flatMap(discordApi -> discordApi.getServerById(id))
-                                        .orElseThrow(AssertionError::new);
-                                serverIndexes.put(server.getId(), new HashMap<>());
+                               nexusCore.getShardManager().getShardOf(id)
+                                       .flatMap(discordApi -> discordApi.getServerById(id))
+                                       .ifPresent(server -> {
+                                           serverIndexes.put(server.getId(), new HashMap<>());
 
-                                for (SlashCommand slashCommand : server.getSlashCommands().join()) {
-                                    serverIndexes.get(server.getId()).put(slashCommand.getName().toLowerCase(), slashCommand.getId());
-                                }
+                                           for (SlashCommand slashCommand : server.getSlashCommands().join()) {
+                                               serverIndexes.get(server.getId()).put(slashCommand.getName().toLowerCase(), slashCommand.getId());
+                                           }
+                                       });
                             }
 
-                            indexes.put(serverIndexes.get(id).get(command.getName().toLowerCase()), command);
+                            indexes.put(
+                                    serverIndexes.get(id).get(command.getName().toLowerCase()),
+                                    ((NexusCommandCore) command).uuid
+                            );
                         });
                     }
 
+                    serverIndexes.clear();
                     logger.info("All global and server slash commands are now indexed. It took {} milliseconds to complete indexing.", System.currentTimeMillis() - start);
                 }).exceptionally(ExceptionLogger.get()).join();
     }

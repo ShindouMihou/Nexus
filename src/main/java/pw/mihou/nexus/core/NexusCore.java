@@ -154,7 +154,6 @@ public class NexusCore implements Nexus {
             getShardManager().asStream().forEachOrdered(onShardLogin);
         }
 
-        commandManager.index();
         return this;
     }
 
