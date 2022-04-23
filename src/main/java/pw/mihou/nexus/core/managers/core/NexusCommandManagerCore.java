@@ -83,7 +83,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
         SlashCommandInteraction interaction = event.getSlashCommandInteraction();
 
         if (getCommandById(interaction.getCommandId()).isPresent()) {
-            return getCommandById(interaction.getId());
+            return getCommandById(interaction.getCommandId());
         }
 
         if (interaction.getServer().isPresent()) {
