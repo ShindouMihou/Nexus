@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.synchronizer;
 
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import pw.mihou.nexus.Nexus;
@@ -57,6 +58,27 @@ public record NexusSynchronizer(
      * @return  A future to indicate progress of this task.
      */
     public CompletableFuture<Void> batchUpdate(long serverId, int totalShards) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
+        engineX.queue(
+                (int) ((serverId >> 22) % totalShards),
+                (api, store) -> batchUpdate(serverId, api).thenAccept(unused -> future.complete(null))
+        );
+
+        return future;
+    }
+
+    /**
+     * Batch updates all commands that supports a specific server. This completely overrides the
+     * server command list and can be used to clear any server slash commands of the bot for that
+     * specific server.
+     *
+     * @param shard         The shard to use for updating the server's commands.
+     * @param serverId      The server to batch upsert the commands onto.
+     * @return  A future to indicate progress of this task.
+     */
+    public CompletableFuture<Void> batchUpdate(long serverId, DiscordApi shard) {
         NexusCommandManager manager = nexus.getCommandManager();
         CompletableFuture<Void> future = new CompletableFuture<>();
         List<NexusCommand> serverCommands = manager.getCommands()
@@ -64,15 +86,12 @@ public record NexusSynchronizer(
                 .filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty() && nexusCommand.getServerIds().contains(serverId))
                 .toList();
 
-        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
         List<SlashCommandBuilder> slashCommandBuilders = new ArrayList<>();
         serverCommands.forEach(command -> slashCommandBuilders.add(command.asSlashCommand()));
-        engineX.queue(
-                (int) ((serverId >> 22) % totalShards),
-                (api, store) -> SYNCHRONIZE_METHODS.get().bulkOverwriteServer(api, slashCommandBuilders, serverId, future)
-        );
+        SYNCHRONIZE_METHODS.get().bulkOverwriteServer(shard, slashCommandBuilders, serverId, future);
 
         return future;
+
     }
 
     /**
