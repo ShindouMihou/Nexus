@@ -13,8 +13,7 @@ public class Test {
     private static final Nexus nexus = Nexus.builder().build();
 
     public static void main(String[] args) {
-        nexus.createCommandFrom(new AGlobalCommand());
-        nexus.createCommandFrom(new ASpecificServerCommand());
+        nexus.listenMany(new AGlobalCommand(), new ASpecificServerCommand());
         NexusCommand dynamic = nexus.createCommandFrom(new ADynamicCommand());
 
         new DiscordApiBuilder()

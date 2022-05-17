@@ -5,7 +5,6 @@ import org.javacord.api.entity.message.component.ButtonStyle;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
-import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 import pw.mihou.nexus.features.paginator.NexusPaginatorBuilder;
@@ -17,7 +16,6 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
-@NexusAttach
 public class PoemCommand implements NexusHandler {
 
     private String name = "poem";

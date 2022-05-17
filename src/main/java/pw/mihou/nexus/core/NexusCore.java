@@ -14,7 +14,7 @@ import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.core.reflective.NexusReflectiveCore;
 import pw.mihou.nexus.core.threadpool.NexusThreadPool;
-import pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation;
+import pw.mihou.nexus.features.command.core.NexusCommandDispatcher;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore;
@@ -99,8 +99,37 @@ public class NexusCore implements Nexus {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public NexusCommand createCommandFrom(Object model) {
-        return NexusReflectiveCore.accept(model, NexusCommandCore.class, this);
+        return listenOne(model);
+    }
+
+    @Override
+    public NexusCommand defineOne(Object command) {
+        return NexusReflectiveCore.command(command, this);
+    }
+
+    @Override
+    public NexusCommand listenOne(Object command) {
+        NexusCommand definition = defineOne(command);
+        getCommandManager().addCommand(definition);
+
+        return definition;
+    }
+
+    @Override
+    public List<NexusCommand> defineMany(Object... commands) {
+        return Arrays.stream(commands)
+                .map(reference -> ((NexusCommand) NexusReflectiveCore.command(reference, this)))
+                .toList();
+    }
+
+    @Override
+    public List<NexusCommand> listenMany(Object... commands) {
+        List<NexusCommand> definitions = defineMany(commands);
+        definitions.forEach(definition -> getCommandManager().addCommand(definition));
+
+        return definitions;
     }
 
     /**
@@ -165,19 +194,9 @@ public class NexusCore implements Nexus {
                 .map(nexusCommand -> (NexusCommandCore) nexusCommand)
                 .ifPresent(nexusCommand ->
                         NexusThreadPool.executorService.submit(() ->
-                                new NexusBaseCommandImplementation(nexusCommand).dispatch(event)
+                                NexusCommandDispatcher.dispatch(nexusCommand, event)
                         )
                 );
-    }
-
-    /**
-     * An internal method which is used by reflection to add a command
-     * into the registry of Nexus.
-     *
-     * @param command The command to add.
-     */
-    private static void addCommand(NexusCommandCore command) {
-        command.core.getCommandManager().addCommand(command);
     }
 
     /**

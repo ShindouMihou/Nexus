@@ -5,6 +5,7 @@ import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
+import pw.mihou.nexus.features.command.core.NexusCommandDispatcher;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
 
 import java.util.Optional;
@@ -48,7 +49,7 @@ public class NexusMessageCore implements NexusMessage {
     }
 
     /**
-     * An internal method that is utilized by the likes of {@link pw.mihou.nexus.features.command.core.NexusBaseCommandImplementation} to
+     * An internal method that is utilized by the likes of {@link NexusCommandDispatcher} to
      * transform the {@link NexusMessage} into an {@link InteractionImmediateResponseBuilder} that can then be used to send the response
      * to the end-user.
      *

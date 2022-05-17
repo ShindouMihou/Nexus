@@ -1,13 +1,11 @@
 package commands;
 
-import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors;
 
 import java.util.List;
 
-@NexusAttach
 public class HasAfterwareCommand implements NexusHandler {
 
     private final String name = "ping";

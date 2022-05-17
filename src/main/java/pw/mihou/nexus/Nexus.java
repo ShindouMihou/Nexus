@@ -11,6 +11,9 @@ import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface Nexus extends SlashCommandCreateListener {
 
     /**
@@ -77,14 +80,57 @@ public interface Nexus extends SlashCommandCreateListener {
      */
     NexusConfiguration getConfiguration();
 
-     /**
+    /**
      * This creates a new command and attaches them if the annotation {@link pw.mihou.nexus.features.command.annotation.NexusAttach} is
      * present on the model.
      *
+     * @see Nexus#listenMany(Object...)
+     * @see Nexus#defineMany(Object...)
+     * @see Nexus#listenOne(Object)
+     * @see Nexus#defineOne(Object)
      * @param model The model that will be used as a reference.
      * @return The Nexus Command instance that is generated from the reference.
      */
+     @Deprecated
     NexusCommand createCommandFrom(Object model);
+
+    /**
+     * Molds one command from the reference provided, not to be confused with {@link Nexus#listenOne(Object)}, this does not
+     * enable the event dispatcher for this command and won't be listed in {@link NexusCommandManager}. This is intended for when you want
+     * to simply test the result of the command generation engine of Nexus.
+     *
+     * @param command  The models used as a reference for the command definition.
+     * @return All the commands that were generated from the references provided.
+     */
+    NexusCommand defineOne(Object command);
+
+    /**
+     * Molds one command from the reference provided and allows events to be dispatched onto the command when an event
+     * is intended to be dispatched to the given command.
+     *
+     * @param command  The model used as a reference for the command definition.
+     * @return All the commands that were generated from the references provided.
+     */
+    NexusCommand listenOne(Object command);
+
+    /**
+     * Molds many commands from the references provided, not to be confused with {@link Nexus#listenMany(Object...)}, this does not
+     * enable the event dispatcher for this command and won't be listed in {@link NexusCommandManager}. This is intended for when you want
+     * to simply test the result of the command generation engine of Nexus.
+     *
+     * @param commands  The models used as a reference for the command definition.
+     * @return All the commands that were generated from the references provided.
+     */
+     List<NexusCommand> defineMany(Object... commands);
+
+    /**
+     * Molds many commands from the references provided and allows events to be dispatched onto the commands when an event
+     * is intended to be dispatched to the given command.
+     *
+     * @param commands  The models used as a reference for the command definition.
+     * @return All the commands that were generated from the references provided.
+     */
+    List<NexusCommand> listenMany(Object... commands);
 
     /**
      * Adds a set of middlewares into the global middleware list which are pre-appended into

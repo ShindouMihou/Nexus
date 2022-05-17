@@ -1,12 +1,10 @@
 package pw.mihou.nexus.commands;
 
-import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 
 import java.util.List;
 
-@NexusAttach
 public class ADynamicCommand implements NexusHandler {
 
     private final String name = "dynamic";

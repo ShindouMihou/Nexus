@@ -4,81 +4,63 @@ import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner;
 import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.core.reflective.core.NexusReflectiveVariableCore;
-import pw.mihou.nexus.core.reflective.facade.NexusReflectiveFacade;
 import pw.mihou.nexus.core.reflective.facade.NexusReflectiveVariableFacade;
+import pw.mihou.nexus.features.command.core.NexusCommandCore;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class NexusReflectiveCore {
 
-    public static final HashMap<Class<?>, NexusReflectiveFacade<?>> adapters = new HashMap<>();
+    private static final Class<?> REFERENCE_CLASS = NexusCommandCore.class;
 
-    public static <R> R accept(Object object, Class<R> rClass, NexusCore core) {
-        // This requires having NOT a single constructor. Please note to any contributors.
-        NexusReflectiveVariableFacade facade = new NexusReflectiveVariableCore(object, rClass);
-        try {
-            if (rClass.isAnnotationPresent(MustImplement.class)) {
-                Class<?> extension = rClass.getAnnotation(MustImplement.class).clazz();
+    public static NexusCommandCore command(Object object, NexusCore core) {
+        NexusCommandCore reference = new NexusCommandCore();
 
-                if (!extension.isAssignableFrom(object.getClass())) {
-                    throw new IllegalStateException("Nexus was unable to complete reflection stage because class: " +
-                            object.getClass().getName()
-                            + " must implement the following class: " + extension.getName());
-                }
+        NexusReflectiveVariableFacade facade = new NexusReflectiveVariableCore(object, reference);
+
+        if (REFERENCE_CLASS.isAnnotationPresent(MustImplement.class)) {
+            Class<?> extension = REFERENCE_CLASS.getAnnotation(MustImplement.class).clazz();
+
+            if (!extension.isAssignableFrom(object.getClass())) {
+                throw new IllegalStateException("Nexus was unable to complete reflection stage because class: " +
+                        object.getClass().getName()
+                        + " must implement the following class: " + extension.getName());
             }
-
-            R r = rClass.newInstance();
-
-            Arrays.stream(r.getClass().getDeclaredFields())
-                    .forEach(field -> {
-                        field.setAccessible(true);
-
-                        try {
-                            if (field.isAnnotationPresent(InjectReferenceClass.class)) {
-                                field.set(r, object);
-                            } else if (field.isAnnotationPresent(InjectUUID.class)) {
-                                field.set(r, NexusUuidAssigner.request());
-                            } else if (field.isAnnotationPresent(InjectNexusCore.class)) {
-                                field.set(r, core);
-                            } else if (field.isAnnotationPresent(Stronghold.class)){
-                                field.set(r, facade.getSharedFields());
-                            } else {
-                                facade.getWithType(field.getName(), fromPrimitiveToNonPrimitive(field.getType())).ifPresent(o -> {
-                                    try {
-                                        field.set(r, o);
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
-                                    }
-                                });
-                            }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    });
-
-            if (rClass.isAnnotationPresent(InvokeIfAnnotated.class)) {
-                InvokeIfAnnotated annotation = rClass.getAnnotation(InvokeIfAnnotated.class);
-
-                if (object.getClass().isAnnotationPresent(annotation.annotation())) {
-                    // If InvokeIfAnnotated is up and the referencing class has the annotation required then we invoke the method.
-                    Method method = annotation.invokingClass().getDeclaredMethod(annotation.methodName(), rClass);
-                    method.setAccessible(true);
-                    method.invoke(annotation.invokingClass(), r);
-                }
-            }
-            return r;
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            // If it ever errors out, please read the very first comment of this method.
-            // If it errors the NoSuchMethodException then there is something wrong with the invoking method.
-            e.printStackTrace();
-            return null;
         }
+
+
+        Arrays.stream(reference.getClass().getDeclaredFields())
+                .forEach(field -> {
+                    field.setAccessible(true);
+
+                    try {
+                        if (field.isAnnotationPresent(InjectReferenceClass.class)) {
+                            field.set(reference, object);
+                        } else if (field.isAnnotationPresent(InjectUUID.class)) {
+                            field.set(reference, NexusUuidAssigner.request());
+                        } else if (field.isAnnotationPresent(InjectNexusCore.class)) {
+                            field.set(reference, core);
+                        } else if (field.isAnnotationPresent(Stronghold.class)){
+                            field.set(reference, facade.getSharedFields());
+                        } else {
+                            facade.getWithType(field.getName(), fromPrimitiveToNonPrimitive(field.getType())).ifPresent(o -> {
+                                try {
+                                    field.set(reference, o);
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        return reference;
     }
 
     /**
-     * This identifies primitive classes and returns back their non-primitive
+     * This identifies primitive classes and returns their non-primitive
      * class values since for some reason, type-checking requires it.
      *
      * @param clazz The class to identify.

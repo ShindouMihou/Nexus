@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Deprecated(forRemoval = true)
 public @interface NexusAttach {
 }

@@ -3,7 +3,6 @@ package pw.mihou.nexus.features.command.core;
 import org.javacord.api.interaction.SlashCommandOption;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
-import pw.mihou.nexus.features.command.annotation.NexusAttach;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 
@@ -18,7 +17,6 @@ import java.util.stream.Stream;
  * command framework.
  */
 @MustImplement(clazz = NexusHandler.class)
-@InvokeIfAnnotated(annotation = NexusAttach.class, invokingClass = NexusCore.class, methodName = "addCommand")
 public class NexusCommandCore implements NexusCommand {
 
     @InjectUUID

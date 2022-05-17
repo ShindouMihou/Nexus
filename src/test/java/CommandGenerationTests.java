@@ -15,14 +15,14 @@ public class CommandGenerationTests {
     @DisplayName("Enforcement of Required Fields Test")
     @Order(1)
     void isRequiredFieldsRequiredTest() {
-        assertThrows(IllegalStateException.class, () -> NEXUS.createCommandFrom(new RequiredTestCommand()));
+        assertThrows(IllegalStateException.class, () -> NEXUS.defineOne(new RequiredTestCommand()));
     }
 
     @Test
     @DisplayName("Nexus Command Generation Test")
     @Order(2)
     void commandGenerationTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new FilledRequiredTestCommand());
+        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
         assertNotNull(
                 command,
                 "The command instance which shouldn't be null is somehow null."
@@ -33,7 +33,7 @@ public class CommandGenerationTests {
     @DisplayName("Value Validation of Required Fields Test")
     @Order(3)
     void requiredFieldsTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new FilledRequiredTestCommand());
+        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
         assertNotNull(
                 command.getName(),
                 "The command name which shouldn't be null is somehow null."
@@ -54,7 +54,7 @@ public class CommandGenerationTests {
     @DisplayName("Injected Nexus Core Test")
     @Order(4)
     void injectedNexusCoreTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new FilledRequiredTestCommand());
+        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
         assertNotNull(
                 ((NexusCommandCore) command).core,
                 "The injection of the Nexus core somehow failed."
@@ -65,7 +65,7 @@ public class CommandGenerationTests {
     @DisplayName("Successful Command Addition Test")
     @Order(5)
     void commandAddedTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new FilledRequiredTestCommand());
+        NexusCommand command = NEXUS.listenOne(new FilledRequiredTestCommand());
         assertTrue(
                 NEXUS.getCommandManager().getCommandByUUID(((NexusCommandCore) command).uuid).isPresent(),
                 "The command was not found in the command manager despite being added."
@@ -76,7 +76,7 @@ public class CommandGenerationTests {
     @DisplayName("Correct Shared Fields Test")
     @Order(6)
     void correctSharedFieldsTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new HasSharedFieldsCommand());
+        NexusCommand command = NEXUS.defineOne(new HasSharedFieldsCommand());
         assertTrue(
                 command.get("oneSharedField", String.class).isPresent(),
                 "The shared field is somehow not visible to the public."
@@ -98,7 +98,7 @@ public class CommandGenerationTests {
     @DisplayName("Has Middleware Test")
     @Order(7)
     void hasMiddlewareTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new HasMiddlewaresCommand());
+        NexusCommand command = NEXUS.defineOne(new HasMiddlewaresCommand());
         assertFalse(
                 ((NexusCommandCore) command).middlewares.isEmpty(),
                 "The middlewares field which shouldn't be empty is somehow empty."
@@ -114,7 +114,7 @@ public class CommandGenerationTests {
     @DisplayName("Has Middleware Test")
     @Order(8)
     void hasAfterwareTest() {
-        NexusCommand command = NEXUS.createCommandFrom(new HasAfterwareCommand());
+        NexusCommand command = NEXUS.defineOne(new HasAfterwareCommand());
         assertFalse(
                 ((NexusCommandCore) command).afterwares.isEmpty(),
                 "The afterwares field which shouldn't be empty is somehow empty."
