@@ -41,9 +41,8 @@ These methods allows Nexus to perform command synchronization and similar (**REQ
 - [Synchronization Example](https://github.com/ShindouMihou/Nexus/blob/master/examples/synchronization/Main.java)
 
 ## 🫓 Fundamentals of creating commands
-You can design commands in Nexus simply by creating a class that implements the [`NexusHandler`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusHandler.java) interface and include the `@NexusAttach` annotation before creating two required `String` fields named: `name` and `description` which are required to create slash commands.
+You can design commands in Nexus simply by creating a class that implements the [`NexusHandler`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusHandler.java) interface before creating two required `String` fields named: `name` and `description` which are required to create slash commands.
 ```java
-@NexusAttach
 public class PingCommand implements NexusHandler {
 
    private final String name = "ping"
@@ -59,7 +58,6 @@ When creating class fields, one must ensure that it doesn't conflict with the na
 For instance, we want to include the option of making our command ephemeral then all we need to do is define a `options` field with `List<SlashCommandOption>` before defining the value of the field with the ephemeral option.
 
 ```java
-@NexusAttach
 public class PingCommand implements NexusHandler {
 
    private final String name = "ping"
@@ -91,8 +89,14 @@ You can also view a demonstration of "Shared Fields" from the shared_fields exam
 
 After creating the command class, you can then tell Nexus to include it by using:
 ```java
-Nexus nexus = ...
-nexus.createCommandFrom(new SomeCommand());
+Nexus nexus = ...;
+nexus.listenOne(new SomeCommand());
+```
+
+You can also create a `NexusCommand` without enabling the event dispatcher (for cases when you want to see the result of the command generation) by using:
+```java
+Nexus nexus = ...;
+NexusCommand command = nexus.defineOne(new SomeCommand());
 ```
 
 ## ♒ Intercepting Commands
