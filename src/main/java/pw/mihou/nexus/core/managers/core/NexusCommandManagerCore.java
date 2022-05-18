@@ -90,7 +90,7 @@ public class NexusCommandManagerCore implements NexusCommandManager {
             return getCommands().stream().filter(nexusCommand ->
                     nexusCommand.getName().equalsIgnoreCase(interaction.getCommandName()) &&
                             nexusCommand.getServerIds().contains(interaction.getServer().get().getId())
-            ).findFirst().map(command -> {
+            ).findFirst().or(() -> getCommandByName(interaction.getCommandName())).map(command -> {
                 indexes.put(interaction.getCommandId(), ((NexusCommandCore) command).uuid);
                 return command;
             });
