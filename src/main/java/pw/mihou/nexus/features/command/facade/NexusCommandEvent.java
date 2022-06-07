@@ -16,6 +16,7 @@ import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -227,6 +228,48 @@ public interface NexusCommandEvent {
      */
     default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeralIf(Predicate<Void> predicate) {
         return respondLaterAsEphemeralIf(predicate.test(null));
+    }
+
+    /**
+     * Gets the event local store that is used to contain shared fields accessible from middlewares, command and
+     * afterwares themselves. You can use this to store data such as whether the command was completed successfully
+     * or other related.
+     *
+     * @return The event-local store from this event.
+     */
+    Map<String, Object> store();
+
+    /**
+     * Gets the value of the given key from the {@link NexusCommandEvent#store()} and maps it into the type given
+     * if possible, otherwise returns null.
+     *
+     * @param key   The key to get from the {@link NexusCommandEvent#store()}.
+     * @param type  The type expected of the value.
+     * @param <T>   The type expected of the value.
+     *
+     * @return The value mapped with the key in {@link NexusCommandEvent#store()} mapped to the type, otherwise null.
+     */
+    default <T> T get(String key, Class<T> type) {
+        if (!store().containsKey(key))
+            return null;
+
+        Object object = store().get(key);
+
+        if (type.isAssignableFrom(object.getClass())) {
+            return type.cast(object);
+        }
+
+        return null;
+    }
+
+    /**
+     * A short-hand expression for placing a key-value pair to {@link NexusCommandEvent#store()}.
+     *
+     * @param key   The key to insert to the store.
+     * @param value The value to insert to the store.
+     */
+    default void store(String key, Object value) {
+        store().put(key, value);
     }
 
 }

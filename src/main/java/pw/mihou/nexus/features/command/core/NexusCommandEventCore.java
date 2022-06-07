@@ -4,10 +4,14 @@ import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class NexusCommandEventCore implements NexusCommandEvent {
 
     private final SlashCommandCreateEvent event;
     private final NexusCommand command;
+    private final Map<String, Object> store = new HashMap<>();
 
     /**
      * Creates a new Nexus Event Core that is sent along with the Command Interceptors
@@ -29,5 +33,10 @@ public class NexusCommandEventCore implements NexusCommandEvent {
     @Override
     public NexusCommand getCommand() {
         return command;
+    }
+
+    @Override
+    public Map<String, Object> store() {
+        return store;
     }
 }
