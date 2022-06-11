@@ -2,6 +2,7 @@ package pw.mihou.nexus.core;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
@@ -23,6 +24,12 @@ import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 import pw.mihou.nexus.features.messages.defaults.NexusDefaultMessageConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
+import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging;
+import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore;
+import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore;
+import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherView;
+import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherViewEvent;
+import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherViewPager;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -207,5 +214,19 @@ public class NexusCore implements Nexus {
      */
     public NexusMessageConfiguration getMessageConfiguration() {
         return messageConfiguration;
+    }
+
+    @Override
+    public void onButtonClick(ButtonClickEvent event) {
+        if (!event.getButtonInteraction().getCustomId().contains("[$;")) return;
+
+        String[] keys = event.getButtonInteraction().getCustomId().split("\\[\\$;", 3);
+        if (keys.length < 3 || !NexusFeatherPaging.views.containsKey(keys[0])) return;
+
+        NexusThreadPool.executorService.submit(() ->
+                NexusFeatherPaging.views.get(keys[0]).onEvent(
+                        new NexusFeatherViewEventCore(event, new NexusFeatherViewPagerCore(keys[0], keys[1]), keys[2])
+                )
+        );
     }
 }

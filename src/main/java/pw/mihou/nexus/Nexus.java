@@ -1,5 +1,6 @@
 package pw.mihou.nexus;
 
+import org.javacord.api.listener.interaction.ButtonClickListener;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.builder.NexusBuilder;
@@ -11,10 +12,9 @@ import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository;
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer;
 
-import java.util.Collection;
 import java.util.List;
 
-public interface Nexus extends SlashCommandCreateListener {
+public interface Nexus extends SlashCommandCreateListener, ButtonClickListener {
 
     /**
      * This creates a new {@link NexusBuilder} which can be used to create
