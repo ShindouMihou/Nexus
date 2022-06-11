@@ -17,13 +17,20 @@ public class NexusFeatherPaging {
      *
      * @param initialKey The initial key that will be included in the buttons.
      * @param type       The type of this feather paging.
-     * @param view       The general view or handler for this paging.
      * @return A {@link NexusFeatherViewPager} that can be used to initialize the buttons, etc.
      */
-    public static NexusFeatherViewPager create(String initialKey, String type, NexusFeatherView view) {
-        views.put(type, view);
-
+    public static NexusFeatherViewPager pager(String initialKey, String type) {
         return new NexusFeatherViewPagerCore(initialKey, type);
+    }
+
+    /**
+     * Registers the handler or view for the given type of feather paging.
+     *
+     * @param type The type of this feather paging.
+     * @param view The view or handler of this paging.
+     */
+    public static void register(String type, NexusFeatherView view) {
+        views.put(type, view);
     }
 
     /**
