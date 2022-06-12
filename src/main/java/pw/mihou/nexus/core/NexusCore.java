@@ -225,7 +225,7 @@ public class NexusCore implements Nexus {
 
         NexusThreadPool.executorService.submit(() ->
                 NexusFeatherPaging.views.get(keys[0]).onEvent(
-                        new NexusFeatherViewEventCore(event, new NexusFeatherViewPagerCore(keys[0], keys[1]), keys[2])
+                        new NexusFeatherViewEventCore(event, new NexusFeatherViewPagerCore(keys[1], keys[0]), keys[2])
                 )
         );
     }
