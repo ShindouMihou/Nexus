@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.facade;
 
+import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import org.javacord.api.interaction.SlashCommandOption;
@@ -90,12 +91,33 @@ public interface NexusCommand {
     Optional<Object> get(String field);
 
     /**
-     * Is the default permission configuration of Discord enabled?
+     * Checks whether the command is default enabled for everyone or not.
      *
-     * @return Whether or not the default permission configuration of Discord is
-     * enabled.
+     * @return Whether this command is default enabled for everyone or not.
      */
-    boolean isDefaultPermissionEnabled();
+    boolean isDefaultEnabledForEveryone();
+
+    /**
+     * Checks whether the command is enabled in DMs or not.
+     *
+     * @return Whether the command is enabled in DMs or not.
+     */
+    boolean isEnabledInDms();
+
+    /**
+     * Checks whether the command is default disabled or not.
+     *
+     * @return Whether the command is default disabled or not.
+     */
+    boolean isDefaultDisabled();
+
+    /**
+     * Gets the permission types required to have this command enabled for that user.
+     *
+     * @return The permission types required for this command to be enabled for
+     * that specific user.
+     */
+    List<PermissionType> getDefaultEnabledForPermissions();
 
     /**
      * Gets the server id of the command.
@@ -114,7 +136,19 @@ public interface NexusCommand {
      */
     default SlashCommandBuilder asSlashCommand() {
         SlashCommandBuilder builder = SlashCommand.with(getName().toLowerCase(), getDescription())
-                .setDefaultPermission(isDefaultPermissionEnabled());
+                .setEnabledInDms(isEnabledInDms());
+
+        if (isDefaultDisabled()) {
+            builder.setDefaultDisabled();
+        }
+
+        if (isDefaultEnabledForEveryone()) {
+            builder.setDefaultEnabledForEveryone();
+        }
+
+        if (!getDefaultEnabledForPermissions().isEmpty()) {
+            builder.setDefaultEnabledForPermissions(getDefaultEnabledForPermissions().toArray(PermissionType[]::new));
+        }
 
         if (!getOptions().isEmpty()) {
             return builder.setOptions(getOptions());
@@ -135,7 +169,20 @@ public interface NexusCommand {
         SlashCommandUpdater updater = new SlashCommandUpdater(commandId)
                 .setName(getName())
                 .setDescription(getDescription())
-                .setDefaultPermission(isDefaultPermissionEnabled());
+                .setEnabledInDms(isEnabledInDms());
+
+        if (isDefaultDisabled()) {
+            updater.setDefaultDisabled();
+        }
+
+        if (isDefaultEnabledForEveryone()) {
+            updater.setDefaultEnabledForEveryone();
+        }
+
+        if (!getDefaultEnabledForPermissions().isEmpty()) {
+            updater.setDefaultEnabledForPermissions(getDefaultEnabledForPermissions().toArray(PermissionType[]::new));
+        }
+
 
         if(!getOptions().isEmpty()) {
             updater.setSlashCommandOptions(getOptions());
