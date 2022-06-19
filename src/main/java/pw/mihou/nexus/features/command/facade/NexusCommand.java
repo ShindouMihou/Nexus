@@ -177,7 +177,7 @@ public interface NexusCommand {
             builder.setDefaultDisabled();
         }
 
-        if (isDefaultEnabledForEveryone()) {
+        if (isDefaultEnabledForEveryone() && !isDefaultDisabled()) {
             builder.setDefaultEnabledForEveryone();
         }
 
@@ -213,7 +213,7 @@ public interface NexusCommand {
             updater.setDefaultDisabled();
         }
 
-        if (isDefaultEnabledForEveryone()) {
+        if (isDefaultEnabledForEveryone() && !isDefaultDisabled()) {
             updater.setDefaultEnabledForEveryone();
         }
 
