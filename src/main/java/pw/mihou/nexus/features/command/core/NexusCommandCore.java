@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.core;
 
 import org.javacord.api.entity.permission.PermissionType;
+import org.javacord.api.interaction.DiscordLocale;
 import org.javacord.api.interaction.SlashCommandOption;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
@@ -29,8 +30,14 @@ public class NexusCommandCore implements NexusCommand {
     @Required
     public String name;
 
+    @WithDefault
+    public Map<DiscordLocale, String> nameLocalizations = Collections.emptyMap();
+
     @Required
     public String description;
+
+    @WithDefault
+    public Map<DiscordLocale, String> descriptionLocalizations = Collections.emptyMap();
 
     @WithDefault
     public List<SlashCommandOption> options = Collections.emptyList();
@@ -139,6 +146,16 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public List<PermissionType> getDefaultEnabledForPermissions() {
         return defaultEnabledForPermissions;
+    }
+
+    @Override
+    public Map<DiscordLocale, String> getNameLocalizations() {
+        return nameLocalizations;
+    }
+
+    @Override
+    public Map<DiscordLocale, String> getDescriptionLocalizations() {
+        return descriptionLocalizations;
     }
 
     @Override

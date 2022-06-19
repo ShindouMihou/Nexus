@@ -1,14 +1,12 @@
 package pw.mihou.nexus.features.command.facade;
 
 import org.javacord.api.entity.permission.PermissionType;
-import org.javacord.api.interaction.SlashCommand;
-import org.javacord.api.interaction.SlashCommandBuilder;
-import org.javacord.api.interaction.SlashCommandOption;
-import org.javacord.api.interaction.SlashCommandUpdater;
+import org.javacord.api.interaction.*;
 import pw.mihou.nexus.commons.Pair;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface NexusCommand {
@@ -120,6 +118,40 @@ public interface NexusCommand {
     List<PermissionType> getDefaultEnabledForPermissions();
 
     /**
+     * Gets all the names in different localizations for this slash command.
+     *
+     * @return All the name localizations of this command.
+     */
+    Map<DiscordLocale, String> getNameLocalizations();
+
+    /**
+     * Gets all the description in different localizations for this slash command.
+     *
+     * @return All the description localizations of this command.
+     */
+    Map<DiscordLocale, String> getDescriptionLocalizations();
+
+    /**
+     * Gets the description localized value for the given localization for this slash command.
+     *
+     * @param locale The locale to get from.
+     * @return The localized description for this slash command, if present.
+     */
+    default Optional<String> getDescriptionLocalization(DiscordLocale locale) {
+        return Optional.ofNullable(getDescriptionLocalizations().get(locale));
+    }
+
+    /**
+     * Gets the name localized value for the given localization for this slash command.
+     *
+     * @param locale The locale to get from.
+     * @return The localized name for this slash command, if present.
+     */
+    default Optional<String> getNameLocalization(DiscordLocale locale) {
+        return Optional.ofNullable(getDescriptionLocalizations().get(locale));
+    }
+
+    /**
      * Gets the server id of the command.
      *
      * @return The server ID of the command.
@@ -137,6 +169,9 @@ public interface NexusCommand {
     default SlashCommandBuilder asSlashCommand() {
         SlashCommandBuilder builder = SlashCommand.with(getName().toLowerCase(), getDescription())
                 .setEnabledInDms(isEnabledInDms());
+
+        getNameLocalizations().forEach(builder::addNameLocalization);
+        getDescriptionLocalizations().forEach(builder::addDescriptionLocalization);
 
         if (isDefaultDisabled()) {
             builder.setDefaultDisabled();
@@ -170,6 +205,9 @@ public interface NexusCommand {
                 .setName(getName())
                 .setDescription(getDescription())
                 .setEnabledInDms(isEnabledInDms());
+
+        getNameLocalizations().forEach(updater::addNameLocalization);
+        getDescriptionLocalizations().forEach(updater::addDescriptionLocalization);
 
         if (isDefaultDisabled()) {
             updater.setDefaultDisabled();
