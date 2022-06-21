@@ -1,7 +1,7 @@
 package pw.mihou.nexus.features.messages.facade;
 
+import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 
@@ -27,7 +27,7 @@ public interface NexusMessage {
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromEphemeral(EmbedBuilder builder) {
-        return new NexusMessageCore(builder).setBuilder(responseBuilder -> responseBuilder.setFlags(InteractionCallbackDataFlag.EPHEMERAL));
+        return new NexusMessageCore(builder).setBuilder(responseBuilder -> responseBuilder.setFlags(MessageFlag.EPHEMERAL));
     }
 
     /**
@@ -67,7 +67,7 @@ public interface NexusMessage {
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromEphemereal(String text) {
-        return new NexusMessageCore(text).setBuilder(builder -> builder.setFlags(InteractionCallbackDataFlag.EPHEMERAL));
+        return new NexusMessageCore(text).setBuilder(builder -> builder.setFlags(MessageFlag.EPHEMERAL));
     }
 
     /**
