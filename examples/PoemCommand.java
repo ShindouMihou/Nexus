@@ -63,6 +63,7 @@ public class PoemCommand implements NexusHandler {
                 .setButton(NexusPaginatorButtonAssignment.CANCEL, Button.create("customId", ButtonStyle.DANGER, "", "🔥"))
                 .build()
                 .send(event.getBaseEvent().getInteraction(), responseUpdater)
+                .thenAccept(instance -> instance.destroyAndRemoveButtonsAfter(Duration.ofSeconds(60)));
         );
 
     }
