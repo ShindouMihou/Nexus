@@ -27,9 +27,7 @@ import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging;
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore;
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore;
-import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherView;
-import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherViewEvent;
-import pw.mihou.nexus.features.paginator.feather.facades.NexusFeatherViewPager;
+
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -223,10 +221,14 @@ public class NexusCore implements Nexus {
         String[] keys = event.getButtonInteraction().getCustomId().split("\\[\\$;", 3);
         if (keys.length < 3 || !NexusFeatherPaging.views.containsKey(keys[0])) return;
 
-        NexusThreadPool.executorService.submit(() ->
-                NexusFeatherPaging.views.get(keys[0]).onEvent(
-                        new NexusFeatherViewEventCore(event, new NexusFeatherViewPagerCore(keys[1], keys[0]), keys[2])
-                )
-        );
+        NexusThreadPool.executorService.submit(() -> {
+            try {
+                NexusFeatherPaging.views.get(keys[0])
+                        .onEvent(new NexusFeatherViewEventCore(event, new NexusFeatherViewPagerCore(keys[1], keys[0]), keys[2]));
+            } catch (Throwable exception) {
+                logger.error("An uncaught exception was received by Nexus Feather with the following stacktrace.");
+                exception.printStackTrace();
+            }
+        });
     }
 }
