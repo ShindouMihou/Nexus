@@ -5,6 +5,7 @@ import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.builder.NexusBuilder;
 import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
+import pw.mihou.nexus.core.enginex.facade.NexusEngineX;
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
@@ -79,6 +80,13 @@ public interface Nexus extends SlashCommandCreateListener, ButtonClickListener {
      * {@link Nexus} instance.
      */
     NexusConfiguration getConfiguration();
+
+    /**
+     * Gets the queueing engine for this {@link Nexus} instance.
+     *
+     * @return  The queueing engine of this instance.
+     */
+    NexusEngineX getEngineX();
 
     /**
      * This creates a new command and attaches them if the annotation {@link pw.mihou.nexus.features.command.annotation.NexusAttach} is

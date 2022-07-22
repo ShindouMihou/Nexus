@@ -94,11 +94,7 @@ public class NexusCore implements Nexus {
         return nexusConfiguration;
     }
 
-    /**
-     * Gets the queueing engine for this {@link Nexus} instance.
-     *
-     * @return  The queueing engine of this instance.
-     */
+    @Override
     public NexusEngineX getEngineX() {
         return engineX;
     }
