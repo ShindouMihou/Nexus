@@ -63,7 +63,12 @@ public record NexusSynchronizer(
         NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
         engineX.queue(
                 (int) ((serverId >> 22) % totalShards),
-                (api, store) -> batchUpdate(serverId, api).thenAccept(unused -> future.complete(null))
+                (api, store) -> batchUpdate(serverId, api)
+                        .thenAccept(unused -> future.complete(null))
+                        .exceptionally(throwable -> {
+                            future.completeExceptionally(throwable);
+                            return null;
+                        })
         );
 
         return future;
@@ -141,12 +146,21 @@ public record NexusSynchronizer(
                 )
                 .toList();
 
+        List<SlashCommandBuilder> globalCommands = manager.getCommands()
+                .stream()
+                .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
+                .map(NexusCommand::asSlashCommand)
+                .toList();
+
         NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
         engineX.queue(
-                (api, store) -> SYNCHRONIZE_METHODS.get().bulkOverwriteGlobal(api, manager.getCommands()
-                        .stream()
-                        .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
-                        .map(NexusCommand::asSlashCommand).toList())
+                (api, store) ->
+                        SYNCHRONIZE_METHODS.get().bulkOverwriteGlobal(api, globalCommands)
+                        .thenAccept(unused -> globalFuture.complete(null))
+                        .exceptionally(throwable -> {
+                            globalFuture.completeExceptionally(throwable);
+                            return null;
+                        })
         );
 
         Map<Long, List<SlashCommandBuilder>> serverMappedCommands = new HashMap<>();
