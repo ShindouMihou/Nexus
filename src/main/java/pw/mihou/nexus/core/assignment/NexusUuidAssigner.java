@@ -8,11 +8,11 @@ public class NexusUuidAssigner {
     /**
      * These are the UUIDs that have reached a handshake with the
      * assigner which means these are allocated to a certain object.
-     *
+     * <p>
      * A UUID is universally unique by session and this ensures that
      * the Nexus instance does not encounter a UUID collision that could
      * lead fatal.
-     *
+     * <p>
      * Once a UUID is assigned, it will never be removed unless you somehow have
      * reached the limit of the UUID uniqueness in which by then, might as well restart
      * your JVM.
@@ -42,5 +42,16 @@ public class NexusUuidAssigner {
         String uuid = UUID.randomUUID().toString();
 
         return handshake(uuid) ? uuid : request();
+    }
+
+    /**
+     * Denies the universally unique identifier for this JVM session. This should be used internally only
+     * when unexpectedly there is a user-generated variant that has the same identifier in wherever this
+     * universally unique identifier is being used.
+     *
+     * @param uuid The UUID to deny.
+     */
+    public static void deny(String uuid) {
+        acceptedUUIDs.remove(uuid);
     }
 }

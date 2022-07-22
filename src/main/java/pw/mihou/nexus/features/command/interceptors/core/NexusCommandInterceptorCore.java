@@ -44,6 +44,16 @@ public class NexusCommandInterceptorCore {
     }
 
     /**
+     * Checks whether there is an interceptor with the given name.
+     *
+     * @param name The name of the interceptor.
+     * @return Is there an interceptor with the following name?
+     */
+    public static boolean has(String name) {
+        return interceptors.containsKey(name);
+    }
+
+    /**
      * An internal method that is used to execute a command interceptor based on its
      * type.
      *
