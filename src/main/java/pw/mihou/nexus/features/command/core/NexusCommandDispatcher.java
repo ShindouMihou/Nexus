@@ -11,7 +11,6 @@ import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class NexusCommandDispatcher {
 
@@ -55,8 +54,17 @@ public class NexusCommandDispatcher {
             );
         }
 
-        CompletableFuture.runAsync(() -> instance.handler.onEvent(nexusEvent), NexusThreadPool.executorService)
-                .thenAcceptAsync(unused -> NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent));
+        NexusThreadPool.executorService.submit(() -> {
+            try {
+                instance.handler.onEvent(nexusEvent);
+            } catch (Throwable throwable) {
+                NexusCore.logger.error("An uncaught exception was received by Nexus Command Dispatcher for the " +
+                        "command " + instance.name + " with the following stacktrace.");
+                throwable.printStackTrace();
+            }
+        });
+
+        NexusThreadPool.executorService.submit(() -> NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent));
     }
 
 }
