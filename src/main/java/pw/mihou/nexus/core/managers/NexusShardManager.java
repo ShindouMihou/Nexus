@@ -1,8 +1,8 @@
 package pw.mihou.nexus.core.managers;
 
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.server.Server;
 import pw.mihou.nexus.Nexus;
-import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.enginex.core.NexusEngineXCore;
 
 import javax.annotation.Nullable;
@@ -59,6 +59,17 @@ public class NexusShardManager {
     }
 
     /**
+     * Gets the given server from any of the shards if there is any shard
+     * responsible for that given server.
+     *
+     * @param id The id of the server to get.
+     * @return The server instance, if present.
+     */
+    public Optional<Server> getServerBy(long id) {
+        return getShardOf(id).flatMap(shard -> shard.getServerById(id));
+    }
+
+    /**
      * Adds or replaces the shard registered on the shard manager.
      * This is recommended to do during restarts of a shard.
      *
@@ -67,7 +78,7 @@ public class NexusShardManager {
     public void put(DiscordApi api) {
         this.shards.put(api.getCurrentShard(), api);
 
-        ((NexusEngineXCore) ((NexusCore) nexus).getEngineX()).onShardReady(api);
+        ((NexusEngineXCore) nexus.getEngineX()).onShardReady(api);
     }
 
     /**
