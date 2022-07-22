@@ -52,10 +52,15 @@ public class NexusEngineXCore implements NexusEngineX {
     public void onShardReady(DiscordApi shard) {
         CompletableFuture.runAsync(() -> {
             while (!getLocalQueue(shard.getCurrentShard()).isEmpty()) {
-                NexusEngineEvent event = getLocalQueue(shard.getCurrentShard()).poll();
+                try {
+                    NexusEngineEvent event = getLocalQueue(shard.getCurrentShard()).poll();
 
-                if (event != null) {
-                    ((NexusEngineEventCore) event).process(shard);
+                    if (event != null) {
+                        ((NexusEngineEventCore) event).process(shard);
+                    }
+                } catch (Throwable exception) {
+                    NexusCore.logger.error("An uncaught exception was received by Nexus' EngineX with the following stacktrace.");
+                    exception.printStackTrace();
                 }
             }
         });
@@ -64,10 +69,15 @@ public class NexusEngineXCore implements NexusEngineX {
             hasGlobalProcessed.set(true);
             CompletableFuture.runAsync(() -> {
                 while (!getGlobalQueue().isEmpty()) {
-                    NexusEngineEvent event = getGlobalQueue().poll();
+                    try {
+                        NexusEngineEvent event = getGlobalQueue().poll();
 
-                    if (event != null) {
-                        ((NexusEngineEventCore) event).process(shard);
+                        if (event != null) {
+                            ((NexusEngineEventCore) event).process(shard);
+                        }
+                    } catch (Throwable exception) {
+                        NexusCore.logger.error("An uncaught exception was received by Nexus' EngineX with the following stacktrace.");
+                        exception.printStackTrace();
                     }
                 }
                 hasGlobalProcessed.set(false);
