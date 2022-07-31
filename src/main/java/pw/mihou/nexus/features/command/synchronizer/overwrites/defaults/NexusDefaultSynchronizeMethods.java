@@ -10,6 +10,7 @@ import pw.mihou.nexus.features.command.synchronizer.overwrites.NexusSynchronizeM
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
@@ -18,7 +19,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
     public CompletableFuture<Void> bulkOverwriteGlobal(DiscordApi shard, List<SlashCommandBuilder> slashCommands) {
         CompletableFuture<Void> globalFuture = new CompletableFuture<>();
 
-        shard.bulkOverwriteGlobalApplicationCommands(slashCommands).thenAccept(applicationCommands -> {
+        shard.bulkOverwriteGlobalApplicationCommands(Set.copyOf(slashCommands)).thenAccept(applicationCommands -> {
             NexusCore.logger.debug("Global commands completed synchronization. [size={}]", applicationCommands.size());
             globalFuture.complete(null);
         }).exceptionally(throwable -> {
@@ -43,7 +44,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
         }
 
         Server server = shard.getServerById(serverId).orElseThrow();
-        shard.bulkOverwriteServerApplicationCommands(server, slashCommands)
+        shard.bulkOverwriteServerApplicationCommands(server, Set.copyOf(slashCommands))
                 .thenAccept(applicationCommands -> {
                     NexusCore.logger.debug("A server has completed synchronization. [server={}, size={}]", serverId, applicationCommands.size());
                     future.complete(null);
@@ -94,7 +95,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
         }
 
         Server server = api.getServerById(serverId).orElseThrow();
-        List<SlashCommand> commands = server.getSlashCommands().join();
+        Set<SlashCommand> commands = server.getSlashCommands().join();
 
         Optional<SlashCommand> matchingCommand = commands.stream()
                 .filter(slashCommand -> slashCommand.getName().equalsIgnoreCase(command.getName()))
