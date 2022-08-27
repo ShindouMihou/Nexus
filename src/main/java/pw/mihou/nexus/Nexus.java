@@ -158,12 +158,4 @@ public interface Nexus extends SlashCommandCreateListener, ButtonClickListener {
      */
     Nexus addGlobalAfterwares(String... afterwares);
 
-    /**
-     * This starts the Nexus instance and allow it to perform its
-     * necessary executions such as indexing.
-     *
-     * @return The {@link  Nexus} instance.
-     */
-    Nexus start();
-
 }

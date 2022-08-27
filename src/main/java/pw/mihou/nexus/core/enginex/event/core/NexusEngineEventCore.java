@@ -4,14 +4,12 @@ import org.javacord.api.DiscordApi;
 import pw.mihou.nexus.core.enginex.event.NexusEngineEvent;
 import pw.mihou.nexus.core.enginex.event.NexusEngineQueuedEvent;
 import pw.mihou.nexus.core.enginex.event.listeners.NexusEngineEventStatusChange;
-import pw.mihou.nexus.core.enginex.event.media.NexusEngineEventWriteableStore;
 import pw.mihou.nexus.core.enginex.event.status.NexusEngineEventStatus;
 import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class NexusEngineEventCore implements NexusEngineEvent {
@@ -19,8 +17,6 @@ public class NexusEngineEventCore implements NexusEngineEvent {
     private final AtomicReference<NexusEngineEventStatus> status = new AtomicReference<>(NexusEngineEventStatus.WAITING);
     private final NexusEngineQueuedEvent event;
     private final List<NexusEngineEventStatusChange> listeners = new ArrayList<>();
-    private final NexusEngineEventWriteableStore store = new NexusEngineEventWriteableStore(new ConcurrentHashMap<>());
-
     public NexusEngineEventCore(NexusEngineQueuedEvent event) {
         this.event = event;
     }
@@ -33,8 +29,9 @@ public class NexusEngineEventCore implements NexusEngineEvent {
     }
 
     /**
-     * Expires this event and stops it from proceeding in any
-     * form of way.
+     * Expires this event which will cancel any actions that will be attempted, this will
+     * also trigger the {@link NexusEngineEventCore#changeStatus(NexusEngineEventStatus)} method which will invoke
+     * all listeners listening to a status change.
      */
     public void expire() {
         if (status() == NexusEngineEventStatus.WAITING) {
@@ -50,8 +47,8 @@ public class NexusEngineEventCore implements NexusEngineEvent {
         NexusEngineEventStatus oldStatus = status.get();
         status.set(newStatus);
 
-        listeners.forEach(listener -> CompletableFuture
-                .runAsync(() -> listener.onStatusChange(this, oldStatus, newStatus), NexusThreadPool.executorService));
+        listeners.forEach(listener -> NexusThreadPool.executorService.submit(() ->
+                listener.onStatusChange(this, oldStatus, newStatus)));
     }
 
     /**
@@ -65,7 +62,7 @@ public class NexusEngineEventCore implements NexusEngineEvent {
         }
 
         changeStatus(NexusEngineEventStatus.PROCESSING);
-        CompletableFuture.runAsync(() -> event.onEvent(api, store), NexusThreadPool.executorService)
+        CompletableFuture.runAsync(() -> event.onEvent(api), NexusThreadPool.executorService)
                 .thenAccept(unused -> changeStatus(NexusEngineEventStatus.FINISHED));
     }
 

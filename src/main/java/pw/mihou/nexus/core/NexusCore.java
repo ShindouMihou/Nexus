@@ -1,7 +1,5 @@
 package pw.mihou.nexus.core;
 
-import org.javacord.api.DiscordApi;
-import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import pw.mihou.nexus.Nexus;
@@ -30,18 +28,15 @@ import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore;
 
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class NexusCore implements Nexus {
 
     private final NexusCommandManagerCore commandManager = new NexusCommandManagerCore(this);
-    private NexusShardManager shardManager;
+    private final NexusShardManager shardManager;
     public static NexusLoggingAdapter logger = new NexusDefaultLoggingAdapter();
     private final NexusMessageConfiguration messageConfiguration;
     private final List<String> globalMiddlewares = new ArrayList<>();
     private final List<String> globalAfterwares = new ArrayList<>();
-    private final DiscordApiBuilder builder;
-    private final Consumer<DiscordApi> onShardLogin;
     private final NexusConfiguration nexusConfiguration;
     private final NexusEngineX engineX = new NexusEngineXCore(this);
     private final NexusSynchronizer synchronizer = new NexusSynchronizer(this);
@@ -52,17 +47,9 @@ public class NexusCore implements Nexus {
      * default specifications.
      *
      * @param messageConfiguration The message configuration to use.
-     * @param builder The builder when creating a new {@link DiscordApi} instance.
-     * @param onShardLogin This is executed everytime a shard logins.
+     * @param nexusConfiguration The configuration to use for Nexus.
      */
-    public NexusCore(
-            NexusMessageConfiguration messageConfiguration,
-            DiscordApiBuilder builder,
-            Consumer<DiscordApi> onShardLogin,
-            NexusConfiguration nexusConfiguration
-    ) {
-        this.builder = builder;
-        this.onShardLogin = onShardLogin;
+    public NexusCore(NexusMessageConfiguration messageConfiguration, NexusConfiguration nexusConfiguration) {
         this.shardManager = new NexusShardManager(this);
         this.nexusConfiguration = nexusConfiguration;
         this.messageConfiguration = Objects.requireNonNullElseGet(messageConfiguration, NexusDefaultMessageConfiguration::new);
@@ -164,29 +151,6 @@ public class NexusCore implements Nexus {
         globalAfterwares.addAll(Arrays.asList(afterwares));
         return this;
     }
-
-    @Override
-    public Nexus start() {
-        if (builder != null && onShardLogin != null) {
-            List<DiscordApi> shards = new ArrayList<>();
-            builder.addListener(this)
-                    .loginAllShards()
-                    .forEach(future -> future.thenAccept(shards::add).join());
-
-            this.shardManager = new NexusShardManager(
-                    this,
-                    shards.stream()
-                            .sorted(Comparator.comparingInt(DiscordApi::getCurrentShard))
-                            .toArray(DiscordApi[]::new)
-            );
-
-            // The shard startup should only happen once all the shards are connected.
-            getShardManager().asStream().forEachOrdered(onShardLogin);
-        }
-
-        return this;
-    }
-
 
     @Override
     public void onSlashCommandCreate(SlashCommandCreateEvent event) {

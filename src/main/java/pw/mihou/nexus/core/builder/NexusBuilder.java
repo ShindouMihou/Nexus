@@ -1,21 +1,15 @@
 package pw.mihou.nexus.core.builder;
 
-import org.javacord.api.DiscordApi;
-import org.javacord.api.DiscordApiBuilder;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.configuration.core.NexusConfiguration;
 import pw.mihou.nexus.features.messages.facade.NexusMessageConfiguration;
 
 import java.time.Duration;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class NexusBuilder {
 
     private NexusMessageConfiguration messageConfiguration;
-    private DiscordApiBuilder builder;
-    private Consumer<DiscordApi> onShardLogin;
     private NexusConfiguration nexusConfiguration = new NexusConfiguration(
             Duration.ofMinutes(10)
     );
@@ -30,41 +24,6 @@ public class NexusBuilder {
      */
     public NexusBuilder setMessageConfiguration(NexusMessageConfiguration configuration) {
         this.messageConfiguration = configuration;
-        return this;
-    }
-
-    /**
-     * Sets the {@link DiscordApiBuilder} instance that {@link Nexus} will use for
-     * creating a new {@link DiscordApi} to store in its {@link pw.mihou.nexus.core.managers.NexusShardManager}.
-     *
-     * @param builder The builder to use whenever Nexus boots.
-     * @return {@link NexusBuilder} for chain-calling methods.
-     */
-    public NexusBuilder setDiscordApiBuilder(DiscordApiBuilder builder) {
-        this.builder = builder;
-        return this;
-    }
-
-    /**
-     * Sets the {@link DiscordApiBuilder} instance that {@link Nexus} will use for
-     * creating a new {@link DiscordApi} to store in its {@link pw.mihou.nexus.core.managers.NexusShardManager}.
-     *
-     * @param builder The builder to use whenever Nexus boots.
-     * @return {@link NexusBuilder} for chain-calling methods.
-     */
-    public NexusBuilder setDiscordApiBuilder(Function<DiscordApiBuilder, DiscordApiBuilder> builder) {
-        return this.setDiscordApiBuilder(builder.apply(new DiscordApiBuilder()));
-    }
-
-    /**
-     * Sets the handler for whenever a new {@link DiscordApi} shard is booted
-     * successfully.
-     *
-     * @param onShardLogin The handler for whenever a new {@link DiscordApi} shard is booted.
-     * @return {@link NexusBuilder} for chain-calling methods.
-     */
-    public NexusBuilder setOnShardLogin(Consumer<DiscordApi> onShardLogin) {
-        this.onShardLogin = onShardLogin;
         return this;
     }
 
@@ -86,6 +45,6 @@ public class NexusBuilder {
      * @return The new {@link Nexus} instance.
      */
     public Nexus build() {
-        return new NexusCore(messageConfiguration, builder, onShardLogin, nexusConfiguration);
+        return new NexusCore(messageConfiguration, nexusConfiguration);
     }
 }

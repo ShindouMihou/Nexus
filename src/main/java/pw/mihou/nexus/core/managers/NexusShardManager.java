@@ -59,6 +59,20 @@ public class NexusShardManager {
     }
 
     /**
+     * Calculates which shard the given server belongs to, given a total number of shards.
+     * <br><br>
+     * This uses the formula <b>((serverId >> 22) % totalShards)</b> which is the specified formula for
+     * calculating the shard of a "guild" by Discord.
+     *
+     * @param serverId The id of the server to calculate.
+     * @param totalShards The total number of shards as per formula.
+     * @return The shard which the given server should belong to, given a total number of shards.
+     */
+    public int shardOf(long serverId, int totalShards) {
+        return (int) ((serverId >> 22) % totalShards);
+    }
+
+    /**
      * Gets the given server from any of the shards if there is any shard
      * responsible for that given server.
      *

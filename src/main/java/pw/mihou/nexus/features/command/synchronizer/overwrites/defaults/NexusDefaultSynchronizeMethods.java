@@ -2,140 +2,117 @@ package pw.mihou.nexus.features.command.synchronizer.overwrites.defaults;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import pw.mihou.nexus.core.NexusCore;
+import pw.mihou.nexus.core.exceptions.NexusFailedActionException;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.synchronizer.overwrites.NexusSynchronizeMethods;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
 
     @Override
-    public CompletableFuture<Void> bulkOverwriteGlobal(DiscordApi shard, List<SlashCommandBuilder> slashCommands) {
-        CompletableFuture<Void> globalFuture = new CompletableFuture<>();
-
-        shard.bulkOverwriteGlobalApplicationCommands(slashCommands).thenAccept(applicationCommands -> {
-            NexusCore.logger.debug("Global commands completed synchronization. [size={}]", applicationCommands.size());
-            globalFuture.complete(null);
-        }).exceptionally(throwable -> {
-            globalFuture.completeExceptionally(throwable);
-            return null;
+    public CompletableFuture<Set<ApplicationCommand>> bulkOverwriteGlobal(DiscordApi shard, Set<SlashCommandBuilder> slashCommands) {
+        return shard.bulkOverwriteGlobalApplicationCommands(slashCommands).thenApply(applicationCommands -> {
+            NexusCore.logger.debug("All global commands have been synchronized. [size={}]", applicationCommands.size());
+            return applicationCommands;
         });
-
-        return globalFuture;
     }
 
     @Override
-    public void bulkOverwriteServer(DiscordApi shard, List<SlashCommandBuilder> slashCommands,
-                                                       long serverId, CompletableFuture<Void> future) {
+    public CompletableFuture<Set<ApplicationCommand>> bulkOverwriteServer(DiscordApi shard, Set<SlashCommandBuilder> slashCommands, long serverId) {
         if (shard.getServerById(serverId).isEmpty()) {
-            future.completeExceptionally(
-                    new IllegalStateException(
-                            "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
-                                    "[shard=" + shard.getCurrentShard() + ";id=" + serverId + "]"
-                    )
-            );
-            return;
+            return getServerNotFoundErrorFrom(shard, serverId);
         }
 
         Server server = shard.getServerById(serverId).orElseThrow();
-        shard.bulkOverwriteServerApplicationCommands(server, slashCommands)
-                .thenAccept(applicationCommands -> {
-                    NexusCore.logger.debug("A server has completed synchronization. [server={}, size={}]", serverId, applicationCommands.size());
-                    future.complete(null);
-                })
-                .exceptionally(throwable -> {
-                    future.completeExceptionally(throwable);
-                    return null;
-                });
+        return shard.bulkOverwriteServerApplicationCommands(server, slashCommands).thenApply(applicationCommands -> {
+            NexusCore.logger.debug("All commands with relation for server {} have been synchronized.", serverId);
+            return applicationCommands;
+        });
     }
 
     @Override
-    public void deleteForServer(DiscordApi api, NexusCommand command, long serverId, CompletableFuture<Void> future) {
-        if (api.getServerById(serverId).isEmpty()) {
-            future.completeExceptionally(
-                    new IllegalStateException(
-                            "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
-                                    "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
-                    )
-            );
-            return;
+    public CompletableFuture<Void> deleteForServer(DiscordApi shard, NexusCommand command, long serverId) {
+        if (shard.getServerById(serverId).isEmpty()) {
+            return getServerNotFoundErrorFrom(shard, serverId);
         }
 
-        Server server = api.getServerById(serverId).orElseThrow();
-        server.getSlashCommands()
-                .join()
-                .stream()
-                .filter(slashCommand -> slashCommand.getName().equalsIgnoreCase(command.getName()))
-                .findFirst()
-                .ifPresent(slashCommand -> slashCommand.deleteForServer(server).thenAccept(unused -> {
-                    NexusCore.logger.debug("A command has completed deletion. [server={}, command={}]", serverId, slashCommand.getName());
-                    future.complete(null);
-                }).exceptionally(throwable -> {
-                    future.completeExceptionally(throwable);
-                    return null;
-                }));
+        Server server = shard.getServerById(serverId).orElseThrow();
+        return server.getSlashCommands().thenCompose(slashCommands -> {
+            SlashCommand slashCommand = slashCommands.stream()
+                    .filter($command -> $command.getName().equalsIgnoreCase(command.getName()))
+                    .findAny()
+                    .orElse(null);
+
+            if (slashCommand == null) {
+                return CompletableFuture.completedFuture(null);
+            }
+
+            return slashCommand.deleteForServer(serverId)
+                    .thenAccept((unused) ->
+                            NexusCore.logger.debug("The command ({}) has been removed from the server ({}).",
+                                    command.getName(), serverId)
+                    );
+        });
     }
 
     @Override
-    public void updateForServer(DiscordApi api, NexusCommand command, long serverId, CompletableFuture<Void> future) {
-        if (api.getServerById(serverId).isEmpty()) {
-            future.completeExceptionally(
-                    new IllegalStateException(
-                            "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
-                                    "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
-                    )
-            );
-            return;
+    public CompletableFuture<ApplicationCommand> updateForServer(DiscordApi shard, NexusCommand command, long serverId) {
+        if (shard.getServerById(serverId).isEmpty()) {
+            return getServerNotFoundErrorFrom(shard, serverId);
         }
 
-        Server server = api.getServerById(serverId).orElseThrow();
-        List<SlashCommand> commands = server.getSlashCommands().join();
+        Server server = shard.getServerById(serverId).orElseThrow();
+        return server.getSlashCommands().thenCompose(slashCommands -> {
+            SlashCommand slashCommand = slashCommands.stream()
+                    .filter($command -> $command.getName().equalsIgnoreCase(command.getName()))
+                    .findAny()
+                    .orElse(null);
 
-        Optional<SlashCommand> matchingCommand = commands.stream()
-                .filter(slashCommand -> slashCommand.getName().equalsIgnoreCase(command.getName()))
-                .findFirst();
+            if (slashCommand == null) {
+                return createForServer(shard, command, serverId);
+            }
 
-        if (matchingCommand.isPresent()) {
-            command.asSlashCommandUpdater(matchingCommand.get().getId()).updateForServer(server)
-                    .thenAccept(slashCommand -> {
-                        NexusCore.logger.debug("A command has completed synchronization. [server={}, command={}]", serverId, slashCommand.getName());
-                        future.complete(null);
-                    })
-                    .exceptionally(throwable -> {
-                        future.completeExceptionally(throwable);
-                        return null;
+            return command.asSlashCommandUpdater(slashCommand.getId())
+                    .updateForServer(shard, serverId)
+                    .thenApply(resultingCommand -> {
+                        NexusCore.logger.debug("The command ({}) has been updated for the server ({}).", command.getName(), serverId);
+                        return resultingCommand;
                     });
-        } else {
-            createForServer(api, command, serverId, future);
-        }
+        });
     }
 
     @Override
-    public void createForServer(DiscordApi api, NexusCommand command, long serverId, CompletableFuture<Void> future) {
-        if (api.getServerById(serverId).isEmpty()) {
-            future.completeExceptionally(
-                    new IllegalStateException(
-                            "Failed to synchronize commands for server, not found on the shard calculated. Is the total shard number value wrong? " +
-                                    "[shard=" + api.getCurrentShard() + ";id=" + serverId + "]"
-                    )
-            );
-            return;
+    public CompletableFuture<ApplicationCommand> createForServer(DiscordApi shard, NexusCommand command, long serverId) {
+        if (shard.getServerById(serverId).isEmpty()) {
+            return getServerNotFoundErrorFrom(shard, serverId);
         }
 
-        Server server = api.getServerById(serverId).orElseThrow();
-        command.asSlashCommand().createForServer(server)
-                .thenAccept(slashCommand -> {
-                    NexusCore.logger.debug("A command has completed synchronization. [server={}, command={}]", serverId, slashCommand.getName());
-                    future.complete(null);
-                })
-                .exceptionally(throwable -> {
-                    future.completeExceptionally(throwable);
-                    return null;
-                });
+        return command.asSlashCommand().createForServer(shard, serverId).thenApply(slashCommand -> {
+            NexusCore.logger.debug("The command ({}) has been created for the server ({}).", command.getName(),
+                    serverId);
+            return slashCommand;
+        });
+    }
+
+    /**
+     * Creates a simple {@link CompletableFuture} with a failed future that indicates the server cannot be found.
+     *
+     * @return A failed future indicating the server cannot be found.
+     * @param <U> The return type intended to contain.
+     */
+    private <U> CompletableFuture<U> getServerNotFoundErrorFrom(DiscordApi shard, long serverId) {
+        return CompletableFuture.failedFuture(
+                new NexusFailedActionException(
+                        "An action failed for Nexus Synchronizer. The server (" + serverId + ")" +
+                        " cannot be found on the shard calculated (" + shard.getCurrentShard() +"). " +
+                        "Is the total shard number value wrong?"
+                )
+        );
     }
 }

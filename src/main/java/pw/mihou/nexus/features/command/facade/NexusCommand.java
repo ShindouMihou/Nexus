@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public interface NexusCommand {
 
+    long PLACEHOLDER_SERVER_ID = 0L;
+
     /**
      * Gets the name of the command.
      *
@@ -45,6 +47,17 @@ public interface NexusCommand {
      * @return A list of server ids that this command is for.
      */
     List<Long> getServerIds();
+
+    /**
+     * Checks whether this command is a server command.
+     * <br><br>
+     * A server command can be a server that does have an entry on its associated server ids.
+     *
+     * @return Is this a server command.
+     */
+    default boolean isServerCommand() {
+        return !getServerIds().isEmpty();
+    }
 
     /**
      * Adds the specified server to the list of servers to

@@ -5,20 +5,21 @@ import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface NexusSynchronizeMethods {
 
-    CompletableFuture<Void> bulkOverwriteGlobal(DiscordApi shard, List<SlashCommandBuilder> slashCommands);
+    CompletableFuture<Set<ApplicationCommand>> bulkOverwriteGlobal(DiscordApi shard,
+                                                                   Set<SlashCommandBuilder> slashCommands);
 
-    void bulkOverwriteServer(DiscordApi shard, List<SlashCommandBuilder> slashCommands,
-                                                long serverId, CompletableFuture<Void> future);
+    CompletableFuture<Set<ApplicationCommand>> bulkOverwriteServer(DiscordApi shard, Set<SlashCommandBuilder> slashCommands,
+                                                                   long serverId);
 
-    void deleteForServer(DiscordApi shard, NexusCommand command, long serverId, CompletableFuture<Void> future);
+    CompletableFuture<Void> deleteForServer(DiscordApi shard, NexusCommand command, long serverId);
 
-    void updateForServer(DiscordApi shard, NexusCommand command, long serverId, CompletableFuture<Void> future);
+    CompletableFuture<ApplicationCommand> updateForServer(DiscordApi shard, NexusCommand command, long serverId);
 
-    void createForServer(DiscordApi shard, NexusCommand command, long serverId, CompletableFuture<Void> future);
+    CompletableFuture<ApplicationCommand> createForServer(DiscordApi shard, NexusCommand command, long serverId);
 
 }

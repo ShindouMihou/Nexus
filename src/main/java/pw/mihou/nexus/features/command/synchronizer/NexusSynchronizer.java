@@ -4,7 +4,6 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import pw.mihou.nexus.Nexus;
-import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.enginex.facade.NexusEngineX;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
@@ -13,35 +12,32 @@ import pw.mihou.nexus.features.command.synchronizer.overwrites.defaults.NexusDef
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
-public record NexusSynchronizer(
-        Nexus nexus
-) {
+public record NexusSynchronizer(Nexus nexus) {
 
-    public static final AtomicReference<NexusSynchronizeMethods> SYNCHRONIZE_METHODS = new AtomicReference<>(new NexusDefaultSynchronizeMethods());
+    public static volatile NexusSynchronizeMethods SYNCHRONIZE_METHODS = new NexusDefaultSynchronizeMethods();
 
     /**
-     * Deletes a command to a specific server.
+     * Deletes a command from a specific server.
      *
      * @param command       The command to delete.
      * @param serverIds     The servers to delete the command towards.
      * @param totalShards   The total amount of shards for this bot. This is used to
      *                      for sharding formula.
-     * @return  A future to indicate progress of this task.
+     * @return  A future to indicate the completion of this task.
      */
     public CompletableFuture<Void> delete(NexusCommand command, int totalShards, long... serverIds) {
         Map<Long, CompletableFuture<Void>> serverMappedFutures = new HashMap<>();
-        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
-        for (long serverId : serverIds) {
-            if (!serverMappedFutures.containsKey(serverId)) {
-                serverMappedFutures.put(serverId, new CompletableFuture<>());
-            }
 
-            engineX.queue(
-                    (int) ((serverId >> 22) % totalShards),
-                    (api, store) -> SYNCHRONIZE_METHODS.get().deleteForServer(api, command, serverId, serverMappedFutures.get(serverId))
-            );
+        for (long serverId : serverIds) {
+            if (serverMappedFutures.containsKey(serverId)) continue;
+
+            CompletableFuture<Void> future = nexus.getEngineX()
+                    .await(nexus.getShardManager().shardOf(serverId, totalShards))
+                    .thenCompose(shard -> SYNCHRONIZE_METHODS.deleteForServer(shard, command, serverId));
+
+            serverMappedFutures.put(serverId, future);
         }
 
         return CompletableFuture.allOf(serverMappedFutures.values().toArray(new CompletableFuture[0]));
@@ -58,20 +54,8 @@ public record NexusSynchronizer(
      * @return  A future to indicate progress of this task.
      */
     public CompletableFuture<Void> batchUpdate(long serverId, int totalShards) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-
-        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
-        engineX.queue(
-                (int) ((serverId >> 22) % totalShards),
-                (api, store) -> batchUpdate(serverId, api)
-                        .thenAccept(unused -> future.complete(null))
-                        .exceptionally(throwable -> {
-                            future.completeExceptionally(throwable);
-                            return null;
-                        })
-        );
-
-        return future;
+        return nexus.getEngineX().await(nexus.getShardManager().shardOf(serverId, totalShards))
+                .thenCompose(shard -> batchUpdate(serverId, shard));
     }
 
     /**
@@ -85,18 +69,12 @@ public record NexusSynchronizer(
      */
     public CompletableFuture<Void> batchUpdate(long serverId, DiscordApi shard) {
         NexusCommandManager manager = nexus.getCommandManager();
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        List<NexusCommand> serverCommands = manager.getCommands()
-                .stream()
-                .filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty() && nexusCommand.getServerIds().contains(serverId))
-                .toList();
 
-        List<SlashCommandBuilder> slashCommandBuilders = new ArrayList<>();
-        serverCommands.forEach(command -> slashCommandBuilders.add(command.asSlashCommand()));
-        SYNCHRONIZE_METHODS.get().bulkOverwriteServer(shard, slashCommandBuilders, serverId, future);
+        Set<SlashCommandBuilder> serverCommands = manager.getCommandsAssociatedWith(serverId).stream()
+                .map(NexusCommand::asSlashCommand)
+                .collect(Collectors.toSet());
 
-        return future;
-
+        return SYNCHRONIZE_METHODS.bulkOverwriteServer(shard, serverCommands, serverId).thenAccept(manager::index);
     }
 
     /**
@@ -110,16 +88,16 @@ public record NexusSynchronizer(
      */
     public CompletableFuture<Void> upsert(NexusCommand command, int totalShards, long... serverIds) {
         Map<Long, CompletableFuture<Void>> serverMappedFutures = new HashMap<>();
-        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
-        for (long serverId : serverIds) {
-            if (!serverMappedFutures.containsKey(serverId)) {
-                serverMappedFutures.put(serverId, new CompletableFuture<>());
-            }
 
-            engineX.queue(
-                    (int) ((serverId >> 22) % totalShards),
-                    (api, store) -> SYNCHRONIZE_METHODS.get().updateForServer(api, command, serverId, serverMappedFutures.get(serverId))
-            );
+        for (long serverId : serverIds) {
+            if (serverMappedFutures.containsKey(serverId)) continue;
+
+            CompletableFuture<Void> future = nexus.getEngineX()
+                    .await(nexus.getShardManager().shardOf(serverId, totalShards))
+                    .thenCompose(shard -> SYNCHRONIZE_METHODS.updateForServer(shard, command, serverId))
+                    .thenAccept($command -> nexus.getCommandManager().index(command, $command.getApplicationId()));
+
+            serverMappedFutures.put(serverId, future);
         }
 
         return CompletableFuture.allOf(serverMappedFutures.values().toArray(new CompletableFuture[0]));
@@ -127,8 +105,8 @@ public record NexusSynchronizer(
 
     /**
      * Synchronizes all the server commands and global commands with the use of
-     * {@link org.javacord.api.DiscordApi#bulkOverwriteGlobalApplicationCommands(List)} and
-     * {@link org.javacord.api.DiscordApi#bulkOverwriteServerApplicationCommands(Server, List)}. This does not
+     * {@link org.javacord.api.DiscordApi#bulkOverwriteGlobalApplicationCommands(Set)} and
+     * {@link org.javacord.api.DiscordApi#bulkOverwriteServerApplicationCommands(Server, Set)}. This does not
      * take any regards to any changes and pushes an override without any care.
      *
      * @param totalShards   The total amount of shards on the bot, used for sharding formula.
@@ -136,63 +114,47 @@ public record NexusSynchronizer(
      */
     public CompletableFuture<Void> synchronize(int totalShards) {
         NexusCommandManager manager = nexus.getCommandManager();
-        CompletableFuture<Void> globalFuture = new CompletableFuture<>();
 
-        // 0L is acceptable as a placeholder definition for "This is a server command but only register when a server other than zero is up".
-        List<NexusCommand> serverCommands = manager.getCommands()
-                .stream()
-                .filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty()
-                        && !(nexusCommand.getServerIds().size() == 1 && nexusCommand.getServerIds().get(0) == 0)
-                )
-                .toList();
+        Set<NexusCommand> serverCommands = manager.getServerCommands();
+        Set<SlashCommandBuilder> globalCommands = manager.getGlobalCommands().stream().map(NexusCommand::asSlashCommand)
+                .collect(Collectors.toSet());
 
-        List<SlashCommandBuilder> globalCommands = manager.getCommands()
-                .stream()
-                .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
-                .map(NexusCommand::asSlashCommand)
-                .toList();
+        NexusEngineX engineX = nexus.getEngineX();
+        CompletableFuture<Void> globalFuture = engineX.awaitAvailable()
+                .thenCompose(shard -> SYNCHRONIZE_METHODS.bulkOverwriteGlobal(shard, globalCommands))
+                .thenAccept(manager::index);
 
-        NexusEngineX engineX = ((NexusCore) nexus).getEngineX();
-        engineX.queue(
-                (api, store) ->
-                        SYNCHRONIZE_METHODS.get().bulkOverwriteGlobal(api, globalCommands)
-                        .thenAccept(unused -> globalFuture.complete(null))
-                        .exceptionally(throwable -> {
-                            globalFuture.completeExceptionally(throwable);
-                            return null;
-                        })
-        );
+        if (serverCommands.isEmpty()) {
+            return globalFuture;
+        }
 
-        Map<Long, List<SlashCommandBuilder>> serverMappedCommands = new HashMap<>();
+        Map<Long, Set<SlashCommandBuilder>> serverMappedCommands = new HashMap<>();
         Map<Long, CompletableFuture<Void>> serverMappedFutures = new HashMap<>();
-        serverCommands.forEach(nexusCommand -> nexusCommand.getServerIds().forEach(serverId -> {
-            if (serverId == 0L) {
-                return;
+
+        for (NexusCommand $command : serverCommands) {
+            for (long serverId : $command.getServerIds()) {
+                if (serverId == NexusCommand.PLACEHOLDER_SERVER_ID) continue;
+
+                if (!serverMappedCommands.containsKey(serverId)) {
+                    serverMappedCommands.put(serverId, new HashSet<>());
+                }
+
+                serverMappedCommands.get(serverId).add($command.asSlashCommand());
             }
+        }
 
-            if (!serverMappedCommands.containsKey(serverId)) {
-                serverMappedCommands.put(serverId, new ArrayList<>());
-            }
+        serverMappedCommands.forEach((server, builders) -> {
+            if (server == NexusCommand.PLACEHOLDER_SERVER_ID) return;
 
-            serverMappedCommands.get(serverId).add(nexusCommand.asSlashCommand());
-        }));
+            CompletableFuture<Void> future = engineX.await(nexus.getShardManager().shardOf(server, totalShards))
+                    .thenCompose(shard -> SYNCHRONIZE_METHODS.bulkOverwriteServer(shard, builders, server))
+                    .thenAccept(manager::index);
 
-        serverMappedCommands.forEach((serverId, slashCommandBuilders) -> {
-            if (serverId == 0L) {
-                return;
-            }
-
-            if (!serverMappedFutures.containsKey(serverId)) {
-                serverMappedFutures.put(serverId, new CompletableFuture<>());
-            }
-
-            engineX.queue((int) (
-                    (serverId >> 22) % totalShards),
-                    (api, store) -> SYNCHRONIZE_METHODS.get().bulkOverwriteServer(api, slashCommandBuilders, serverId, serverMappedFutures.get(serverId))
-            );
+            serverMappedFutures.put(server, future);
         });
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         futures.add(globalFuture);
         futures.addAll(serverMappedFutures.values());
 

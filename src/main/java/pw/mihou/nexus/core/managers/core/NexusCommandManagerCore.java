@@ -1,5 +1,6 @@
 package pw.mihou.nexus.core.managers.core;
 
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
@@ -9,18 +10,16 @@ import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager;
+import pw.mihou.nexus.core.managers.records.NexusCommandIndex;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class NexusCommandManagerCore implements NexusCommandManager {
 
     private final Map<String, NexusCommand> commands = new HashMap<>();
-
     private final Map<Long, String> indexes = new HashMap<>();
-
     private final NexusCore nexusCore;
     private static final NexusLoggingAdapter logger = NexusCore.logger;
 
@@ -57,19 +56,20 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     }
 
     @Override
-    public Optional<NexusCommand> getCommandByName(String name) {
-        return getCommands().stream()
-                .filter(nexusCommand -> nexusCommand.getName().equalsIgnoreCase(name))
-                .findFirst();
-    }
-
-    @Override
     public Optional<NexusCommand> getCommandByName(String name, long server) {
         return getCommands().stream()
                 .filter(nexusCommand ->
                         nexusCommand.getName().equalsIgnoreCase(name) && nexusCommand.getServerIds().contains(server)
                 )
                 .findFirst();
+    }
+
+    @Override
+    public List<NexusCommandIndex> export() {
+        return indexes.entrySet()
+                .stream()
+                .map(entry -> new NexusCommandIndex(commands.get(entry.getValue()), entry.getKey()))
+                .toList();
     }
 
     /**
@@ -109,59 +109,63 @@ public class NexusCommandManagerCore implements NexusCommandManager {
     public void index() {
         logger.info("Nexus is now performing command indexing, this will delay your boot time by a few seconds but improve performance and precision in look-ups...");
         long start = System.currentTimeMillis();
-        nexusCore.getShardManager()
-                .asStream()
-                .findFirst()
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Nexus was unable to perform command indexing because there are no shards registered in Nexus's Shard Manager."
-                        )
-                ).getGlobalSlashCommands().thenAcceptAsync(slashCommands -> {
-                    Map<String, Long> newIndexes = slashCommands.stream()
-                            .collect(Collectors.toMap(slashCommand -> slashCommand.getName().toLowerCase(), ApplicationCommand::getId));
+        nexusCore.getEngineX().awaitAvailable().thenAcceptAsync(shard -> {
+           Set<SlashCommand> slashCommands = shard.getGlobalSlashCommands().join();
 
-                    // Ensure the indexes are clear otherwise we might end up with some wrongly placed commands.
-                    indexes.clear();
+           // Clearing the entire in-memory index mapping to make sure that we don't have any outdated indexes.
+           indexes.clear();
 
-                    if (commands.isEmpty()) {
-                        return;
-                    }
+           for (SlashCommand slashCommand : slashCommands) {
+               index(slashCommand);
+           }
 
-                    // Perform indexing which is basically mapping the ID of the slash command
-                    // to the Nexus Command that will be called everytime the command executes.
-                    getCommands().stream()
-                            .filter(nexusCommand -> nexusCommand.getServerIds().isEmpty())
-                            .forEach(nexusCommand -> indexes.put(
-                                    newIndexes.get(nexusCommand.getName().toLowerCase()),
-                                    ((NexusCommandCore) nexusCommand).uuid)
-                            );
+           Set<Long> servers = new HashSet<>();
+           for (NexusCommand serverCommand : getServerCommands()) {
+               servers.addAll(serverCommand.getServerIds());
+           }
 
-                    Map<Long, Map<String, Long>> serverIndexes = new HashMap<>();
+           for (long server : servers) {
+               if (server == 0L) continue;
 
-                    for (NexusCommand command : getCommands().stream().filter(nexusCommand -> !nexusCommand.getServerIds().isEmpty()).toList()) {
-                        command.getServerIds().forEach(id -> {
-                            if (!serverIndexes.containsKey(id)) {
-                               nexusCore.getShardManager().getShardOf(id)
-                                       .flatMap(discordApi -> discordApi.getServerById(id))
-                                       .ifPresent(server -> {
-                                           serverIndexes.put(server.getId(), new HashMap<>());
+               Set<SlashCommand> $slashCommands = nexusCore.getEngineX().await(server)
+                       .thenComposeAsync(Server::getSlashCommands).join();
 
-                                           for (SlashCommand slashCommand : server.getSlashCommands().join()) {
-                                               serverIndexes.get(server.getId()).put(slashCommand.getName().toLowerCase(), slashCommand.getId());
-                                           }
-                                       });
-                            }
+               for (SlashCommand slashCommand : $slashCommands) {
+                   index(slashCommand);
+               }
+           }
 
-                            indexes.put(
-                                    serverIndexes.get(id).get(command.getName().toLowerCase()),
-                                    ((NexusCommandCore) command).uuid
-                            );
-                        });
-                    }
+            logger.info("All global and server slash commands are now indexed. It took {} milliseconds to complete indexing.", System.currentTimeMillis() - start);
+        }).exceptionally(ExceptionLogger.get()).join();
+    }
 
-                    serverIndexes.clear();
-                    logger.info("All global and server slash commands are now indexed. It took {} milliseconds to complete indexing.", System.currentTimeMillis() - start);
-                }).exceptionally(ExceptionLogger.get()).join();
+    @Override
+    public void index(NexusCommand command, long snowflake) {
+        indexes.put(snowflake, ((NexusCommandCore) command).uuid);
+    }
+
+    @Override
+    public void index(ApplicationCommand applicationCommand) {
+        long serverId = applicationCommand.getServerId().orElse(-1L);
+
+        if (serverId == -1L) {
+            for (NexusCommand command : commands.values()) {
+                if (!command.getServerIds().isEmpty()) continue;
+                if (!command.getName().equalsIgnoreCase(applicationCommand.getName())) continue;
+
+                index(command, applicationCommand.getApplicationId());
+                break;
+            }
+            return;
+        }
+
+        for (NexusCommand command : commands.values()) {
+            if (command.getServerIds().contains(serverId)) continue;
+            if (!command.getName().equalsIgnoreCase(applicationCommand.getName())) continue;
+
+            index(command, applicationCommand.getApplicationId());
+            break;
+        }
     }
 
 }
