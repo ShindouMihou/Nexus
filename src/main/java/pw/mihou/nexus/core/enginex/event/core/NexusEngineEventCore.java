@@ -1,6 +1,7 @@
 package pw.mihou.nexus.core.enginex.event.core;
 
 import org.javacord.api.DiscordApi;
+import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.enginex.event.NexusEngineEvent;
 import pw.mihou.nexus.core.enginex.event.NexusEngineQueuedEvent;
 import pw.mihou.nexus.core.enginex.event.listeners.NexusEngineEventStatusChange;
@@ -9,7 +10,6 @@ import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class NexusEngineEventCore implements NexusEngineEvent {
@@ -62,8 +62,16 @@ public class NexusEngineEventCore implements NexusEngineEvent {
         }
 
         changeStatus(NexusEngineEventStatus.PROCESSING);
-        CompletableFuture.runAsync(() -> event.onEvent(api), NexusThreadPool.executorService)
-                .thenAccept(unused -> changeStatus(NexusEngineEventStatus.FINISHED));
+        NexusThreadPool.executorService.submit(() -> {
+            try {
+                event.onEvent(api);
+            } catch (Exception exception) {
+                NexusCore.logger.error("An uncaught exception was caught inside a Nexus Engine Event.");
+                exception.printStackTrace();
+            } finally {
+                changeStatus(NexusEngineEventStatus.FINISHED);
+            }
+        });
     }
 
     @Override
