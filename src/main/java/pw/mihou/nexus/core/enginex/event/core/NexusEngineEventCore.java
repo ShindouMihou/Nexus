@@ -22,7 +22,7 @@ public class NexusEngineEventCore implements NexusEngineEvent {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         if (status() == NexusEngineEventStatus.WAITING) {
             changeStatus(NexusEngineEventStatus.STOPPED);
         }
@@ -33,7 +33,7 @@ public class NexusEngineEventCore implements NexusEngineEvent {
      * also trigger the {@link NexusEngineEventCore#changeStatus(NexusEngineEventStatus)} method which will invoke
      * all listeners listening to a status change.
      */
-    public void expire() {
+    public synchronized void expire() {
         if (status() == NexusEngineEventStatus.WAITING) {
             changeStatus(NexusEngineEventStatus.EXPIRED);
         }
@@ -56,7 +56,7 @@ public class NexusEngineEventCore implements NexusEngineEvent {
      *
      * @param api   The shard that will be processing the event.
      */
-    public void process(DiscordApi api) {
+    public synchronized void process(DiscordApi api) {
         if (status.get() == NexusEngineEventStatus.STOPPED || status.get() == NexusEngineEventStatus.EXPIRED) {
             return;
         }
