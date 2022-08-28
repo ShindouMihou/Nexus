@@ -99,17 +99,26 @@ public class NexusCommandCore implements NexusCommand {
 
     @Override
     public NexusCommand addSupportFor(Long... serverIds) {
+        return associate(serverIds);
+    }
+
+    @Override
+    public NexusCommand associate(Long... serverIds) {
         this.serverIds = Stream.concat(this.serverIds.stream(), Stream.of(serverIds)).toList();
         return this;
     }
 
     @Override
-    public NexusCommand removeSupportFor(Long... serverIds) {
-        List<Long> mutableList = new ArrayList<>(this.serverIds);
-        mutableList.removeAll(Arrays.stream(serverIds).toList());
+    public NexusCommand disassociate(Long... serverIds) {
+        List<Long> excludedSnowflakes = Arrays.asList(serverIds);
+        this.serverIds = this.serverIds.stream().filter(snowflake -> !excludedSnowflakes.contains(snowflake)).toList();
 
-        this.serverIds = mutableList.stream().toList();
         return this;
+    }
+
+    @Override
+    public NexusCommand removeSupportFor(Long... serverIds) {
+        return disassociate(serverIds);
     }
 
     @Override

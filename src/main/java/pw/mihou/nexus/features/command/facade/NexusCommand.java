@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.facade;
 
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
 import pw.mihou.nexus.commons.Pair;
@@ -61,24 +62,52 @@ public interface NexusCommand {
 
     /**
      * Adds the specified server to the list of servers to
-     * register this command with. If {@link pw.mihou.nexus.Nexus} has the
-     * <b>autoApplySupportedServersChangesOnCommands</b> option enabled then it
-     * will automatically update this change.
+     * register this command with.
      *
      * @param serverIds The server ids to add support for this command.
      * @return {@link NexusCommand} instance for chain-calling methods.
+     * @see NexusCommand#associate(Long...)
      */
+    @Deprecated()
     NexusCommand addSupportFor(Long... serverIds);
 
     /**
+     * Associates this command from the given servers, this can be used to include this command into the command list
+     * of the server after batching updating.
+     * <br><br>
+     * <b>This does not perform any changes onto Discord.</b>
+     * <br><br>
+     * If you want to update changes then please use
+     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long, DiscordApi)} method
+     * <b>after using this method</b>.
+     *
+     * @param serverIds The snowflakes of the servers to disassociate this command from.
+     * @return the current and updated {@link NexusCommand} instance for chain-calling methods.
+     */
+    NexusCommand associate(Long... serverIds);
+
+    /**
+     * Disassociates this command from the given servers, removing any form of association with
+     * the given servers.
+     * <br><br>
+     * <b>This does not perform any changes onto Discord.</b> If you want to update changes then please use
+     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long, DiscordApi)} method
+     * <b>after using this method</b>.
+     *
+     * @param serverIds The snowflakes of the servers to disassociate this command from.
+     * @return the current and updated {@link NexusCommand} instance for chain-calling methods.
+     */
+    NexusCommand disassociate(Long... serverIds);
+
+    /**
      * Removes the specified server to the list of servers to
-     * register this command with. If {@link pw.mihou.nexus.Nexus} has the
-     * <b>autoApplySupportedServersChangesOnCommands</b> option enabled then it
-     * will automatically update this change.
+     * register this command with.
      *
      * @param serverIds The server ids to remove support for this command.
      * @return {@link NexusCommand} instance for chain-calling methods.
+     * @see NexusCommand#disassociate(Long...)
      */
+    @Deprecated()
     NexusCommand removeSupportFor(Long... serverIds);
 
     /**
