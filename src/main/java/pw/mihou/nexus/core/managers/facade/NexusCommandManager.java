@@ -30,7 +30,7 @@ public interface NexusCommandManager {
     default Set<NexusCommand> getGlobalCommands() {
         Set<NexusCommand> commands = new HashSet<>();
         for (NexusCommand command : getCommands()) {
-            if (!command.isServerCommand()) continue;
+            if (command.isServerCommand()) continue;
             commands.add(command);
         }
 
@@ -48,7 +48,7 @@ public interface NexusCommandManager {
     default Set<NexusCommand> getServerCommands() {
         Set<NexusCommand> commands = new HashSet<>();
         for (NexusCommand command : getCommands()) {
-            if (command.isServerCommand()) continue;
+            if (!command.isServerCommand()) continue;
             commands.add(command);
         }
 
