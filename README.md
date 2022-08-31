@@ -9,38 +9,51 @@ Nexus doesn't enforce other dependencies other than the latest stable version of
 The framework doesn't have any plans of moving to Maven Central at this moment, as such, it is recommended to use [Jitpack.io](https://jitpack.io/#pw.mihou/Nexus) to install the framework onto your project. Please follow the instructions written there.
 - [pw.mihou.Nexus](https://jitpack.io/#pw.mihou/Nexus)
 
-# 🧑‍🎨 Artisan
+## 🧑‍🎨 Artisan
 
-## 🌸 Your Nexus instance
+### 🌸 Your Nexus instance
 To start with using Nexus, one must create a global Nexus instance. It is recommended to place this instance as a **`public static`** field on your Main class or similar that can be accessed at any time without needing to recreate the instance.
 ```java
-public class Main {
-
-  public static Nexus NEXUS;
-
-  public static void main(String[] args) {
-     NEXUS = Nexus.builder().build();
-  }
-
-}
+Nexus nexus = Nexus.builder().build();
 ```
 
-You can configure the message configuration of Nexus and related configuration (e.g. maximum lifespan of an cross-shard Nexus request) from the [`NexusBuilder`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/core/builder/NexusBuilder.java). One can also set the creation of the `DiscordApi` instances from here which also allows the shard to be included in the [`NexusShardManager`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/core/managers/NexusShardManager.java)
+You can configure the message configuration of Nexus and related configuration (e.g. maximum lifespan of an cross-shard Nexus request) from the [`NexusBuilder`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/core/builder/NexusBuilder.java).
 
-For developers that are not planning on using Nexus' DiscordApi creation methods then we recommend adding this line on every shard startup:
+Before proceeding forward, you need to add a few lines to how you create your DiscordApi instance, for example:
 ```java
-Main.NEXUS.getShardManager().put(api);
+new DiscordApiBuilder()
+       .setToken(...)
+       .addListener(nexus)
+       .setTotalShards(1)
+       .loginAll()
+       .forEach(future -> future.thenAccept(shard -> {
+            nexus.getShardManager().put(shard);
+            //... other stuff like onShardLogin()
+       }).exceptionally(ExceptionLogger.get()));
 ```
 
-And for every shard removal:
+In particular, you need the add these two lines:
 ```java
-Main.NEXUS.getShardManager().remove(shardNumber);
+.addListener(nexus)
 ```
+```java
+nexus.getShardManager().put(shard);
+```
+
+The former allows Nexus to listen into specific events like slash command events and handle them, the latter enables Nexus to use its own shard manager to get the DiscordApi instance of specific shards (e.g. during command synchronization and many other parts of the framework). Both of those lines are considered necessary for the framework to function.
+
+Another line that you may need to add if you are using the `DiscordApi#disconnect()` method is:
+```java
+DiscordApi shard = ...
+nexus.getShardManager().remove(shard.getCurrentShard());
+```
+
+You should add that line before calling `disconnect()` to tell Nexus that the given shard is no longer useable and removes it from its shard manager (important especially since Nexus will hold a reference to the shard until you call that function).
 
 These methods allows Nexus to perform command synchronization and similar (**REQUIRED for command synchronization**). You can view an example of those methods in use from below. 
 - [Synchronization Example](https://github.com/ShindouMihou/Nexus/blob/master/examples/synchronization/Main.java)
 
-## 🫓 Fundamentals of creating commands
+### 🫓 Fundamentals of creating commands
 You can design commands in Nexus simply by creating a class that implements the [`NexusHandler`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusHandler.java) interface before creating two required `String` fields named: `name` and `description` which are required to create slash commands.
 ```java
 public class PingCommand implements NexusHandler {
@@ -99,7 +112,7 @@ Nexus nexus = ...;
 NexusCommand command = nexus.defineOne(new SomeCommand());
 ```
 
-## ♒ Intercepting Commands
+### ♒ Intercepting Commands
 Nexus includes the ability to intercept specific commands by including either the `middlewares` or `afterwares` field that takes a `List<String>` with the values inside the `List` being the key names of the interceptors. The framework provides several middlewares by default that you can add to your command or globally (via the `Nexus.addGlobalMiddleware(...)` method).
 - [Common Interceptors](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/NexusCommonInterceptors.java)
 - [Common Interceptors Implementation](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/core/NexusCommonInterceptorsCore.java)
@@ -161,7 +174,7 @@ Middlewares that can take more than 3 seconds to complete should always use a de
 
 You are free to answer the interaction yourself but it will not be communicated cross-middleware and to the command. The methods above will allow middlewares and the command to use a single `InteractionOriginalResponseUpdater`.
 
-## 🏜️ Synchronizing Commands
+### 🏜️ Synchronizing Commands
 Nexus includes built-in synchronization methods for slash commands that are modifiable to one's liking. To understand how to synchronize commands to Discord, please visit our examples instead:
 - [Synchronization Example](https://github.com/ShindouMihou/Nexus/tree/master/examples/synchronization)
 
@@ -178,6 +191,10 @@ NexusSynchronizer.SYNCHRONIZE_METHODS.set(<Your Synchronize Methods Class>);
 
 What is the use-case for modifying the synchronize methods?
 - [x] Customizable synchronize methods were implemented due to the requirements of one of the bots under development that uses custom `bulkOverwrite...` methods that aren't included in the official Javacord fork. Nexus needs to adapt to those requirements as well and therefore synchronize methods are completely customizable.
+
+> **Note**
+>
+> The following text below only applies to versions below v1.0.0-beta. The newer version ([**#8**](https://github.com/ShindouMihou/Nexus/pull/8)) has better synchronize methods that are more efficient and improved overall.
 
 The default synchronize methods should be more than enough for a bot that runs on a single cluster but for easier multi-cluster usage, it is recommended to use only one cluster to handle the synchronization of commands with a custom Javacord fork that allows for bulk-overwriting and updating of slash commands in servers using only the server id. 
 - You can refer to [BeemoBot/Javacord#1](https://github.com/BeemoBot/Javacord/pull/1) for more information.
@@ -199,6 +216,7 @@ Nexus includes a simple pagination implementation which one can use easily, you 
 
 # 🌇 Nexus is used by
 - [Mana](https://manabot.fun): The original reason for Nexus' creation, Mana is an anime Discord bot that brings anime into communities.
+- [Amelia-chan](https://github.com/Amelia-chan/Amelia): A specialized RSS feed bot created for the ScribbleHub novel platform.
 - More to be added, feel free to create an issue if you want to add yours here!
 
 # 📚 License
