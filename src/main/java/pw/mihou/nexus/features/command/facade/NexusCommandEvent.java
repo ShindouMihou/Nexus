@@ -9,14 +9,12 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
-import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.managers.NexusShardManager;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -86,7 +84,7 @@ public interface NexusCommandEvent {
      *
      * @return The ID of the text channel where the command was executed.
      */
-    default Long getChannelId() {
+    default long getChannelId() {
         return getChannel().getId();
     }
 
@@ -95,7 +93,7 @@ public interface NexusCommandEvent {
      *
      * @return The ID of the user who executed this command.
      */
-    default Long getUserId() {
+    default long getUserId() {
         return getUser().getId();
     }
 
@@ -141,25 +139,6 @@ public interface NexusCommandEvent {
      */
     default NexusShardManager getShardManager() {
         return getNexus().getShardManager();
-    }
-
-    /**
-     * Gets the options that were brought with this command.
-     *
-     * @return All the options of this command.
-     */
-    default List<SlashCommandInteractionOption> getOptions() {
-        return getInteraction().getOptions();
-    }
-
-    /**
-     * Gets the options of a subcommand.
-     *
-     * @param name The name of the subcommand to search for.
-     * @return The options of a subcommand, if present.
-     */
-    default Optional<List<SlashCommandInteractionOption>> getSubcommandOptions(String name) {
-        return getInteraction().getOptionByName(name).map(SlashCommandInteractionOption::getOptions);
     }
 
     /**
