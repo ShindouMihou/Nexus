@@ -40,8 +40,7 @@ public class Test {
         // Global synchronization of all commands, recommended at startup.
         // This updates, creates or removes any commands that are missing, outdated or removed.
         //----------------------
-        nexus.getSynchronizer()
-                .synchronize(4)
+        nexus.getSynchronizer().synchronize()
                 .thenAccept(unused -> System.out.println("Synchronization with Discord's and Nexus' command repository is now complete."))
                 .exceptionally(ExceptionLogger.get());
 
@@ -55,8 +54,8 @@ public class Test {
 
             // We recommend using batch update if you performed more than 1 `addSupportFor` methods.
             // As batch update will update all of those command using only one request.
-            // batchUpdate(853911163355922434L, 4);
-            // batchUpdate(858685857511112736L, 4);
+            // batchUpdate(853911163355922434L);
+            // batchUpdate(858685857511112736L);
 
             // Single update, on the otherwise, allows multiple server ids but sends a single create or update
             // request for a command and doesn't scale well when done with many commands.
@@ -70,7 +69,7 @@ public class Test {
             // The same information as earlier, batch update will update the entire server slash command list
             // which means it will remove any slash commands that are no longer supporting that server
             // and will update or create any slash commands that still support that server.
-            // batchUpdate(853911163355922434L, 4);
+            // batchUpdate(853911163355922434L);
 
             // Single delete is fine when you are only deleting one command on a pile of servers.
             singleDelete(dynamic, 4, 853911163355922434L);
@@ -84,11 +83,10 @@ public class Test {
      * startup-related synchronization.
      *
      * @param serverId      The server id to synchronize commands to.
-     * @param totalShards   The total shards of the server.
      */
-    private static void batchUpdate(long serverId, int totalShards) {
+    private static void batchUpdate(long serverId) {
         nexus.getSynchronizer()
-                .batchUpdate(serverId, totalShards)
+                .batchUpdate(serverId)
                 .thenAccept(unused -> System.out.println("A batch update was complete. [server="+serverId+"]"))
                 .exceptionally(ExceptionLogger.get());
     }
