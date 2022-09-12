@@ -4,6 +4,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageFlag;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
@@ -168,6 +169,50 @@ public interface NexusCommandEvent {
      */
     default InteractionImmediateResponseBuilder respondNow() {
         return getInteraction().createImmediateResponder();
+    }
+
+    /**
+     * A short-hand expression of sending a non-ephemeral response to Discord with the given content. This does not
+     * handle the exceptions, please handle the exceptions accordingly.
+     *
+     * @param content the content to send as a response.
+     * @return A future that contains the updater to update the response when needed.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondNowWith(String content) {
+        return respondNow().setContent(content).respond();
+    }
+
+    /**
+     * A short-hand expression of sending a non-ephemeral response to Discord with the given embeds. This does not
+     * handle the exceptions, please handle the exceptions accordingly.
+     *
+     * @param embeds the embeds to send as a response.
+     * @return A future that contains the updater to update the response when needed.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondNowWith(EmbedBuilder... embeds) {
+        return respondNow().addEmbeds(embeds).respond();
+    }
+
+    /**
+     * A short-hand expression of sending an ephemeral response to Discord with the given content. This does not
+     * handle the exceptions, please handle the exceptions accordingly.
+     *
+     * @param content the content to send as a response.
+     * @return A future that contains the updater to update the response when needed.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondNowEphemerallyWith(String content) {
+        return respondNowAsEphemeral().setContent(content).respond();
+    }
+
+    /**
+     * A short-hand expression of sending an ephemeral response to Discord with the given embeds. This does not
+     * handle the exceptions, please handle the exceptions accordingly.
+     *
+     * @param embeds the embeds to send as a response.
+     * @return A future that contains the updater to update the response when needed.
+     */
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondNowEphemerallyWith(EmbedBuilder... embeds) {
+        return respondNowAsEphemeral().addEmbeds(embeds).respond();
     }
 
     /**
