@@ -25,12 +25,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
 
     @Override
     public CompletableFuture<Set<ApplicationCommand>> bulkOverwriteServer(DiscordApi shard, Set<SlashCommandBuilder> slashCommands, long serverId) {
-        if (shard.getServerById(serverId).isEmpty()) {
-            return getServerNotFoundErrorFrom(shard, serverId);
-        }
-
-        Server server = shard.getServerById(serverId).orElseThrow();
-        return shard.bulkOverwriteServerApplicationCommands(server, slashCommands).thenApply(applicationCommands -> {
+        return shard.bulkOverwriteServerApplicationCommands(serverId, slashCommands).thenApply(applicationCommands -> {
             NexusCore.logger.debug("All commands with relation for server {} have been synchronized.", serverId);
             return applicationCommands;
         });
@@ -89,10 +84,6 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
 
     @Override
     public CompletableFuture<ApplicationCommand> createForServer(DiscordApi shard, NexusCommand command, long serverId) {
-        if (shard.getServerById(serverId).isEmpty()) {
-            return getServerNotFoundErrorFrom(shard, serverId);
-        }
-
         return command.asSlashCommand().createForServer(shard, serverId).thenApply(slashCommand -> {
             NexusCore.logger.debug("The command ({}) has been created for the server ({}).", command.getName(),
                     serverId);

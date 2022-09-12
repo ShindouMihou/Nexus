@@ -1,6 +1,5 @@
 package pw.mihou.nexus.features.command.synchronizer;
 
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import pw.mihou.nexus.Nexus;
@@ -48,33 +47,19 @@ public record NexusSynchronizer(Nexus nexus) {
      * server command list and can be used to clear any server slash commands of the bot for that
      * specific server.
      *
-     * @param totalShards   The total amount of shards for this bot. This is used to
-     *                      for sharding formula.
-     * @param serverId      The server to batch upsert the commands onto.
+     * @param serverId the given guild snowflake to perform updates upon.
      * @return  A future to indicate progress of this task.
      */
-    public CompletableFuture<Void> batchUpdate(long serverId, int totalShards) {
-        return nexus.getEngineX().await(nexus.getShardManager().shardOf(serverId, totalShards))
-                .thenCompose(shard -> batchUpdate(serverId, shard));
-    }
-
-    /**
-     * Batch updates all commands that supports a specific server. This completely overrides the
-     * server command list and can be used to clear any server slash commands of the bot for that
-     * specific server.
-     *
-     * @param shard         The shard to use for updating the server's commands.
-     * @param serverId      The server to batch upsert the commands onto.
-     * @return  A future to indicate progress of this task.
-     */
-    public CompletableFuture<Void> batchUpdate(long serverId, DiscordApi shard) {
+    public CompletableFuture<Void> batchUpdate(long serverId) {
         NexusCommandManager manager = nexus.getCommandManager();
 
         Set<SlashCommandBuilder> serverCommands = manager.getCommandsAssociatedWith(serverId).stream()
                 .map(NexusCommand::asSlashCommand)
                 .collect(Collectors.toSet());
 
-        return SYNCHRONIZE_METHODS.bulkOverwriteServer(shard, serverCommands, serverId).thenAccept(manager::index);
+        return nexus.getEngineX().awaitAvailable()
+                .thenCompose(shard -> SYNCHRONIZE_METHODS.bulkOverwriteServer(shard, serverCommands, serverId))
+                .thenAccept(manager::index);
     }
 
     /**
@@ -109,10 +94,9 @@ public record NexusSynchronizer(Nexus nexus) {
      * {@link org.javacord.api.DiscordApi#bulkOverwriteServerApplicationCommands(Server, Set)}. This does not
      * take any regards to any changes and pushes an override without any care.
      *
-     * @param totalShards   The total amount of shards on the bot, used for sharding formula.
      * @return A future to indicate the progress of the synchronization task.
      */
-    public CompletableFuture<Void> synchronize(int totalShards) {
+    public CompletableFuture<Void> synchronize() {
         NexusCommandManager manager = nexus.getCommandManager();
 
         Set<NexusCommand> serverCommands = manager.getServerCommands();
@@ -146,7 +130,7 @@ public record NexusSynchronizer(Nexus nexus) {
         serverMappedCommands.forEach((server, builders) -> {
             if (server == NexusCommand.PLACEHOLDER_SERVER_ID) return;
 
-            CompletableFuture<Void> future = engineX.await(nexus.getShardManager().shardOf(server, totalShards))
+            CompletableFuture<Void> future = engineX.awaitAvailable()
                     .thenCompose(shard -> SYNCHRONIZE_METHODS.bulkOverwriteServer(shard, builders, server))
                     .thenAccept(manager::index);
 
