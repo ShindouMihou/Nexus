@@ -79,7 +79,7 @@ public class Test {
     /**
      * Updates, removes or creates any commands that are outdated, removed or missing. This is recommended
      * especially when you recently added support to a lot of servers. Not recommended on startup since
-     * {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#synchronize(int)} is more recommended for
+     * {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#synchronize()} is more recommended for
      * startup-related synchronization.
      *
      * @param serverId      The server id to synchronize commands to.
@@ -93,7 +93,7 @@ public class Test {
 
     /**
      * Updates a single command on one or many servers. This is practically the same as batch update but utilizes a more
-     * update or create approach whilst {@link Test#batchUpdate(long, int)} overrides the entire server slash command list
+     * update or create approach whilst {@link Test#batchUpdate(long)} overrides the entire server slash command list
      * with what Nexus knows.
      *
      * @param command       The command to update on the specified servers.
@@ -109,7 +109,7 @@ public class Test {
 
     /**
      * Deletes a single command on one or many servers. This is practically the same as batch update but utilizes a more
-     * delete approach whilst {@link Test#batchUpdate(long, int)} overrides the entire server slash command list
+     * delete approach whilst {@link Test#batchUpdate(long)} overrides the entire server slash command list
      * with what Nexus knows.
      *
      * @param command       The command to update on the specified servers.
