@@ -18,8 +18,6 @@ public class ADynamicCommand implements NexusHandler {
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow()
-                .setContent("Dyna-dynam-iteee!")
-                .respond();
+        event.respondNowWith("Dyna-dynam-iteee!");
     }
 }

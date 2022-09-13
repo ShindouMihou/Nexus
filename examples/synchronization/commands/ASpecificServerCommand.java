@@ -13,8 +13,6 @@ public class ASpecificServerCommand implements NexusHandler {
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow()
-                .setContent("This command is dedicated to this server!")
-                .respond();
+        event.respondNow("This command is dedicated to this server!");
     }
 }

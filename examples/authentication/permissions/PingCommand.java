@@ -18,6 +18,6 @@ public class PingCommand implements NexusHandler {
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow().setContent("Pong!").respond();
+        event.respondNowWith("Pong!");
     }
 }
