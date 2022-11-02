@@ -19,6 +19,7 @@ import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
 import pw.mihou.nexus.features.command.responders.NexusResponderRepository
+import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore
@@ -95,6 +96,14 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      */
     @JvmStatic
     val responderRepository = NexusResponderRepository()
+
+    /**
+     * [NexusSynchronizer] is a tool that is used to synchronize commands between Discord and the bot.
+     *
+     * You can learn more about it at [Understanding Synchronization](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Synchronization).
+     */
+    @JvmStatic
+    val synchronizer = NexusSynchronizer()
 
     /**
      * Configures the [NexusConfiguration] in a more Kotlin way.
