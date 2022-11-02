@@ -1,6 +1,7 @@
 package pw.mihou.nexus.core.managers.facade
 
 import org.javacord.api.interaction.ApplicationCommand
+import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import java.util.*
@@ -14,6 +15,16 @@ interface NexusCommandManager {
      * @return All the commands stored in Nexus's command registry.
      */
     val commands: Collection<NexusCommand>
+
+    /**
+     * An index store is a store that is being utilized to store [NexusMetaIndex] that allows Nexus to match commands faster
+     * than with regular O(N) methods. Nexus will auto-index all commands that do not have an index already, therefore, there is not
+     * much needed to change.
+     *
+     * You can, however, change this to a persistent in-memory store that Nexus will use (be sure to use some in-memory caching
+     * for performance reasons).
+     */
+    var indexStore: IndexStore
 
     /**
      * Gets all the global commands that are stored inside the Nexus registry of commands.

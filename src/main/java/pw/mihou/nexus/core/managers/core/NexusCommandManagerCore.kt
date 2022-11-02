@@ -20,7 +20,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
     override val commands: Collection<NexusCommand>
         get() = commandsDelegate.values
 
-    private val indexStore: IndexStore = InMemoryIndexStore()
+    override var indexStore: IndexStore = InMemoryIndexStore()
 
     override fun add(command: NexusCommand): NexusCommandManager {
         if (commandsDelegate[command.uuid] != null)
