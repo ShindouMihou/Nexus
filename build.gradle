@@ -1,0 +1,29 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'java'
+}
+
+group = 'pw.mihou'
+version = '1.0.0-beta'
+description = 'Nexus is the next-generation Javacord framework that aims to create Discord bots with less code, dynamic, more simplicity and beauty.'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.javacord:javacord:3.6.0'
+    implementation 'org.slf4j:slf4j-api:2.0.1'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}

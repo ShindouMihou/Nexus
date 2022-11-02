@@ -1,6 +1,5 @@
 package pw.mihou.nexus.core.logger.adapters.defaults.configuration;
 
-import pw.mihou.nexus.core.logger.adapters.defaults.NexusConsoleLoggingAdapter;
 import pw.mihou.nexus.core.logger.adapters.defaults.configuration.enums.NexusConsoleLoggingLevel;
 
 import javax.annotation.Nonnull;

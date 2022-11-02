@@ -1,6 +1,10 @@
 import commands.*;
+import commands.conflict.AlsoConflictedPingCommand;
+import commands.conflict.ConflictedPingCommand;
+import commands.conflict.NotConflictedPingCommand;
 import org.junit.jupiter.api.*;
 import pw.mihou.nexus.Nexus;
+import pw.mihou.nexus.core.managers.indexes.exceptions.IndexIdentifierConflictException;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors;
@@ -9,20 +13,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CommandGenerationTests {
 
-    private static final Nexus NEXUS = Nexus.builder().build();
-
     @Test
     @DisplayName("Enforcement of Required Fields Test")
     @Order(1)
     void isRequiredFieldsRequiredTest() {
-        assertThrows(IllegalStateException.class, () -> NEXUS.defineOne(new RequiredTestCommand()));
+        assertThrows(IllegalStateException.class, () -> Nexus.manifest(new RequiredTestCommand()));
     }
 
     @Test
     @DisplayName("Nexus Command Generation Test")
     @Order(2)
     void commandGenerationTest() {
-        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
+        NexusCommand command = Nexus.manifest(new FilledRequiredTestCommand());
         assertNotNull(
                 command,
                 "The command instance which shouldn't be null is somehow null."
@@ -33,7 +35,7 @@ public class CommandGenerationTests {
     @DisplayName("Value Validation of Required Fields Test")
     @Order(3)
     void requiredFieldsTest() {
-        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
+        NexusCommand command = Nexus.manifest(new FilledRequiredTestCommand());
         assertNotNull(
                 command.getName(),
                 "The command name which shouldn't be null is somehow null."
@@ -51,32 +53,21 @@ public class CommandGenerationTests {
     }
 
     @Test
-    @DisplayName("Injected Nexus Core Test")
-    @Order(4)
-    void injectedNexusCoreTest() {
-        NexusCommand command = NEXUS.defineOne(new FilledRequiredTestCommand());
-        assertNotNull(
-                ((NexusCommandCore) command).core,
-                "The injection of the Nexus core somehow failed."
-        );
-    }
-
-    @Test
     @DisplayName("Successful Command Addition Test")
-    @Order(5)
+    @Order(4)
     void commandAddedTest() {
-        NexusCommand command = NEXUS.listenOne(new FilledRequiredTestCommand());
-        assertTrue(
-                NEXUS.getCommandManager().getCommandByUUID(((NexusCommandCore) command).uuid).isPresent(),
+        NexusCommand command = Nexus.command(new FilledRequiredTestCommand());
+        assertNotNull(
+                Nexus.getCommandManager().get(((NexusCommandCore) command).uuid),
                 "The command was not found in the command manager despite being added."
         );
     }
 
     @Test
     @DisplayName("Correct Shared Fields Test")
-    @Order(6)
+    @Order(5)
     void correctSharedFieldsTest() {
-        NexusCommand command = NEXUS.defineOne(new HasSharedFieldsCommand());
+        NexusCommand command = Nexus.manifest(new HasSharedFieldsCommand());
         assertTrue(
                 command.get("oneSharedField", String.class).isPresent(),
                 "The shared field is somehow not visible to the public."
@@ -96,9 +87,9 @@ public class CommandGenerationTests {
 
     @Test
     @DisplayName("Has Middleware Test")
-    @Order(7)
+    @Order(6)
     void hasMiddlewareTest() {
-        NexusCommand command = NEXUS.defineOne(new HasMiddlewaresCommand());
+        NexusCommand command = Nexus.manifest(new HasMiddlewaresCommand());
         assertFalse(
                 ((NexusCommandCore) command).middlewares.isEmpty(),
                 "The middlewares field which shouldn't be empty is somehow empty."
@@ -112,9 +103,9 @@ public class CommandGenerationTests {
 
     @Test
     @DisplayName("Has Middleware Test")
-    @Order(8)
+    @Order(7)
     void hasAfterwareTest() {
-        NexusCommand command = NEXUS.defineOne(new HasAfterwareCommand());
+        NexusCommand command = Nexus.manifest(new HasAfterwareCommand());
         assertFalse(
                 ((NexusCommandCore) command).afterwares.isEmpty(),
                 "The afterwares field which shouldn't be empty is somehow empty."
@@ -126,5 +117,13 @@ public class CommandGenerationTests {
         );
     }
 
+    @Test
+    @DisplayName("Index Identifier Conflict")
+    @Order(8)
+    void canIdentifyIndexConflicts() {
+        Nexus.command(new ConflictedPingCommand());
 
+        assertThrows(IndexIdentifierConflictException.class, () -> Nexus.command(new AlsoConflictedPingCommand()));
+        assertDoesNotThrow(() -> Nexus.command(new NotConflictedPingCommand()));
+    }
 }

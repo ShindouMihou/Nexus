@@ -5,6 +5,7 @@ import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 import pw.mihou.nexus.features.command.interceptors.facades.*;
 import pw.mihou.nexus.features.command.interceptors.repositories.NexusMiddlewareGateRepository;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,7 @@ public class NexusCommandInterceptorCore {
      * @param event The event to execute.
      * @return Are all interceptors agreeing with the command execution?
      */
+    @Nullable
     public static NexusMiddlewareGate interceptWithMany(List<String> names, NexusCommandEvent event) {
         // This is intentionally a for-loop since we want to stop at a specific point.
         NexusMiddlewareGateCore gate = NexusMiddlewareGateRepository.get(event.getBaseEvent().getInteraction());

@@ -5,7 +5,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.interaction.ApplicationCommand;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandBuilder;
-import pw.mihou.nexus.core.NexusCore;
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.exceptions.NexusFailedActionException;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.synchronizer.overwrites.NexusSynchronizeMethods;
@@ -18,7 +18,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
     @Override
     public CompletableFuture<Set<ApplicationCommand>> bulkOverwriteGlobal(DiscordApi shard, Set<SlashCommandBuilder> slashCommands) {
         return shard.bulkOverwriteGlobalApplicationCommands(slashCommands).thenApply(applicationCommands -> {
-            NexusCore.logger.debug("All global commands have been synchronized. [size={}]", applicationCommands.size());
+            Nexus.getLogger().debug("All global commands have been synchronized. [size={}]", applicationCommands.size());
             return applicationCommands;
         });
     }
@@ -26,7 +26,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
     @Override
     public CompletableFuture<Set<ApplicationCommand>> bulkOverwriteServer(DiscordApi shard, Set<SlashCommandBuilder> slashCommands, long serverId) {
         return shard.bulkOverwriteServerApplicationCommands(serverId, slashCommands).thenApply(applicationCommands -> {
-            NexusCore.logger.debug("All commands with relation for server {} have been synchronized.", serverId);
+            Nexus.getLogger().debug("All commands with relation for server {} have been synchronized.", serverId);
             return applicationCommands;
         });
     }
@@ -50,7 +50,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
 
             return slashCommand.deleteForServer(serverId)
                     .thenAccept((unused) ->
-                            NexusCore.logger.debug("The command ({}) has been removed from the server ({}).",
+                            Nexus.getLogger().debug("The command ({}) has been removed from the server ({}).",
                                     command.getName(), serverId)
                     );
         });
@@ -76,7 +76,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
             return command.asSlashCommandUpdater(slashCommand.getId())
                     .updateForServer(shard, serverId)
                     .thenApply(resultingCommand -> {
-                        NexusCore.logger.debug("The command ({}) has been updated for the server ({}).", command.getName(), serverId);
+                        Nexus.getLogger().debug("The command ({}) has been updated for the server ({}).", command.getName(), serverId);
                         return resultingCommand;
                     });
         });
@@ -85,7 +85,7 @@ public class NexusDefaultSynchronizeMethods implements NexusSynchronizeMethods {
     @Override
     public CompletableFuture<ApplicationCommand> createForServer(DiscordApi shard, NexusCommand command, long serverId) {
         return command.asSlashCommand().createForServer(shard, serverId).thenApply(slashCommand -> {
-            NexusCore.logger.debug("The command ({}) has been created for the server ({}).", command.getName(),
+            Nexus.getLogger().debug("The command ({}) has been created for the server ({}).", command.getName(),
                     serverId);
             return slashCommand;
         });

@@ -1,10 +1,9 @@
 package pw.mihou.nexus.core.reflective;
 
-import pw.mihou.nexus.core.NexusCore;
-import pw.mihou.nexus.core.assignment.NexusUuidAssigner;
 import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.core.reflective.core.NexusReflectiveVariableCore;
 import pw.mihou.nexus.core.reflective.facade.NexusReflectiveVariableFacade;
+import pw.mihou.nexus.features.command.annotation.IdentifiableAs;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 
 import java.util.*;
@@ -13,7 +12,7 @@ public class NexusReflectiveCore {
 
     private static final Class<?> REFERENCE_CLASS = NexusCommandCore.class;
 
-    public static NexusCommandCore command(Object object, NexusCore core) {
+    public static NexusCommandCore command(Object object) {
         NexusCommandCore reference = new NexusCommandCore();
 
         NexusReflectiveVariableFacade facade = new NexusReflectiveVariableCore(object, reference);
@@ -28,6 +27,13 @@ public class NexusReflectiveCore {
             }
         }
 
+        String temporaryUuid = facade.getWithType("name", String.class).orElseThrow();
+
+        if (object.getClass().isAnnotationPresent(IdentifiableAs.class)) {
+            temporaryUuid = object.getClass().getAnnotation(IdentifiableAs.class).key();
+        }
+
+        final String uuid = temporaryUuid;
 
         Arrays.stream(reference.getClass().getDeclaredFields())
                 .forEach(field -> {
@@ -37,9 +43,7 @@ public class NexusReflectiveCore {
                         if (field.isAnnotationPresent(InjectReferenceClass.class)) {
                             field.set(reference, object);
                         } else if (field.isAnnotationPresent(InjectUUID.class)) {
-                            field.set(reference, NexusUuidAssigner.request());
-                        } else if (field.isAnnotationPresent(InjectNexusCore.class)) {
-                            field.set(reference, core);
+                            field.set(reference, uuid);
                         } else if (field.isAnnotationPresent(Stronghold.class)){
                             field.set(reference, facade.getSharedFields());
                         } else {

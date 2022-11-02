@@ -5,6 +5,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
+import org.javacord.api.interaction.callback.InteractionMessageBuilderBase;
 import pw.mihou.nexus.features.command.core.NexusCommandDispatcher;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
 
@@ -64,6 +65,22 @@ public class NexusMessageCore implements NexusMessage {
 
         build.setAllowedMentions(ALLOWED_MENTIONS);
         return build;
+    }
+
+    /**
+     * An internal method that is utilized by the likes of {@link NexusCommandDispatcher} to
+     * transform the {@link NexusMessage} into an {@link InteractionMessageBuilderBase} that can then be used to send the response
+     * to the end-user.
+     *
+     * @param instance The {@link InteractionImmediateResponseBuilder} provided by Javacord.
+     * @return The {@link InteractionMessageBuilderBase} with all the proper configuration.
+     */
+    public InteractionMessageBuilderBase<?> convertTo(InteractionMessageBuilderBase<?> instance) {
+        asString().ifPresent(instance::setContent);
+        asEmbed().ifPresent(instance::addEmbed);
+
+        instance.setAllowedMentions(ALLOWED_MENTIONS);
+        return instance;
     }
 
     @Override

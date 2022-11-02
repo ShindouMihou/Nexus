@@ -1,6 +1,5 @@
 package pw.mihou.nexus.features.command.facade;
 
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
 import pw.mihou.nexus.commons.Pair;
@@ -13,6 +12,17 @@ import java.util.Optional;
 public interface NexusCommand {
 
     long PLACEHOLDER_SERVER_ID = 0L;
+
+    /**
+     * Gets the unique identifier of the command, this tends to be the command name unless the
+     * command has an override using the {@link pw.mihou.nexus.features.command.annotation.IdentifiableAs} annotation.
+     * <br>
+     * There are many use-cases for this unique identifier such as retrieving the index (application command id) of the
+     * command from the index store to be used for mentioning the command, and some other more.
+     *
+     * @return the unique identifier of the command.
+     */
+    String getUuid();
 
     /**
      * Gets the name of the command.
@@ -78,7 +88,7 @@ public interface NexusCommand {
      * <b>This does not perform any changes onto Discord.</b>
      * <br><br>
      * If you want to update changes then please use
-     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long, DiscordApi)} method
+     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long)} method
      * <b>after using this method</b>.
      *
      * @param serverIds The snowflakes of the servers to disassociate this command from.
@@ -91,7 +101,7 @@ public interface NexusCommand {
      * the given servers.
      * <br><br>
      * <b>This does not perform any changes onto Discord.</b> If you want to update changes then please use
-     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long, DiscordApi)} method
+     * the {@link pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer#batchUpdate(long)} method
      * <b>after using this method</b>.
      *
      * @param serverIds The snowflakes of the servers to disassociate this command from.

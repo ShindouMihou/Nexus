@@ -12,8 +12,7 @@ import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import pw.mihou.nexus.Nexus;
-import pw.mihou.nexus.core.managers.NexusShardManager;
-import pw.mihou.nexus.features.command.core.NexusCommandCore;
+import pw.mihou.nexus.sharding.NexusShardingManager;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -113,16 +112,6 @@ public interface NexusCommandEvent {
     NexusCommand getCommand();
 
     /**
-     * Gets the {@link Nexus} instance that was in charge
-     * of handling this command.
-     *
-     * @return The Nexus instance that was in charge of this command.
-     */
-    default Nexus getNexus() {
-        return ((NexusCommandCore) getCommand()).core;
-    }
-
-    /**
      * Gets the Discord API shard that was in charge of this event.
      *
      * @return The Discord API shard that was in charge of this event.
@@ -132,13 +121,12 @@ public interface NexusCommandEvent {
     }
 
     /**
-     * Gets the {@link NexusShardManager} that is associated with the
-     * {@link Nexus} instance.
+     * Gets the {@link NexusShardingManager} that is associated with the {@link Nexus} instance.
      *
      * @return The Nexus Shard Manager associated with this Nexus instance.
      */
-    default NexusShardManager getShardManager() {
-        return getNexus().getShardManager();
+    default NexusShardingManager getShardManager() {
+        return Nexus.getSharding();
     }
 
     /**
@@ -211,7 +199,7 @@ public interface NexusCommandEvent {
      * @return The {@link InteractionOriginalResponseUpdater}.
      */
     default CompletableFuture<InteractionOriginalResponseUpdater> respondLater() {
-        return getNexus()
+        return Nexus
                 .getResponderRepository()
                 .get(getBaseEvent().getInteraction());
     }
@@ -223,7 +211,7 @@ public interface NexusCommandEvent {
      * @return The {@link InteractionOriginalResponseUpdater} with the ephemeral flag attached.
      */
     default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral() {
-        return getNexus()
+        return Nexus
                 .getResponderRepository()
                 .getEphemereal(getBaseEvent().getInteraction());
     }

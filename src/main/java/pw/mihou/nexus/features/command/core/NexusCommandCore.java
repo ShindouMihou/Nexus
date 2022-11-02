@@ -3,8 +3,8 @@ package pw.mihou.nexus.features.command.core;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.DiscordLocale;
 import org.javacord.api.interaction.SlashCommandOption;
-import pw.mihou.nexus.core.NexusCore;
 import pw.mihou.nexus.core.reflective.annotations.*;
+import pw.mihou.nexus.features.command.validation.OptionValidation;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 
@@ -43,6 +43,9 @@ public class NexusCommandCore implements NexusCommand {
     public List<SlashCommandOption> options = Collections.emptyList();
 
     @WithDefault
+    public List<OptionValidation<?>> validators = Collections.emptyList();
+
+    @WithDefault
     public Duration cooldown = Duration.ofSeconds(5);
 
     @WithDefault
@@ -50,27 +53,23 @@ public class NexusCommandCore implements NexusCommand {
 
     @WithDefault
     public List<String> afterwares = Collections.emptyList();
-
     @WithDefault
     public List<Long> serverIds = new ArrayList<>();
-
     @WithDefault
     public boolean defaultEnabledForEveryone = true;
-
     @WithDefault
     public boolean enabledInDms = true;
-
     @WithDefault
     public boolean defaultDisabled = false;
-
     @WithDefault
     public List<PermissionType> defaultEnabledForPermissions = Collections.emptyList();
-
-    @InjectNexusCore
-    public NexusCore core;
-
     @InjectReferenceClass
     public NexusHandler handler;
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
 
     @Override
     public String getName() {

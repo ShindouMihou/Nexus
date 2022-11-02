@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.facade;
 
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.features.command.interceptors.repositories.NexusMiddlewareGateRepository;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
 
@@ -18,7 +19,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      */
     default CompletableFuture<Void> askDelayedResponse() {
             return CompletableFuture.allOf(
-                    getNexus().getResponderRepository().peek(getBaseEvent().getInteraction())
+                    Nexus.getResponderRepository().peek(getBaseEvent().getInteraction())
             );
     }
 
@@ -30,7 +31,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      */
     default CompletableFuture<Void> askDelayedResponseAsEphemeral() {
         return CompletableFuture.allOf(
-                getNexus().getResponderRepository().peekEphemeral(getBaseEvent().getInteraction())
+                Nexus.getResponderRepository().peekEphemeral(getBaseEvent().getInteraction())
         );
     }
 
