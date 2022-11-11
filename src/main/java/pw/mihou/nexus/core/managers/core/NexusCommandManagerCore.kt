@@ -153,15 +153,14 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
                     indexes.add(manifest(command, applicationCommand.id, null))
                     break
                 }
-                return
-            }
+            } else {
+                for (command in commands) {
+                    if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
+                    if (!command.serverIds.contains(serverId)) continue
 
-            for (command in commands) {
-                if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
-                if (!command.serverIds.contains(serverId)) continue
-
-                indexes.add(manifest(command, applicationCommand.id, serverId))
-                break
+                    indexes.add(manifest(command, applicationCommand.id, serverId))
+                    break
+                }
             }
         }
 
@@ -180,14 +179,14 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
                 break
             }
             return
-        }
+        } else {
+            for (command in commands) {
+                if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
+                if (!command.serverIds.contains(serverId)) continue
 
-        for (command in commands) {
-            if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
-            if (!command.serverIds.contains(serverId)) continue
-
-            index(command, applicationCommand.id, serverId)
-            break
+                index(command, applicationCommand.id, serverId)
+                break
+            }
         }
     }
 }
