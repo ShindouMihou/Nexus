@@ -126,7 +126,7 @@ public interface NexusCommandEvent {
      * @return The Nexus Shard Manager associated with this Nexus instance.
      */
     default NexusShardingManager getShardManager() {
-        return Nexus.getSharding();
+        return Nexus.getShardingManager();
     }
 
     /**
