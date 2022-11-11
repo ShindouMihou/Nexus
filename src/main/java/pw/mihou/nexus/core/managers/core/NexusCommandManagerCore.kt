@@ -143,24 +143,24 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
     override fun index(applicationCommandList: Set<ApplicationCommand>) {
         val indexes = mutableListOf<NexusMetaIndex>()
         for (applicationCommand in applicationCommandList) {
-            val serverId = applicationCommand.serverId.orElse(-1L)
+            val serverId: Long? = applicationCommand.serverId.orElse(null)
 
-            if (serverId == -1L) {
+            if (serverId == null) {
                 for (command in commands) {
                     if (command.serverIds.isNotEmpty()) continue
                     if (!command.name.equals(command.name, ignoreCase = true)) continue
 
-                    indexes.add(manifest(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null)))
+                    indexes.add(manifest(command, applicationCommand.applicationId, null))
                     break
                 }
                 return
             }
 
             for (command in commands) {
-                if (command.serverIds.contains(serverId)) continue
                 if (!command.name.equals(command.name, ignoreCase = true)) continue
+                if (!command.serverIds.contains(serverId)) continue
 
-                indexes.add(manifest(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null)))
+                indexes.add(manifest(command, applicationCommand.applicationId, serverId))
                 break
             }
         }
@@ -169,24 +169,24 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
     }
 
     override fun index(applicationCommand: ApplicationCommand) {
-        val serverId = applicationCommand.serverId.orElse(-1L)
+        val serverId: Long? = applicationCommand.serverId.orElse(null)
 
-        if (serverId == -1L) {
+        if (serverId == null) {
             for (command in commands) {
                 if (command.serverIds.isNotEmpty()) continue
                 if (!command.name.equals(command.name, ignoreCase = true)) continue
 
-                index(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null))
+                index(command, applicationCommand.applicationId, null)
                 break
             }
             return
         }
 
         for (command in commands) {
-            if (command.serverIds.contains(serverId)) continue
             if (!command.name.equals(command.name, ignoreCase = true)) continue
+            if (!command.serverIds.contains(serverId)) continue
 
-            index(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null))
+            index(command, applicationCommand.applicationId, serverId)
             break
         }
     }
