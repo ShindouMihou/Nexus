@@ -12,7 +12,6 @@ class InMemoryIndexStore: IndexStore {
     }
 
     override operator fun get(applicationCommandId: Long): NexusMetaIndex? = indexes[applicationCommandId]
-    override operator fun get(command: String): NexusMetaIndex? = indexes.values.firstOrNull { it.command == command }
 
     override fun addAll(metaIndexes: List<NexusMetaIndex>) {
         for (metaIndex in metaIndexes) {

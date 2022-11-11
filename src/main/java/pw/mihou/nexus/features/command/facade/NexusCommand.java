@@ -2,7 +2,6 @@ package pw.mihou.nexus.features.command.facade;
 
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
-import pw.mihou.nexus.commons.Pair;
 
 import java.time.Duration;
 import java.util.List;
@@ -212,11 +211,8 @@ public interface NexusCommand {
     long getServerId();
 
     /**
-     * Transforms this into a slash command builder that can be used to create
-     * the slash command yourself, it returns this via a {@link Pair} containing the server id
-     * and the builder.
-     *
-     * @return The server id of the server this is intended (nullable) and the slash command builder.
+     * Transforms this into a slash command builder that can be used to create the slash command.
+     * @return the {@link SlashCommandBuilder}.
      */
     default SlashCommandBuilder asSlashCommand() {
         SlashCommandBuilder builder = SlashCommand.with(getName().toLowerCase(), getDescription())
@@ -245,12 +241,10 @@ public interface NexusCommand {
     }
 
     /**
-     * Transforms this into a slash command updater that can be used to update
-     * the slash command yourself, it returns this via a {@link Pair} containing the server id
-     * and the updater.
+     * Transforms this into a slash command updater that can be used to update the slash command yourself.
      *
      * @param commandId The ID of the command to update.
-     * @return The server id of the server this is intended (nullable) and the slash command updater.
+     * @return the {@link SlashCommandUpdater}.
      */
     default SlashCommandUpdater asSlashCommandUpdater(long commandId) {
         SlashCommandUpdater updater = new SlashCommandUpdater(commandId)

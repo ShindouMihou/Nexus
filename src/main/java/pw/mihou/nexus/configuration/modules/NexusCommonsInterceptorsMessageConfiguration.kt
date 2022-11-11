@@ -5,7 +5,10 @@ import pw.mihou.nexus.features.messages.facade.NexusMessage
 
 class NexusCommonsInterceptorsMessageConfiguration internal constructor() {
 
-    @Volatile var ratelimited: (event: NexusCommandEvent, remainingSeconds: Long) -> NexusMessage = { _, remainingSeconds ->
+    @set:JvmName("setRatelimitedMessage")
+    @get:JvmName("getRatelimitedMessage")
+    @Volatile
+    var ratelimited: (event: NexusCommandEvent, remainingSeconds: Long) -> NexusMessage = { _, remainingSeconds ->
         NexusMessage.fromEphemereal(
             "**SLOW DOWN***!"
                     + "\n"

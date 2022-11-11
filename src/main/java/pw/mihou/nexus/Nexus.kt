@@ -62,6 +62,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * You can learn more at [Understanding Nexus Sharding Manager](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Nexus-Sharding-Manager).
      */
     @JvmStatic
+    @get:JvmName("getShardingManager")
     val sharding = NexusShardingManager()
 
     /**
@@ -110,6 +111,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * @param modifier the modifier to modify the state of the framework.
      */
     @JvmStatic
+    @JvmSynthetic
     fun configure(modifier: NexusConfiguration.() -> Unit): Nexus {
         modifier(configuration)
         return this

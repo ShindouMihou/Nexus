@@ -9,6 +9,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder
  * @param modifier the modifier to modify the [EmbedBuilder].
  * @return the [EmbedBuilder] that is being used.
  */
+@JvmSynthetic
 fun embed(modifier: EmbedBuilder.() -> Unit): EmbedBuilder {
     val embed = EmbedBuilder()
     modifier(embed)

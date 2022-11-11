@@ -32,12 +32,21 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
          * @return the [Requires] instance.
          */
         @JvmStatic
+        @JvmSynthetic
         fun createRequirements(modifier: (Requires.() -> Unit) = {}): Requires {
             val requires = Requires()
             modifier(requires)
 
             return requires
         }
+
+        /**
+         * Creates the [Requires] that can be configured to include more different options in the validation, intended for
+         * Java usage where functions aren't best used.
+         * @return the [Requires] instance.
+         */
+        @JvmStatic
+        fun createRequirements(): Requires = Requires()
     }
 
     /**
@@ -100,6 +109,7 @@ class Requires internal constructor() {
  * @param requirements the additional requirements that is required such as non-nullable.
  * @return a [OptionValidation] instance.
  */
+@JvmOverloads
 fun <Option> createValidator(collector: (NexusCommandEvent) -> Optional<Option>, validator: (Option) -> Boolean,
                              error: ValidationError? = null, requirements: Requires? = null): OptionValidation<Option> {
     val optionValidation = OptionValidation(collector)

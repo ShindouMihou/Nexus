@@ -20,14 +20,6 @@ interface IndexStore {
     operator fun get(applicationCommandId: Long): NexusMetaIndex?
 
     /**
-     * Gets the [NexusMetaIndex] from the store or an in-memory cache by the Nexus unique identifier.
-     * @param command the unique identifier of the command, tends to be of the same value always unless the name changed or
-     * the unique identifier was changed via the [IdentifiableAs] annotation.
-     * @return the [NexusMetaIndex] that was caught otherwise none.
-     */
-    operator fun get(command: String): NexusMetaIndex?
-
-    /**
      * Adds one or more [NexusMetaIndex] into the store, this is used in scenarios such as mass-synchronization which
      * offers more than one indexes at the same time.
      *

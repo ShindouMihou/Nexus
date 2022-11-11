@@ -17,7 +17,16 @@ interface ValidationError {
         @JvmStatic
         var textTemplate: (message: String) -> String = { message -> message }
 
+        /**
+         * An embed template that is used to modify the looks and details of the embed on the go.
+         * You can use this to prepend or apply different looks to the embed such as setting the colors and
+         * many other details.
+         */
         @JvmStatic
+        var embedTemplate: (embed: EmbedBuilder) -> EmbedBuilder = { embed -> embed }
+
+        @JvmStatic
+        @JvmSynthetic
         fun create(embed: EmbedBuilder, modifier: (ValidationEmbedError.() -> Unit) = {}): ValidationEmbedError {
             val validationError = ValidationEmbedError(embed)
             modifier(validationError)
@@ -26,12 +35,18 @@ interface ValidationError {
         }
 
         @JvmStatic
+        @JvmSynthetic
         fun create(contents: String, modifier: (ValidationStringError.() -> Unit) = {}): ValidationStringError {
             val validationError = ValidationStringError(textTemplate(contents))
             modifier(validationError)
 
             return validationError
         }
+
+        @JvmStatic
+        fun create(contents: String): ValidationStringError = ValidationStringError(textTemplate(contents))
+        @JvmStatic
+        fun create(embed: EmbedBuilder): ValidationEmbedError = ValidationEmbedError(embed)
     }
 }
 

@@ -6,8 +6,8 @@ import pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration
 
 class NexusConfiguration internal constructor() {
 
-    val express = NexusExpressConfiguration()
-    val global = NexusGlobalConfiguration()
-    val commonsInterceptors = NexusCommonsInterceptorsConfiguration()
+    @JvmField val express = NexusExpressConfiguration()
+    @JvmField val global = NexusGlobalConfiguration()
+    @JvmField val commonsInterceptors = NexusCommonsInterceptorsConfiguration()
 
 }
