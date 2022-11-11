@@ -5,7 +5,6 @@ import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import java.util.*
-import java.util.function.Function
 
 interface NexusCommandManager {
     /**
@@ -97,20 +96,9 @@ interface NexusCommandManager {
      * It is not recommended to use this for any other purposes other than creating a database copy because this creates
      * more garbage for the garbage collector.
      *
-     * @return A snapshot of the in-memory indexes that the command manager has.
+     * @return A snapshot of the indexes that the command manager has.
      */
     fun export(): List<NexusMetaIndex>
-
-    /**
-     * Creates a new fresh in-memory index map by using the [NexusCommandManager.index] method before creating
-     * an export of the given indexes with the [NexusCommandManager.export] command.
-     *
-     * @return A snapshot of the in-memory indexes that the command manager has.
-     */
-    fun indexThenExport(): List<NexusMetaIndex> {
-        index()
-        return export()
-    }
 
     /**
      * This indexes all the commands whether it'd be global or server commands to increase
@@ -119,7 +107,7 @@ interface NexusCommandManager {
     fun index()
 
     /**
-     * Creates an in-memory index mapping of the given command and the given slash command snowflake.
+     * Creates an index mapping of the given command and the given slash command snowflake.
      * <br></br><br></br>
      * You can use this method to index commands from your database.
      *
@@ -130,36 +118,16 @@ interface NexusCommandManager {
     fun index(command: NexusCommand, snowflake: Long, server: Long?)
 
     /**
-     * Massively creates an in-memory index mapping for all the given command using the indexer reducer
-     * provided below.
-     * <br></br><br></br>
-     * This is a completely synchronous operation and could cause major blocking on the application if you use
-     * it daringly.
-     *
-     * @param indexer The indexer reducer to collectively find the index of the commands.
-     */
-    fun index(indexer: Function<NexusCommand, NexusMetaIndex>) {
-        for (command in commands) {
-            val metaIndex = indexer.apply(command)
-            index(command, metaIndex.applicationCommandId, metaIndex.server)
-        }
-    }
-
-    /**
-     * Creates an in-memory index of all the slash commands provided. This will map all the commands based on properties
+     * Creates an index of all the slash commands provided. This will map all the commands based on properties
      * that matches e.g. the name (since a command can only have one global and one server command that have the same name)
      * and the server property if available.
      *
      * @param applicationCommandList the command list to use for indexing.
      */
-    fun index(applicationCommandList: Set<ApplicationCommand>) {
-        for (applicationCommand in applicationCommandList) {
-            index(applicationCommand)
-        }
-    }
+    fun index(applicationCommandList: Set<ApplicationCommand>)
 
     /**
-     * Creates an in-memory index of the given slash command provided. This will map all the command based on the property
+     * Creates an index of the given slash command provided. This will map all the command based on the property
      * that matches e.g. the name (since a command can only have one global and one server command that have the same name)
      * and the server property  if available.
      *

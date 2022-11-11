@@ -133,8 +133,39 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
             .join()
     }
 
+    private fun manifest(command: NexusCommand, snowflake: Long, server: Long?) =
+        toIndex(applicationCommandId = snowflake, command = command, server = server)
+
     override fun index(command: NexusCommand, snowflake: Long, server: Long?) {
         indexStore.add(toIndex(applicationCommandId = snowflake, command = command, server = server))
+    }
+
+    override fun index(applicationCommandList: Set<ApplicationCommand>) {
+        val indexes = mutableListOf<NexusMetaIndex>()
+        for (applicationCommand in applicationCommandList) {
+            val serverId = applicationCommand.serverId.orElse(-1L)
+
+            if (serverId == -1L) {
+                for (command in commands) {
+                    if (command.serverIds.isNotEmpty()) continue
+                    if (!command.name.equals(command.name, ignoreCase = true)) continue
+
+                    indexes.add(manifest(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null)))
+                    break
+                }
+                return
+            }
+
+            for (command in commands) {
+                if (command.serverIds.contains(serverId)) continue
+                if (!command.name.equals(command.name, ignoreCase = true)) continue
+
+                indexes.add(manifest(command, applicationCommand.applicationId, applicationCommand.serverId.orElse(null)))
+                break
+            }
+        }
+
+        indexStore.addAll(indexes)
     }
 
     override fun index(applicationCommand: ApplicationCommand) {
