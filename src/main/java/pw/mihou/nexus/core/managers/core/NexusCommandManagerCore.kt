@@ -148,7 +148,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
             if (serverId == null) {
                 for (command in commands) {
                     if (command.serverIds.isNotEmpty()) continue
-                    if (!command.name.equals(command.name, ignoreCase = true)) continue
+                    if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
 
                     indexes.add(manifest(command, applicationCommand.applicationId, null))
                     break
@@ -157,7 +157,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
             }
 
             for (command in commands) {
-                if (!command.name.equals(command.name, ignoreCase = true)) continue
+                if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
                 if (!command.serverIds.contains(serverId)) continue
 
                 indexes.add(manifest(command, applicationCommand.applicationId, serverId))
@@ -174,7 +174,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         if (serverId == null) {
             for (command in commands) {
                 if (command.serverIds.isNotEmpty()) continue
-                if (!command.name.equals(command.name, ignoreCase = true)) continue
+                if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
 
                 index(command, applicationCommand.applicationId, null)
                 break
@@ -183,7 +183,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         }
 
         for (command in commands) {
-            if (!command.name.equals(command.name, ignoreCase = true)) continue
+            if (!command.name.equals(applicationCommand.name, ignoreCase = true)) continue
             if (!command.serverIds.contains(serverId)) continue
 
             index(command, applicationCommand.applicationId, serverId)
