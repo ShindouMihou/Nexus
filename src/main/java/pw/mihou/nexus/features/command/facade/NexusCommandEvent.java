@@ -11,13 +11,21 @@ import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
+import org.javacord.api.util.logging.ExceptionLogger;
 import pw.mihou.nexus.Nexus;
+import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
+import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore;
+import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 import pw.mihou.nexus.sharding.NexusShardingManager;
 
+import java.lang.reflect.Array;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface NexusCommandEvent {
@@ -282,6 +290,28 @@ public interface NexusCommandEvent {
      */
     default void store(String key, Object value) {
         store().put(key, value);
+    }
+
+    /**
+     * Activates one or more middlewares and executes the success consumer once all middlewares succeed without
+     * throwing an issue. This does not support {@link InteractionOriginalResponseUpdater} or related, it will use
+     * {@link InteractionImmediateResponseBuilder} instead.
+     *
+     * @param middlewares   the middlewares to activate.
+     * @param success       what to do when all the middlewares succeed.
+     */
+    default void middlewares(List<String> middlewares, Consumer<Void> success) {
+        NexusMiddlewareGateCore middlewareGate = ((NexusMiddlewareGateCore) NexusCommandInterceptorCore.interceptWithMany(middlewares, this));
+
+        if (middlewareGate == null) {
+            success.accept(null);
+            return;
+        }
+
+        NexusMessageCore response = ((NexusMessageCore) middlewareGate.response());
+        if (response != null) {
+            response.convertTo(respondNow()).respond().exceptionally(ExceptionLogger.get());
+        }
     }
 
 }
