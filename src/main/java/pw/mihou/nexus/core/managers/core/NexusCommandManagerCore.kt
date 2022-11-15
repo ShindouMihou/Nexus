@@ -6,6 +6,7 @@ import org.javacord.api.interaction.SlashCommand
 import org.javacord.api.interaction.SlashCommandInteraction
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
+import pw.mihou.nexus.configuration.modules.info
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
 import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.indexes.defaults.InMemoryIndexStore
@@ -92,9 +93,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
     }
 
     override fun index() {
-        Nexus.configuration.global.logger
-            .info("Nexus is now performing command indexing, this will delay your boot time by a few seconds " +
-                    "but improve performance and precision in look-ups...")
+        Nexus.configuration.loggingTemplates.INDEXING_COMMANDS.info()
 
         val start = System.currentTimeMillis()
         Nexus.express
@@ -126,8 +125,7 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
                     }
                 }
 
-                Nexus.configuration.global.logger.info("All global and server slash commands are now indexed." +
-                        " It took ${System.currentTimeMillis() - start} milliseconds to complete indexing.")
+                Nexus.configuration.loggingTemplates.COMMANDS_INDXED(System.currentTimeMillis() - start).info()
             }
             .exceptionally(ExceptionLogger.get())
             .join()

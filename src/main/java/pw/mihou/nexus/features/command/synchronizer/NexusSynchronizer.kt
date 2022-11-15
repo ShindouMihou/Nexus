@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 class NexusSynchronizer internal constructor() {
 
-    @Volatile var methods: NexusSynchronizeMethods = NexusDefaultSynchronizeMethods()
+    @Volatile var methods: NexusSynchronizeMethods = NexusDefaultSynchronizeMethods
 
     /**
      * Deletes a command from a specific server.

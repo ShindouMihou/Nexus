@@ -39,7 +39,7 @@ internal class NexusExpressCore: NexusExpress {
                         }
                     }
                 } catch (exception: Exception) {
-                    Nexus.configuration.global.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
+                    Nexus.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
                 }
             }
 
@@ -55,7 +55,7 @@ internal class NexusExpressCore: NexusExpress {
                             (event as NexusExpressEventCore).process(shard)
                         }
                     } catch (exception: Exception) {
-                        Nexus.configuration.global.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
+                        Nexus.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
                     }
                 }
             }
@@ -72,7 +72,7 @@ internal class NexusExpressCore: NexusExpress {
                         }
                     }
                 } catch (exception: Exception) {
-                    Nexus.configuration.global.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
+                    Nexus.logger.error("An uncaught exception was caught from Nexus Express Way.", exception)
                 }
             }
         }
@@ -94,7 +94,7 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = localQueue(shard).remove(this)
-                            Nexus.configuration.global.logger.warn(
+                            Nexus.logger.warn(
                                 "An express request that was specified " +
                                     "for shard $shard has expired after ${maximumTimeout.toMillis()} milliseconds " +
                                     "without the shard connecting with Nexus. [acknowledged=$removed]"
@@ -126,7 +126,7 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = predicateQueue.remove(pair)
-                            Nexus.configuration.global.logger.warn(
+                            Nexus.logger.warn(
                                 "An express request that was specified " +
                                         "for a predicate has expired after ${maximumTimeout.toMillis()} milliseconds " +
                                         "without any matching shard connecting with Nexus. [acknowledged=$removed]"
@@ -156,7 +156,7 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = globalQueue.remove(this)
-                            Nexus.configuration.global.logger.warn(
+                            Nexus.logger.warn(
                                 "An express request that was specified " +
                                         "for any available shards has expired after ${maximumTimeout.toMillis()} milliseconds " +
                                         "without any shard connecting with Nexus. [acknowledged=$removed]"
@@ -236,7 +236,7 @@ internal class NexusExpressCore: NexusExpress {
                 try {
                     event.accept(shard)
                 } catch (exception: Exception) {
-                    Nexus.configuration.global.logger.error("An uncaught exception was caught from Nexus Express Broadcaster.", exception)
+                    Nexus.logger.error("An uncaught exception was caught from Nexus Express Broadcaster.", exception)
                 }
             }
         }
