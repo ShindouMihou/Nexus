@@ -12,8 +12,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.javacord:javacord:3.6.0'
-    implementation 'org.slf4j:slf4j-api:2.0.1'
+    implementation 'org.javacord:javacord:3.7.0'
+    implementation 'org.slf4j:slf4j-api:2.0.3'
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 }
