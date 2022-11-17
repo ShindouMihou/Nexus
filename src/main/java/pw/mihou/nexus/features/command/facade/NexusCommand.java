@@ -1,16 +1,58 @@
 package pw.mihou.nexus.features.command.facade;
 
+import kotlin.Pair;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
+import pw.mihou.nexus.core.exceptions.NoSuchAfterwareException;
+import pw.mihou.nexus.core.exceptions.NoSuchMiddlewareException;
+import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
+import pw.mihou.nexus.features.command.validation.OptionValidation;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public interface NexusCommand {
 
     long PLACEHOLDER_SERVER_ID = 0L;
+
+    static Map<DiscordLocale, String> createLocalized(Pair<DiscordLocale, String>... entries) {
+        return Arrays.stream(entries).collect(Collectors.toMap((pair) -> pair.component1(), (value) -> value.component2()));
+    }
+
+    static List<SlashCommandOption> createOptions(SlashCommandOption... options) {
+        return Arrays.stream(options).toList();
+    }
+
+    static List<OptionValidation<?>> createValidators(OptionValidation<?>... validators) {
+        return Arrays.stream(validators).toList();
+    }
+
+    static List<String> createMiddlewares(String... middlewares) {
+        List<String> list = new ArrayList<>();
+        for (String middleware : middlewares) {
+            if (!NexusCommandInterceptorCore.has(middleware)) throw new NoSuchMiddlewareException(middleware);
+            list.add(middleware);
+        }
+        return list;
+    }
+
+    static List<String> createAfterwares(String... afterwares) {
+        List<String> list = new ArrayList<>();
+        for (String afterware : afterwares) {
+            if (!NexusCommandInterceptorCore.has(afterware)) throw new NoSuchAfterwareException(afterware);
+            list.add(afterware);
+        }
+        return list;
+    }
+
+    static List<Long> with(long... servers) {
+        return Arrays.stream(servers).boxed().toList();
+    }
+
+    static List<PermissionType> createDefaultEnabledForPermissions(PermissionType... permissions) {
+        return Arrays.stream(permissions).toList();
+    }
 
     /**
      * Gets the unique identifier of the command, this tends to be the command name unless the
