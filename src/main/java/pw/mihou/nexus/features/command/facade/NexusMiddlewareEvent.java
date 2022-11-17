@@ -18,9 +18,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * @return The future to determine whether the response was accepted or not.
      */
     default CompletableFuture<Void> askDelayedResponse() {
-            return CompletableFuture.allOf(
-                    Nexus.getResponderRepository().peek(getBaseEvent().getInteraction())
-            );
+            return CompletableFuture.allOf(Nexus.getResponderRepository().peek(getBaseEvent().getInteraction()));
     }
 
     /**
@@ -30,9 +28,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * @return The future to determine whether the response was accepted or not.
      */
     default CompletableFuture<Void> askDelayedResponseAsEphemeral() {
-        return CompletableFuture.allOf(
-                Nexus.getResponderRepository().peekEphemeral(getBaseEvent().getInteraction())
-        );
+        return CompletableFuture.allOf(Nexus.getResponderRepository().peekEphemeral(getBaseEvent().getInteraction()));
     }
 
     /**
