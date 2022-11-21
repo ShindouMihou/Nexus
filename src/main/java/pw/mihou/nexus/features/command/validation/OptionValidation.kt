@@ -16,7 +16,7 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
      * The error to send to the client when it does not pass the validation, this is separate from the error that
      * will be sent from the requirements.
      */
-    var error: ValidationError? = null
+    var error: (Option) -> ValidationError? = { null }
 
     /**
      * Additional requirements that is needed by the [OptionValidation] such as whether to
@@ -47,6 +47,27 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
          */
         @JvmStatic
         fun createRequirements(): Requires = Requires()
+
+        /**
+         * Creates an [OptionValidation] that can be used to validate an [NexusCommandEvent] to match a specific state.
+         *
+         * @param collector the collector to collect the item that is being validated.
+         * @param validator the validator to use to validate that the option is valid.
+         * @param error     the message to send when the validation causes an error.
+         * @param requirements the additional requirements that is required such as non-nullable.
+         * @return a [OptionValidation] instance.
+         */
+        @JvmOverloads
+        @JvmStatic
+        fun <Option> create(collector: (NexusCommandEvent) -> Optional<Option>, validator: (Option) -> Boolean,
+                                     error: (Option) -> ValidationError? = { null }, requirements: Requires? = null): OptionValidation<Option> {
+            val optionValidation = OptionValidation(collector)
+            optionValidation.validator = validator
+            optionValidation.error = error
+            requirements?.apply { optionValidation.requirements = requirements }
+
+            return optionValidation
+        }
     }
 
     /**
@@ -68,7 +89,7 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
 
         val collectedItem = item.orElseThrow()
         if (!validator(collectedItem)) {
-            return ValidationResult(hasPassed = false, error = error)
+            return ValidationResult(hasPassed = false, error = error(collectedItem))
         }
 
         return ValidationResult(hasPassed = true, error = null)
@@ -98,24 +119,4 @@ class Requires internal constructor() {
     }
 
     inner class ErrorableRequireSetting internal constructor(val error: ValidationError?)
-}
-
-/**
- * Creates an [OptionValidation] that can be used to validate an [NexusCommandEvent] to match a specific state.
- *
- * @param collector the collector to collect the item that is being validated.
- * @param validator the validator to use to validate that the option is valid.
- * @param error     the message to send when the validation causes an error.
- * @param requirements the additional requirements that is required such as non-nullable.
- * @return a [OptionValidation] instance.
- */
-@JvmOverloads
-fun <Option> createValidator(collector: (NexusCommandEvent) -> Optional<Option>, validator: (Option) -> Boolean,
-                             error: ValidationError? = null, requirements: Requires? = null): OptionValidation<Option> {
-    val optionValidation = OptionValidation(collector)
-    optionValidation.validator = validator
-    optionValidation.error = error
-    requirements?.apply { optionValidation.requirements = requirements }
-
-    return optionValidation
 }
