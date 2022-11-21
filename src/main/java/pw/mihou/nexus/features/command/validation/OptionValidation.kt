@@ -79,8 +79,8 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
      */
     internal fun validate(event: NexusCommandEvent): ValidationResult {
         val item = collector(event)
-        if (requirements.nonNull != null && item.isEmpty) {
-            return ValidationResult(hasPassed = false, error = requirements.nonNull!!.error)
+        if (requirements.nonNull == null && item.isEmpty) {
+            return ValidationResult(hasPassed = true, error = null)
         }
 
         if (requirements.nonNull != null && item.isEmpty) {
