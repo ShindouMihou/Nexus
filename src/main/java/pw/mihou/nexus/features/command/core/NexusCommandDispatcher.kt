@@ -25,57 +25,62 @@ object NexusCommandDispatcher {
      * @param event     The [SlashCommandCreateEvent] event to dispatch.
      */
     fun dispatch(instance: NexusCommandCore, event: SlashCommandCreateEvent) {
-        val nexusEvent: NexusCommandEvent = NexusCommandEventCore(event, instance)
+        try {
+            val nexusEvent: NexusCommandEvent = NexusCommandEventCore(event, instance)
 
-        val middlewares: MutableList<String> = ArrayList()
-        middlewares.addAll(globalMiddlewares)
-        middlewares.addAll(instance.middlewares)
+            val middlewares: MutableList<String> = ArrayList()
+            middlewares.addAll(globalMiddlewares)
+            middlewares.addAll(instance.middlewares)
 
-        val afterwares: MutableList<String> = ArrayList()
-        afterwares.addAll(globalAfterwares)
-        afterwares.addAll(instance.afterwares)
+            val afterwares: MutableList<String> = ArrayList()
+            afterwares.addAll(globalAfterwares)
+            afterwares.addAll(instance.afterwares)
 
-        val middlewareGate = NexusCommandInterceptorCore.interceptWithMany(middlewares, nexusEvent) as NexusMiddlewareGateCore?
+            val middlewareGate = NexusCommandInterceptorCore.interceptWithMany(middlewares, nexusEvent) as NexusMiddlewareGateCore?
 
-        if (middlewareGate != null) {
-            val middlewareResponse = middlewareGate.response() as NexusMessageCore?
-            middlewareResponse?.convertTo(nexusEvent.respondNow())?.respond()?.exceptionally(ExceptionLogger.get())
-            return
-        }
-
-        if (event.slashCommandInteraction.channel.isEmpty) {
-            logger.error(
-                "The channel of a slash command event is somehow not present; this is possibly a change in Discord's side " +
-                        "and may need to be addressed, please send an issue @ https://github.com/ShindouMihou/Nexus"
-            )
-        }
-
-        val validationResult = validate(validations = instance.validators, nexusEvent)
-
-        if (validationResult != null) {
-            if (validationResult.error == null) {
+            if (middlewareGate != null) {
+                val middlewareResponse = middlewareGate.response() as NexusMessageCore?
+                middlewareResponse?.convertTo(nexusEvent.respondNow())?.respond()?.exceptionally(ExceptionLogger.get())
                 return
             }
 
-            val responder = nexusEvent.respondNow()
-            validationResult.error.convertTo(responder)
-
-            responder.respond().exceptionally(ExceptionLogger.get())
-            return
-        }
-
-        NexusThreadPool.executorService.submit {
-            try {
-                instance.handler.onEvent(nexusEvent)
-            } catch (throwable: Throwable) {
-                logger.error("An uncaught exception was received by Nexus Command Dispatcher for the " +
-                        "command ${instance.name} with the following stacktrace."
+            if (event.slashCommandInteraction.channel.isEmpty) {
+                logger.error(
+                    "The channel of a slash command event is somehow not present; this is possibly a change in Discord's side " +
+                            "and may need to be addressed, please send an issue @ https://github.com/ShindouMihou/Nexus"
                 )
-                throwable.printStackTrace()
             }
-        }
 
-        NexusThreadPool.executorService.submit { NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent) }
+            val validationResult = validate(validations = instance.validators, nexusEvent)
+
+            if (validationResult != null) {
+                if (validationResult.error == null) {
+                    return
+                }
+
+                val responder = nexusEvent.respondNow()
+                validationResult.error.convertTo(responder)
+
+                responder.respond().exceptionally(ExceptionLogger.get())
+                return
+            }
+
+            NexusThreadPool.executorService.submit {
+                try {
+                    instance.handler.onEvent(nexusEvent)
+                } catch (throwable: Throwable) {
+                    logger.error("An uncaught exception was received by Nexus Command Dispatcher for the " +
+                            "command ${instance.name} with the following stacktrace."
+                    )
+                    throwable.printStackTrace()
+                }
+            }
+
+            NexusThreadPool.executorService.submit { NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent) }
+        } catch (exception: Exception) {
+            logger.error("An uncaught exception occurred within Nexus' dispatcher for command ${instance.name}.")
+            exception.printStackTrace()
+        }
     }
 }
 
