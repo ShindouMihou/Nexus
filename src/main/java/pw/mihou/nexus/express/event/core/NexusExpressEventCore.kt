@@ -23,7 +23,7 @@ internal class NexusExpressEventCore(val request: NexusExpressRequest): NexusExp
     fun expire() {
         synchronized (this) {
             if (status == NexusExpressEventStatus.WAITING) {
-                change(status = NexusExpressEventStatus.WAITING)
+                change(status = NexusExpressEventStatus.EXPIRED)
             }
         }
     }
