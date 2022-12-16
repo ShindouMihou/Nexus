@@ -94,11 +94,13 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = localQueue(shard).remove(this)
-                            Nexus.logger.warn(
-                                "An express request that was specified " +
-                                    "for shard $shard has expired after ${maximumTimeout.toMillis()} milliseconds " +
-                                    "without the shard connecting with Nexus. [acknowledged=$removed]"
-                            )
+                            if (Nexus.configuration.express.showExpiredWarnings) {
+                                Nexus.logger.warn(
+                                    "An express request that was specified " +
+                                            "for shard $shard has expired after ${maximumTimeout.toMillis()} milliseconds " +
+                                            "without the shard connecting with Nexus. [acknowledged=$removed]"
+                                )
+                            }
 
                             expire()
                         }
@@ -126,11 +128,13 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = predicateQueue.remove(pair)
-                            Nexus.logger.warn(
-                                "An express request that was specified " +
-                                        "for a predicate has expired after ${maximumTimeout.toMillis()} milliseconds " +
-                                        "without any matching shard connecting with Nexus. [acknowledged=$removed]"
-                            )
+                            if (Nexus.configuration.express.showExpiredWarnings) {
+                                Nexus.logger.warn(
+                                    "An express request that was specified " +
+                                            "for a predicate has expired after ${maximumTimeout.toMillis()} milliseconds " +
+                                            "without any matching shard connecting with Nexus. [acknowledged=$removed]"
+                                )
+                            }
 
                             expire()
                         }
@@ -156,11 +160,13 @@ internal class NexusExpressCore: NexusExpress {
                     expressEvent.`do` {
                         if (status() == NexusExpressEventStatus.WAITING) {
                             val removed = globalQueue.remove(this)
-                            Nexus.logger.warn(
-                                "An express request that was specified " +
-                                        "for any available shards has expired after ${maximumTimeout.toMillis()} milliseconds " +
-                                        "without any shard connecting with Nexus. [acknowledged=$removed]"
-                            )
+                            if (Nexus.configuration.express.showExpiredWarnings) {
+                                Nexus.logger.warn(
+                                    "An express request that was specified " +
+                                            "for any available shards has expired after ${maximumTimeout.toMillis()} milliseconds " +
+                                            "without any shard connecting with Nexus. [acknowledged=$removed]"
+                                )
+                            }
 
                             expire()
                         }
