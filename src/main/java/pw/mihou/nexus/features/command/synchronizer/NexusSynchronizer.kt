@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.synchronizer
 
+import org.javacord.api.interaction.ApplicationCommand
 import org.javacord.api.interaction.SlashCommandBuilder
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.async.NexusLaunchable
@@ -62,7 +63,7 @@ class NexusSynchronizer internal constructor() {
      * for sharding formula.
      * @return  A future to indicate progress of this task.
      */
-    fun upsert(command: NexusCommand, totalShards: Int, vararg servers: Long): NexusLaunchable<Unit, Unit> = NexusLaunchable {
+    fun upsert(command: NexusCommand, totalShards: Int, vararg servers: Long): NexusLaunchable<Unit, ApplicationCommand> = NexusLaunchable {
         val serverMappedFutures = mutableMapOf<Long, CompletableFuture<Void>>()
 
         for (server in servers) {
@@ -72,10 +73,9 @@ class NexusSynchronizer internal constructor() {
                 Nexus.express
                     .await(Nexus.sharding.calculate(server, totalShards))
                     .thenCompose { shard -> methods.updateForServer(shard, command, server) }
+                    .thenApply { complete(it); it }
                     .thenAccept { `$command` -> Nexus.commandManager.index(command, `$command`.applicationId, `$command`.serverId.orElse(null)) }
                     .join()
-
-                complete(Unit)
             } catch (exception: Exception) {
                 error(NexusSynchronizerException(server, command, exception))
             }
@@ -90,7 +90,7 @@ class NexusSynchronizer internal constructor() {
      *
      * @return A future to indicate the progress of the synchronization task.
      */
-    fun synchronize(): NexusLaunchable<Unit, Unit> = NexusLaunchable {
+    fun synchronize(): NexusLaunchable<Unit, Set<ApplicationCommand>> = NexusLaunchable {
         val manager: NexusCommandManager = Nexus.commandManager
 
         val serverCommands = manager.serverCommands
@@ -100,6 +100,7 @@ class NexusSynchronizer internal constructor() {
             Nexus.express
                 .awaitAvailable()
                 .thenCompose { shard -> methods.bulkOverwriteGlobal(shard, globalCommands) }
+                .thenApply { complete(it); it }
                 .thenAccept(manager::index)
                 .join()
         } catch (exception: Exception) {
@@ -130,6 +131,7 @@ class NexusSynchronizer internal constructor() {
                 Nexus.express
                     .awaitAvailable()
                     .thenCompose { shard -> methods.bulkOverwriteServer(shard, builders, server) }
+                    .thenApply { complete(it); it }
                     .thenAccept(manager::index)
                     .join()
             } catch (exception: Exception) {
