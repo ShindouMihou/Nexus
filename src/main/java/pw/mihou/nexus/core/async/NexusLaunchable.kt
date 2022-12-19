@@ -66,8 +66,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchables the tasks to execute.
      */
-    fun addTaskCompletionListeners(launchables: List<NexusLaunchableCallback<SecondaryResult>>) {
+    fun addTaskCompletionListeners(launchables: List<NexusLaunchableCallback<SecondaryResult>>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         stack.taskCompletionStack.addAll(launchables)
+        return this
     }
 
     /**
@@ -80,8 +81,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchables the tasks to execute.
      */
-    fun addFinalCompletionListeners(launchables: List<NexusLaunchableCallback<PrimaryResult>>) {
+    fun addFinalCompletionListeners(launchables: List<NexusLaunchableCallback<PrimaryResult>>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         finalCompletionStack.addAll(launchables)
+        return this
     }
 
     /**
@@ -91,8 +93,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchables the tasks to execute.
      */
-    fun addTaskErrorListeners(launchables: List<NexusLaunchableCallback<Exception>>) {
+    fun addTaskErrorListeners(launchables: List<NexusLaunchableCallback<Exception>>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         stack.taskErrorStack.addAll(launchables)
+        return this
     }
 
     /**
@@ -105,8 +108,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchable the task to execute.
      */
-    fun addTaskCompletionListener(launchable: NexusLaunchableCallback<SecondaryResult>) {
+    fun addTaskCompletionListener(launchable: NexusLaunchableCallback<SecondaryResult>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         stack.taskCompletionStack.add(launchable)
+        return this
     }
 
     /**
@@ -119,8 +123,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchable the tasks to execute.
      */
-    fun addFinalCompletionListener(launchable: NexusLaunchableCallback<PrimaryResult>) {
+    fun addFinalCompletionListener(launchable: NexusLaunchableCallback<PrimaryResult>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         finalCompletionStack.add(launchable)
+        return this
     }
 
     /**
@@ -130,8 +135,9 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
      *
      * @param launchables the tasks to execute.
      */
-    fun addTaskErrorListener(launchable: NexusLaunchableCallback<Exception>) {
+    fun addTaskErrorListener(launchable: NexusLaunchableCallback<Exception>): NexusLaunchable<PrimaryResult, SecondaryResult> {
         stack.taskErrorStack.add(launchable)
+        return this
     }
 
     fun join() = finalFuture.join()
