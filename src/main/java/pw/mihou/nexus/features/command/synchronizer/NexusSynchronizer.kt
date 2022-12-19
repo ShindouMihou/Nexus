@@ -2,8 +2,10 @@ package pw.mihou.nexus.features.command.synchronizer
 
 import org.javacord.api.interaction.SlashCommandBuilder
 import pw.mihou.nexus.Nexus
+import pw.mihou.nexus.core.async.NexusLaunchable
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
 import pw.mihou.nexus.features.command.facade.NexusCommand
+import pw.mihou.nexus.features.command.synchronizer.exceptions.NexusSynchronizerException
 import pw.mihou.nexus.features.command.synchronizer.overwrites.NexusSynchronizeMethods
 import pw.mihou.nexus.features.command.synchronizer.overwrites.defaults.NexusDefaultSynchronizeMethods
 import java.util.concurrent.CompletableFuture
@@ -21,20 +23,17 @@ class NexusSynchronizer internal constructor() {
      *                      for sharding formula.
      * @return  A future to indicate the completion of this task.
      */
-    fun delete(command: NexusCommand, totalShards: Int, vararg servers: Long): CompletableFuture<Void> {
-        val serverMappedFutures: MutableMap<Long, CompletableFuture<Void>> = HashMap()
-
+    fun delete(command: NexusCommand, totalShards: Int, vararg servers: Long): NexusLaunchable<Unit, Unit>  = NexusLaunchable {
         for (serverId in servers) {
-            if (serverMappedFutures.containsKey(serverId)) continue
-
-            val future: CompletableFuture<Void> = Nexus.express
-                .await(Nexus.sharding.calculate(serverId, totalShards))
-                .thenCompose { shard -> methods.deleteForServer(shard, command, serverId) }
-
-            serverMappedFutures[serverId] = future
+            try {
+                Nexus.express
+                    .await(Nexus.sharding.calculate(serverId, totalShards))
+                    .thenCompose { shard -> methods.deleteForServer(shard, command, serverId) }
+                    .join()
+            } catch (exception: Exception) {
+                error(NexusSynchronizerException(serverId, command, exception))
+            }
         }
-
-        return CompletableFuture.allOf(*serverMappedFutures.values.toTypedArray<CompletableFuture<*>>())
     }
 
     /**
@@ -63,21 +62,24 @@ class NexusSynchronizer internal constructor() {
      * for sharding formula.
      * @return  A future to indicate progress of this task.
      */
-    fun upsert(command: NexusCommand, totalShards: Int, vararg servers: Long): CompletableFuture<Void> {
+    fun upsert(command: NexusCommand, totalShards: Int, vararg servers: Long): NexusLaunchable<Unit, Unit> = NexusLaunchable {
         val serverMappedFutures = mutableMapOf<Long, CompletableFuture<Void>>()
 
         for (server in servers) {
             if (serverMappedFutures.containsKey(server)) continue
 
-            val future: CompletableFuture<Void> = Nexus.express
-                .await(Nexus.sharding.calculate(server, totalShards))
-                .thenCompose { shard -> methods.updateForServer(shard, command, server) }
-                .thenAccept { `$command` -> Nexus.commandManager.index(command, `$command`.applicationId, `$command`.serverId.orElse(null)) }
+            try {
+                Nexus.express
+                    .await(Nexus.sharding.calculate(server, totalShards))
+                    .thenCompose { shard -> methods.updateForServer(shard, command, server) }
+                    .thenAccept { `$command` -> Nexus.commandManager.index(command, `$command`.applicationId, `$command`.serverId.orElse(null)) }
+                    .join()
 
-            serverMappedFutures[server] = future
+                complete(Unit)
+            } catch (exception: Exception) {
+                error(NexusSynchronizerException(server, command, exception))
+            }
         }
-
-        return CompletableFuture.allOf(*serverMappedFutures.values.toTypedArray<CompletableFuture<*>>())
     }
 
     /**
@@ -88,23 +90,27 @@ class NexusSynchronizer internal constructor() {
      *
      * @return A future to indicate the progress of the synchronization task.
      */
-    fun synchronize(): CompletableFuture<Void> {
+    fun synchronize(): NexusLaunchable<Unit, Unit> = NexusLaunchable {
         val manager: NexusCommandManager = Nexus.commandManager
 
         val serverCommands = manager.serverCommands
         val globalCommands = manager.globalCommands.map { command -> command.asSlashCommand() }.toHashSet()
 
-        val globalFuture: CompletableFuture<Void> = Nexus.express
-            .awaitAvailable()
-            .thenCompose { shard -> methods.bulkOverwriteGlobal(shard, globalCommands) }
-            .thenAccept(manager::index)
+        try {
+            Nexus.express
+                .awaitAvailable()
+                .thenCompose { shard -> methods.bulkOverwriteGlobal(shard, globalCommands) }
+                .thenAccept(manager::index)
+                .join()
+        } catch (exception: Exception) {
+            error(NexusSynchronizerException(null, null, exception))
+        }
 
         if (serverCommands.isEmpty()) {
-            return globalFuture
+            return@NexusLaunchable
         }
 
         val serverMappedCommands: MutableMap<Long, MutableSet<SlashCommandBuilder>> = mutableMapOf()
-        val serverMappedFutures: MutableMap<Long, CompletableFuture<Void>> = mutableMapOf()
 
         for (`$command` in serverCommands) {
             for (serverId in `$command`.serverIds) {
@@ -120,22 +126,16 @@ class NexusSynchronizer internal constructor() {
         serverMappedCommands.forEach { (server, builders) ->
             if (server == NexusCommand.PLACEHOLDER_SERVER_ID) return@forEach
 
-            val future: CompletableFuture<Void> = Nexus.express
-                .awaitAvailable()
-                .thenCompose { shard -> methods.bulkOverwriteServer(shard, builders, server) }
-                .thenAccept(manager::index)
-
-            serverMappedFutures[server] = future
+            try {
+                Nexus.express
+                    .awaitAvailable()
+                    .thenCompose { shard -> methods.bulkOverwriteServer(shard, builders, server) }
+                    .thenAccept(manager::index)
+                    .join()
+            } catch (exception: Exception) {
+                error(NexusSynchronizerException(server, null, exception))
+            }
         }
-
-        val futures: List<CompletableFuture<Void>> = mutableListOf<CompletableFuture<Void>>().let {
-            it.add(globalFuture)
-            it.addAll(serverMappedFutures.values)
-
-            it.toList()
-        }
-
-        return CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>>())
     }
 
 }

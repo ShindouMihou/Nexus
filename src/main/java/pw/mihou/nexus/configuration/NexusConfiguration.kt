@@ -1,9 +1,6 @@
 package pw.mihou.nexus.configuration
 
-import pw.mihou.nexus.configuration.modules.NexusCommonsInterceptorsConfiguration
-import pw.mihou.nexus.configuration.modules.NexusExpressConfiguration
-import pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration
-import pw.mihou.nexus.configuration.modules.NexusLoggingTemplatesConfiguration
+import pw.mihou.nexus.configuration.modules.*
 
 class NexusConfiguration internal constructor() {
 
@@ -11,5 +8,6 @@ class NexusConfiguration internal constructor() {
     @JvmField val global = NexusGlobalConfiguration()
     @JvmField val commonsInterceptors = NexusCommonsInterceptorsConfiguration()
     @JvmField val loggingTemplates = NexusLoggingTemplatesConfiguration()
+    @JvmField val launch = NexusLaunchConfiguration()
 
 }
