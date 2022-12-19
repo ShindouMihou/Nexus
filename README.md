@@ -1,231 +1,183 @@
-# 🍰 Nexus Framework
-The formal successor of [Velen](https://github.com/ShindouMihou/Velen) which takes a more OOP (Object Oriented Programming) approach to integrating slash commands onto your Discord bot without the need of builders. Nexus is slightly inspired by Laravel and is aimed to be more efficient than Velen at performing certain tasks.
+<div align="center">
+    Build with simplicity.
+</div>
 
-## 🌉 Dependencies
-Nexus doesn't enforce other dependencies other than the latest stable version of Javacord. Every development version of Javacord will have a branch of Nexus that is dedicated to compatiability changes (if the development version includes a breaking change), we recommend including any SLF4J-compatiable logging framework although Nexus supports adapters for custom logging. 
-- [💻 Logging](https://github.com/ShindouMihou/Nexus/#-Logging)
+### 
 
-## 📦 Installation
-The framework doesn't have any plans of moving to Maven Central at this moment, as such, it is recommended to use [Jitpack.io](https://jitpack.io/#pw.mihou/Nexus) to install the framework onto your project. Please follow the instructions written there.
-- [pw.mihou.Nexus](https://jitpack.io/#pw.mihou/Nexus)
+Nexus is a Javacord framework, originally written in Java, now in Kotlin-Java, designed to simplify development of Discord bots. It is the successor to 
+the [Velen](https://github.com/ShindouMihou/Velen) framework and takes a more object-ful approach to designing commands, also follows a strict standard of 
+one Discord bot per application.
 
-## 🧑‍🎨 Artisan
+#### 🎄 Preparing
 
-### 🌸 Your Nexus instance
-To start with using Nexus, one must create a global Nexus instance. It is recommended to place this instance as a **`public static`** field on your Main class or similar that can be accessed at any time without needing to recreate the instance.
-```java
-Nexus nexus = Nexus.builder().build();
+To install Nexus, head to [Jitpack](https://jitpack.io/#pw.mihou/Nexus) and select the release that you want to install, you may also 
+select the branch, commit that you want to install and follow the instructions from there.
+
+Nexus is pre-configured with most of the basic standards, but there are a few requirements that are in needed before proceeding and that is 
+handling the shard connection and disconnections with the shard manager. The framework uses its own sharding manager to help it route different tasks 
+to different shards without the need for you to bring along a shard parameter everytime, so we need a way for the framework to gather those shards.
+
+To do so, you can do the following on where you spawn a shard:
+```kotlin
+val shard: DiscordApi = ...
+Nexus.sharding.put(shard)
 ```
 
-You can configure the message configuration of Nexus and related configuration (e.g. maximum lifespan of an cross-shard Nexus request) from the [`NexusBuilder`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/core/builder/NexusBuilder.java).
+An example of how to do this would be:
+```kotlin
+// Sample One: Non-sharded
+val shard = DiscordApiBuilder()
+    .setToken(...)
+    .addListener(Nexus)
+    .login()
+    .join()
+Nexus.sharding.put(shard)
 
-Before proceeding forward, you need to add a few lines to how you create your DiscordApi instance, for example:
-```java
-new DiscordApiBuilder()
-       .setToken(...)
-       .addListener(nexus)
-       .setTotalShards(1)
-       .loginAll()
-       .forEach(future -> future.thenAccept(shard -> {
-            nexus.getShardManager().put(shard);
-            //... other stuff like onShardLogin()
-       }).exceptionally(ExceptionLogger.get()));
+// Sample Two: Sharded
+DiscordApiBuilder()
+    .setToken(...)
+    .addListener(Nexus)
+    .setTotalShards(1)
+    .loginAll()
+    .forEach { future -> future.thenAccept { shard -> 
+      Nexus.sharding.put(shard)
+      // other essentials that you may do such as onShardLogin()  
+    } }
 ```
 
-In particular, you need the add these two lines:
-```java
-.addListener(nexus)
-```
-```java
-nexus.getShardManager().put(shard);
+You also have to remember to place the `addListener` line to tell Javacord to route events to Nexus:
+```kotlin
+DiscordApiBuilder()
+    .addListener(Nexus)
 ```
 
-The former allows Nexus to listen into specific events like slash command events and handle them, the latter enables Nexus to use its own shard manager to get the DiscordApi instance of specific shards (e.g. during command synchronization and many other parts of the framework). Both of those lines are considered necessary for the framework to function.
+> **Note!**
+> When disconnecting with shards, you also have to indicate to Nexus that you want to remove the shard by adding 
+> the following line before the actual disconnect:
+> ```kotlin
+> Nexus.sharding.remove(shard.currentShard)
+> ```
 
-Another line that you may need to add if you are using the `DiscordApi#disconnect()` method is:
-```java
-DiscordApi shard = ...
-nexus.getShardManager().remove(shard.getCurrentShard());
-```
+#### 🍾 Designer
 
-You should add that line before calling `disconnect()` to tell Nexus that the given shard is no longer useable and removes it from its shard manager (important especially since Nexus will hold a reference to the shard until you call that function).
+Nexus offers a simple, and straightforward manner of designing commands, but before we can continue designing commands, let us first understand a few 
+fundamental rules that Nexus enforces:
+1. You cannot have two or more commands with the same name unless you modify one of the commands with the `@IdentifiableAs` annotation, for indexing reasons. ([Read more here]())
+2. You have to implement `NexusHandler` otherwise the engine will reject the command.
+3. You should have a name and a description field in the command itself, Discord requires these.
 
-These methods allows Nexus to perform command synchronization and similar (**REQUIRED for command synchronization**). You can view an example of those methods in use from below. 
-- [Synchronization Example](https://github.com/ShindouMihou/Nexus/blob/master/examples/synchronization/Main.java)
-
-### 🫓 Fundamentals of creating commands
-You can design commands in Nexus simply by creating a class that implements the [`NexusHandler`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusHandler.java) interface before creating two required `String` fields named: `name` and `description` which are required to create slash commands.
-```java
-public class PingCommand implements NexusHandler {
-
-   private final String name = "ping"
-   private final String description = "Ping pong!"
-   
-   @Override
-   public void onEvent(NexusCommandEvent event) {}
-
-}
-```
-When creating class fields, one must ensure that it doesn't conflict with the names of the variables found in [NexusCommandCore](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/core/NexusCommandCore.java) that has the `@Required` or `@WithDefault` annotations as these are options that must be set or can be overriden by defining these fields with the proper types on your class.
-
-For instance, we want to include the option of making our command ephemeral then all we need to do is define a `options` field with `List<SlashCommandOption>` before defining the value of the field with the ephemeral option.
-
-```java
-public class PingCommand implements NexusHandler {
-
-   private final String name = "ping"
-   private final String description = "Ping pong!"
-   private final List<SlashCommandOption> options = List.of(
-      SlashCommandOption.create(
-           SlashCommandOptionType.BOOLEAN, "ephemeral", "Whether to make the command ephemeral or not.", false
-      )
-   );
-   
-   @Override
-   public void onEvent(NexusCommandEvent event) {}
-
+After understanding all of those, we can start designing a command by simply creating a simple class that implements the `NexusHandler` class:
+```kotlin
+object PingCommand: NexusHandler {
+    override fun onEvent(event: NexusCommandEvent) {}
 }
 ```
 
-All fields with the exception of those defined in the [NexusCommandCore](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/core/NexusCommandCore.java) are not visible to interceptors but can be made visible by including the `@Share` annotation before the command which places the field into an immutable Map (whatever the field's value is upon generation will be the final value known to Nexus). You can see an example of this on the Authentication middlewares example:
-- [Authentication Examples](https://github.com/ShindouMihou/Nexus/tree/master/examples/authentication)
-- [Permissions Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L21)
-- [Role Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L59)
-- [User Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L102)
+But, that is still not a command and Nexus won't recognize it as one because it is still missing a few requirements and that is the `name` and `description` field. 
+It is here that we start to understand the object-ful nature of designing commands in Nexus, to add the following fields, all you need to do is add class fields:
+```kotlin
+object PingCommand: NexusHandler {
+    val name: String = "ping"
+    val description: String = "Ping, Pong!"
 
-You can also view a demonstration of "Shared Fields" from the shared_fields example:
-- [Shared Fields Example](https://github.com/ShindouMihou/Nexus/tree/master/examples/shared_fields)
-
-> We do not recommend using `event.getInteraction().respondLater()` or similar methods but instead use the `event.respondLater()` methods which **respects middlewares**. 
-> To explain this further, middlewares are allowed to request to Discord for an extension time to process the middleware's functions which is done through Nexus and this creates an `InteractionOriginalResponseUpdater` that Nexus stores for other middlewares to use or for the command to use. 
-> This is explained more on **Intercepting Commands**
-
-After creating the command class, you can then tell Nexus to include it by using:
-```java
-Nexus nexus = ...;
-nexus.listenOne(new SomeCommand());
-```
-
-You can also create a `NexusCommand` without enabling the event dispatcher (for cases when you want to see the result of the command generation) by using:
-```java
-Nexus nexus = ...;
-NexusCommand command = nexus.defineOne(new SomeCommand());
-```
-
-### ♒ Intercepting Commands
-Nexus includes the ability to intercept specific commands by including either the `middlewares` or `afterwares` field that takes a `List<String>` with the values inside the `List` being the key names of the interceptors. The framework provides several middlewares by default that you can add to your command or globally (via the `Nexus.addGlobalMiddleware(...)` method).
-- [Common Interceptors](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/NexusCommonInterceptors.java)
-- [Common Interceptors Implementation](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/core/NexusCommonInterceptorsCore.java)
-- [Nexus Auth Middlewares Implementation](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java)
-
-You can create your own middleware by using the method: `NexusCommandInterceptor.addMiddleware("middleware.name", event -> ...)`
-
-You can create your own afterware by using the method: `NexusCommandInterceptor.addAfterware("afterware.name", event -> ...)`
-
-These two methods utilizes Java's Lambdas to allow creating of the interceptors without the need of creating a new class but if you want to move the handling to their own classes then you can simply implement the [`NexusMiddleware`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/facades/NexusMiddleware.java) or [`NexusAfterware`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/interceptors/facades/NexusAfterware.java) interface.
-```java
-public class SomeMiddleware implements NexusMiddleware {
-
-    @Override
-    public void onBeforeCommand(NexusMiddlewareEvent event) { }
-
+    override fun onEvent(event: NexusCommandEvent) {}
 }
 ```
 
-Middlewares can control the execution of a command by utilizing the methods that [`NexusMiddlewareEvent`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusMiddlewareEvent.java) provides which includes:
-- `next()` : Tells Nexus to move forward to the next middleware to process if any, otherwise executes the command.
-- `stop()` : Stops the command from executing, this causes an `Interaction has failed` result in the Discord client of the user.
-- `stop(NexusMessage)` : Stops the command from executing with a response sent which can be either an Embed or a String.
-- `stopIf(boolean, NexusMessage)` : Same as above but only stops if the boolean provided is equals to true.
-- `stopIf(Predicate, NexusMessage)`: Same as above but evaluates the result from the function provided with Predicate.
-- `stopIf(Predicate)` : Same as above but doesn't send a message response.
+And that's pretty much how you can create a command, but how about we go deeper and add some functionality?
+```kotlin
+object PingCommand: NexusHandler {
+    val name: String = "ping"
+    val description: String = "Ping, Pong!"
 
-You do not need to tell Nexus to do `next()` since the default response of a middleware will always be `next()`.
-```java
-public class ServerOnlyMiddleware implements NexusMiddleware {
-
-    @Override
-    public void onBeforeCommand(NexusMiddlewareEvent event) {
-       event.stopIf(event.getServer().isEmpty());
+    override fun onEvent(event: NexusCommandEvent) {
+        val server = event.server.orElseThrow()
+        event.respondNowWith("Hello ${server.name}!")
     }
-
 }
 ```
-The above tells a simple example of a middleware the prevents the execution if the server is not present.
-```java
-Nexus nexus = ...
-NexusCommandInterceptor.addMiddleware("middlewares.gate.server", new ServerOnlyMiddleware());
-nexus.addGlobalMiddleware("middlewares.gate.server");
+
+And now, the command has a simple functionality that says "Hello {server}!", but there's a problem, we don't have a guarantee that it is executed on a server, but 
+don't worry, Nexus has a solution and that is through **middlewares** and **afterwares** which is common for many web frameworks.
+
+You can create a command interceptor, either a middleware or an afterware, through either two ways:
+1. Creating a repository of interceptors.
+2. Registering them directly onto the framework.
+
+Let us first understand the second way first; Nexus stores all interceptors in a single, global container in the application that is accessible by a name. All of these 
+are stored inside the `NexusCommandInterceptor` and we can add into it by simply doing the following:
+```kotlin
+// Sample One: Used to reduce code-duplication.
+NexusCommandInterceptor.addMiddleware("nexus.auth.server") { event -> event.stopIf(event.server.isEmpty) }
+
+// Sample Two: Used to create quick middlewares, not recommended.
+// It uses UUID as its namespace instead of giving a user-defined one.
+NexusCommandInterceptor.middleware { event -> event.stopIf(event.server.isEmpty) }
 ```
 
-Command Interceptors doesn't have any set of rules but we recommend following a similar scheme as package-classes of Java (e.g. `nexus.auth.permissions`) to make it easier to read but once again it is not required.
+Middlewares implement the `NexusMiddleware` interface which uses the `NexusMiddlewareEvent` that contains a bit more methods than the traditional `NexusCommandEvent`:
+- `next`: tells Nexus to skip to the next middleware, **does not require to be called response of a middleware.**
+- `stop`: tells Nexus to stop the command from executing, this causes an `Interaction has failed` result in the Discord client of the user.
+- `stop(NexusMesage)`: tells Nexus to stop the command from executing together with a message to be sent.
+- `stopIf(boolean, NexusMessage?)`: tells Nexus to stop the command from executing if the boolean is true, and sends a message when provided.
+- `stopIf(Predicate, NexusMessage?)`: same as above but just a predicate.
 
-Interceptors can access shared fields of a command as long as the field is defined with `@Share` which then will allow the interceptor to freely access it via the `event.getCommand().get("fieldName", Type.class)` which returns an `Optional<Type>`. You can see examples of these being used from the following references:
-- [Permissions Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L21)
-- [Role Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L59)
-- [User Authentication Middleware](https://github.com/ShindouMihou/Nexus/blob/f8942c4eca80ea5da92a71c14ae3b6d12cbf0e79/src/main/java/pw/mihou/nexus/features/command/interceptors/commons/modules/auth/NexusAuthMiddleware.java#L102)
-- [Shared Fields Example](https://github.com/ShindouMihou/Nexus/tree/master/examples/shared_fields)
-
-Middlewares that can take more than 3 seconds to complete should always use a delayed response which tells Nexus to generate a `InteractionOriginalResponseUpdater` for the command to use. A delayed response doesn't mean that the interaction is already answered, it just tells Discord that we are taking a bit longer to respond. You can use the following methods to perform a delayed response:
-- `askDelayedResponse()`: Asks for a delayed response, this won't allow you to respond to the command directly.
-- `askDelayedResponseAsEphemeral()`: Same as above but as ephemeral.
-- `askDelayedResponseAsEphemeralIf(boolean)`: Same as above but responds as an ephemeral if the boolean is true.
-- `askDelayedResponseAsEphemeralIf(Predicate)`: Same as above but evaluates the boolean from the Predicate.
-
-You are free to answer the interaction yourself but it will not be communicated cross-middleware and to the command. The methods above will allow middlewares and the command to use a single `InteractionOriginalResponseUpdater`.
-
-### 🏜️ Synchronizing Commands
-Nexus includes built-in synchronization methods for slash commands that are modifiable to one's liking. To understand how to synchronize commands to Discord, please visit our examples instead:
-- [Synchronization Example](https://github.com/ShindouMihou/Nexus/tree/master/examples/synchronization)
-
-You can modify the synchronization methods by implementing the following interface:
-- [NexusSynchronizeMethods](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/synchronizer/overwrites/NexusSynchronizeMethods.java)
-
-For reference, you can view the default methods that Nexus uses:
-- [NexusDefaultSynchronizeMethods](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/synchronizer/overwrites/defaults/NexusDefaultSynchronizeMethods.java)
-
-After defining your own synchronize methods, you can then add this line at startup:
-```java
-NexusSynchronizer.SYNCHRONIZE_METHODS.set(<Your Synchronize Methods Class>);
+Another way of creating interceptors is through a repository, and you can do that by creating a class that extends the `NexusInterceptorRepository` which 
+contains default methods for creating interceptors in a faster way. We recommend creating interceptors in a manner such as this:
+```kotlin
+object SampleInterceptorRepository: NexusInterceptorRepository() {
+    val SERVER_ONLY = "nexus.auth.server"
+    
+    override fun define() {
+        middleware(SERVER_ONLY) { event -> event.stopIf(event.server.isEmpty) }
+    }
+}
 ```
 
-What is the use-case for modifying the synchronize methods?
-- [x] Customizable synchronize methods were implemented due to the requirements of one of the bots under development that uses custom `bulkOverwrite...` methods that aren't included in the official Javacord fork. Nexus needs to adapt to those requirements as well and therefore synchronize methods are completely customizable.
-
-> **Note**
->
-> The following text below only applies to versions below v1.0.0-beta. The newer version ([**#8**](https://github.com/ShindouMihou/Nexus/pull/8)) has better synchronize methods that are more efficient and improved overall.
-
-The default synchronize methods should be more than enough for a bot that runs on a single cluster but for easier multi-cluster usage, it is recommended to use only one cluster to handle the synchronization of commands with a custom Javacord fork that allows for bulk-overwriting and updating of slash commands in servers using only the server id. 
-- You can refer to [BeemoBot/Javacord#1](https://github.com/BeemoBot/Javacord/pull/1) for more information.
-
-## 💻 Logging
-The framework logs through SLF4J by default but one can also use our console logging adapter to log to console in a similar format to Javacord's fallback logger. You can read more about how to use the console logging adapter on [v1.0.0-alpha3.0.6 Release Notes](https://github.com/ShindouMihou/Nexus/releases/tag/v1.0.0-alpha3.06).
-
-One can also create their own logging adapter by creating a class that implements [`NexusLoggingAdapter`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/core/logger/adapters/NexusLoggingAdapter.java) and routing Nexus to use those methods.
-```java
-Nexus.setLogger(<Your Logging Adapter Class Here>);
+You can then tell Nexus to register all the middlewares by doing the following:
+```kotlin
+NexusCommandInterceptor.addRepository(SampleInterceptorRepository)
 ```
 
-### ⏰ Rate-limiting
-You can rate-limit or add cooldowns to commands by including a simple `Duration cooldown = ...` field onto your command and including the `NexusCommonInterceptors.NEXUS_RATELIMITER` onto the list of middlewares of a command. The rate-limiter is made into a middleware to allow for custom implementations with the cooldown accessible from the [`NexusCommand`](https://github.com/ShindouMihou/Nexus/blob/master/src/main/java/pw/mihou/nexus/features/command/facade/NexusCommand.java) instance directly.
+One of the reasons that the above is recommended to build repositories is because we can immediately use the variable to include the middleware, for example:
+```kotlin
+object PingCommand: NexusHandler {
+    val name: String = "ping"
+    val description: String = "Ping, Pong!"
+    val middlewares = NexusCommand.createMiddlewares(SampleInterceptorRepository.SERVER_ONLY)
 
-## 📰 Pagination
-Nexus includes a simple pagination implementation which one can use easily, you can view an example implementation of this from the examples below:
-- [Poem Command](https://github.com/ShindouMihou/Nexus/blob/master/examples/PoemCommand.java)
+    override fun onEvent(event: NexusCommandEvent) {
+        val server = event.server.orElseThrow()
+        event.respondNowWith("Hello ${server.name}!")
+    }
+}
+```
 
-# 🌇 Nexus is used by
-- [Mana](https://manabot.fun): The original reason for Nexus' creation, Mana is an anime Discord bot that brings anime into communities.
-- [Amelia-chan](https://github.com/Amelia-chan/Amelia): A specialized RSS feed bot created for the ScribbleHub novel platform.
-- More to be added, feel free to create an issue if you want to add yours here!
+And now, the command is guaranteed to be executed only when the server is present. But, did you know that you can do more with interceptors. You can add custom properties 
+to commands that interceptors can access using the `@Share` annotation, which looks like this:
+```kotlin
+object PingCommand: NexusHandler {
+    val name: String = "ping"
+    val description: String = "Ping, Pong!"
+    val middlewares = NexusCommand.createMiddlewares(SampleInterceptorRepository.SERVER_ONLY, SampleInterceptorRepository.DEVELOPER_LOCK)
+    @Share val DEVELOPER_ONLY = false
 
-# 📚 License
-Nexus follows Apache 2.0 license which allows the following permissions:
-- ✔ Commercial Use
-- ✔ Modification
-- ✔ Distribution
-- ✔ Patent use
-- ✔ Private use
+    override fun onEvent(event: NexusCommandEvent) {
+        val server = event.server.orElseThrow()
+        event.respondNowWith("Hello ${server.name}!")
+    }
+}
 
-The contributors and maintainers of Nexus are not to be held liability over any creations that uses Nexus. We also forbid trademark use of
-the library and there is no warranty as stated by Apache 2.0 license. You can read more about the Apache 2.0 license on [GitHub](https://github.com/ShindouMihou/Nexus/blob/master/LICENSE).
+object SampleInterceptorRepository: NexusInterceptorRepository() {
+    val SERVER_ONLY = "nexus.auth.server"
+    val DEVELOPER_LOCK = "nexus.auth.developer"
+
+    override fun define() {
+        middleware(SERVER_ONLY) { event -> event.stopIf(event.server.isEmpty) }
+        middleware(DEVELOPER_LOCK) { event -> 
+            val locked = event.command.get("DEVELOPER_ONLY", Boolean::class.java).orElse(false)
+            event.stopIf(locked)
+        }
+    }
+}
+```
