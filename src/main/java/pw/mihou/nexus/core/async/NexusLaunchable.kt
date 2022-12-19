@@ -6,7 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Launchables is an asynchronous task that can have multiple completion stages and exceptions handle-able contrary to the
- * one that [CompletableFuture] has. It's a more complex variant that is designed to work support multiple tasks inside a single asynchronous
+ * one that [CompletableFuture] has. It's a more complex variant that is designed to support multiple tasks inside a single asynchronous
  * task.
  *
  * A launchable has two stages of completion:
