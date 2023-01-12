@@ -41,12 +41,34 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
         Object globalParent = Nexus.getConfiguration().global.inheritance;
         if (globalParent != null) {
             Class<?> parent = globalParent.getClass();
-            prepareInheritance(parent, object);
+            prepareInheritance(parent, object, globalParent);
         }
 
         if (object.getClass().isAnnotationPresent(Inherits.class)) {
             Class<?> parent = object.getClass().getAnnotation(Inherits.class).value();
-            prepareInheritance(parent, object);
+            try {
+                Object inheritanceReference;
+
+                if (parent.getConstructors().length != 0) {
+                    Constructor<?> constructor = Arrays.stream(parent.getConstructors())
+                            .filter(construct -> construct.getParameterCount() == 0)
+                            .findFirst()
+                            .orElse(null);
+
+                    if (constructor == null) {
+                        throw new NotInheritableException(parent);
+                    }
+
+                    inheritanceReference = constructor.newInstance();
+                } else {
+                    inheritanceReference = parent.getDeclaredConstructor().newInstance();
+                }
+
+                prepareInheritance(parent, object, inheritanceReference);
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // After collecting all the defaults, we can start bootstrapping the fields HashMap.
@@ -90,18 +112,7 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                 });
     }
 
-    private void prepareInheritance(Class<?> parent, Object command) {
-        Constructor<?> constructor = Arrays.stream(parent.getConstructors())
-                .filter(construct -> construct.getParameterCount() == 0)
-                .findFirst()
-                .orElse(null);
-
-        if (constructor == null) {
-            throw new NotInheritableException(parent);
-        }
-
-        try {
-            Object inheritanceReference = constructor.newInstance();
+    private void prepareInheritance(Class<?> parent, Object command, Object  inheritanceReference) {
             Arrays.stream(parent.getDeclaredFields())
                     .forEach(field -> {
                         field.setAccessible(true);
@@ -122,9 +133,6 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                             throw new IllegalStateException("Nexus was unable to complete variable inheritance stage for class: " + command.getClass().getName());
                         }
                     });
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
