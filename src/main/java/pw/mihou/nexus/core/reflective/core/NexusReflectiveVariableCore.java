@@ -1,5 +1,6 @@
 package pw.mihou.nexus.core.reflective.core;
 
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.exceptions.NotInheritableException;
 import pw.mihou.nexus.core.reflective.annotations.Required;
 import pw.mihou.nexus.core.reflective.annotations.Share;
@@ -37,32 +38,15 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                     }
                 });
 
+        Object globalParent = Nexus.getConfiguration().global.inheritance;
+        if (globalParent != null) {
+            Class<?> parent = globalParent.getClass();
+            prepareInheritance(parent, object);
+        }
+
         if (object.getClass().isAnnotationPresent(Inherits.class)) {
             Class<?> parent = object.getClass().getAnnotation(Inherits.class).value();
-            Constructor<?> constructor = Arrays.stream(parent.getConstructors())
-                    .filter(construct -> construct.getParameterCount() == 0)
-                    .findFirst()
-                    .orElse(null);
-
-            if (constructor == null) {
-                throw new NotInheritableException(parent);
-            }
-
-            try {
-                Object inheritanceReference = constructor.newInstance();
-                Arrays.stream(parent.getDeclaredFields())
-                        .forEach(field -> {
-                            field.setAccessible(true);
-                            try {
-                                fields.put(field.getName().toLowerCase(), field.get(inheritanceReference));
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                                throw new IllegalStateException("Nexus was unable to complete variable inheritance stage for class: " + object.getClass().getName());
-                            }
-                        });
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+            prepareInheritance(parent, object);
         }
 
         // After collecting all the defaults, we can start bootstrapping the fields HashMap.
@@ -104,6 +88,43 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                         );
                     }
                 });
+    }
+
+    private void prepareInheritance(Class<?> parent, Object command) {
+        Constructor<?> constructor = Arrays.stream(parent.getConstructors())
+                .filter(construct -> construct.getParameterCount() == 0)
+                .findFirst()
+                .orElse(null);
+
+        if (constructor == null) {
+            throw new NotInheritableException(parent);
+        }
+
+        try {
+            Object inheritanceReference = constructor.newInstance();
+            Arrays.stream(parent.getDeclaredFields())
+                    .forEach(field -> {
+                        field.setAccessible(true);
+                        try {
+                            Object obj = field.get(inheritanceReference);
+                            if (obj == null) {
+                                return;
+                            }
+
+                            if (field.isAnnotationPresent(Share.class)) {
+                                sharedFields.put(field.getName().toLowerCase(), obj);
+                                return;
+                            }
+
+                            fields.put(field.getName().toLowerCase(), field.get(inheritanceReference));
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                            throw new IllegalStateException("Nexus was unable to complete variable inheritance stage for class: " + command.getClass().getName());
+                        }
+                    });
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

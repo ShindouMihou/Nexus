@@ -32,4 +32,12 @@ class NexusGlobalConfiguration internal constructor() {
      * if you are using a Log4j logger but with a SLF4J bridge as the default logging adapter uses SLF4J.
      */
     @Volatile var logger: NexusLoggingAdapter = NexusDefaultLoggingAdapter()
+
+    /**
+     * To enable global inheritance, wherein all the commands inherits properties from the class provided below, you can
+     * specify which class you want to be inherited and Nexus will take care of inheriting them. Including a global inheritance
+     * class would mean the properties of the global inheritance class will be inherited by children commands regardless of
+     * whether they have a local inheritance class.
+     */
+    @JvmField @Volatile var inheritance: Any? = null
 }
