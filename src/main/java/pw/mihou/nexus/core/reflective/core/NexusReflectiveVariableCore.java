@@ -11,6 +11,7 @@ import pw.mihou.nexus.features.inheritance.Inherits;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -49,23 +50,33 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
             try {
                 Object inheritanceReference;
 
-                Constructor<?> constructor;
-                if (parent.getConstructors().length != 0) {
-                    constructor = Arrays.stream(parent.getConstructors())
-                            .filter(construct -> construct.getParameterCount() == 0)
-                            .findFirst()
-                            .orElse(null);
+                Field localInstance = null;
 
-                    if (constructor == null) {
-                        throw new NotInheritableException(parent);
+                try {
+                    localInstance = parent.getField("INSTANCE");
+                } catch (NoSuchFieldException ignored) {}
+
+                if (localInstance != null) {
+                    inheritanceReference = localInstance.get(null);
+                } else {
+                    Constructor<?> constructor;
+                    if (parent.getConstructors().length != 0) {
+                        constructor = Arrays.stream(parent.getConstructors())
+                                .filter(construct -> construct.getParameterCount() == 0)
+                                .findFirst()
+                                .orElse(null);
+
+                        if (constructor == null) {
+                            throw new NotInheritableException(parent);
+                        }
+
+                    } else {
+                        constructor = parent.getDeclaredConstructor();
                     }
 
-                } else {
-                    constructor = parent.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    inheritanceReference = constructor.newInstance();
                 }
-
-                constructor.setAccessible(true);
-                inheritanceReference = constructor.newInstance();
 
                 prepareInheritance(parent, object, inheritanceReference);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
