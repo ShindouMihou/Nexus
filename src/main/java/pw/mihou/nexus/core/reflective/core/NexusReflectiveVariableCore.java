@@ -59,8 +59,10 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                         throw new NotInheritableException(parent);
                     }
 
+                    constructor.setAccessible(true);
                     inheritanceReference = constructor.newInstance();
                 } else {
+                    parent.getDeclaredConstructor().setAccessible(true);
                     inheritanceReference = parent.getDeclaredConstructor().newInstance();
                 }
 
