@@ -49,8 +49,9 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
             try {
                 Object inheritanceReference;
 
+                Constructor<?> constructor;
                 if (parent.getConstructors().length != 0) {
-                    Constructor<?> constructor = Arrays.stream(parent.getConstructors())
+                    constructor = Arrays.stream(parent.getConstructors())
                             .filter(construct -> construct.getParameterCount() == 0)
                             .findFirst()
                             .orElse(null);
@@ -59,12 +60,12 @@ public class NexusReflectiveVariableCore implements NexusReflectiveVariableFacad
                         throw new NotInheritableException(parent);
                     }
 
-                    constructor.setAccessible(true);
-                    inheritanceReference = constructor.newInstance();
                 } else {
-                    parent.getDeclaredConstructor().setAccessible(true);
-                    inheritanceReference = parent.getDeclaredConstructor().newInstance();
+                    constructor = parent.getDeclaredConstructor();
                 }
+
+                constructor.setAccessible(true);
+                inheritanceReference = constructor.newInstance();
 
                 prepareInheritance(parent, object, inheritanceReference);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
