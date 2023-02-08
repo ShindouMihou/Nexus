@@ -5,7 +5,13 @@ import pw.mihou.nexus.features.command.validation.result.ValidationResult
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import java.util.*
 
-class OptionValidation<Option> internal constructor(val collector: (NexusCommandEvent) -> Optional<Option>) {
+typealias OptionCollector<Option> = (NexusCommandEvent) -> Optional<Option>
+class OptionValidation<Option> internal constructor() {
+
+    /**
+     * The collector to use to collect the option's value.
+     */
+    lateinit var collector: (NexusCommandEvent) -> Optional<Option>
 
     /**
      * The validator to use to validate that the result is indeed what we want.
@@ -59,9 +65,16 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
          */
         @JvmOverloads
         @JvmStatic
-        fun <Option> create(collector: (NexusCommandEvent) -> Optional<Option>, validator: (Option) -> Boolean,
-                                     error: (Option) -> ValidationError? = { null }, requirements: Requires? = null): OptionValidation<Option> {
-            val optionValidation = OptionValidation(collector)
+        fun <Option> create(
+            collector: OptionCollector<Option>? = null,
+            validator: (Option) -> Boolean,
+            error: (Option) -> ValidationError? = { null },
+            requirements: Requires? = null
+        ): OptionValidation<Option> {
+            val optionValidation = OptionValidation<Option>()
+            if (collector != null) {
+                optionValidation.collector = collector
+            }
             optionValidation.validator = validator
             optionValidation.error = error
             requirements?.apply { optionValidation.requirements = requirements }
@@ -94,6 +107,20 @@ class OptionValidation<Option> internal constructor(val collector: (NexusCommand
 
         return ValidationResult(hasPassed = true, error = null)
     }
+
+    /**
+     * Creates a clone of the current [OptionValidation] but with a new collector. This is intended for when
+     * you want to store validators to prevent duplicate codes and is the most recommended way.
+     *
+     * @param collector the collector to use to collect the option's value.
+     * @return a clone of the current [OptionValidation] but with a new collector.
+     */
+    fun withCollector(collector: OptionCollector<Option>) = create(
+        collector = collector,
+        validator = this.validator,
+        error = this.error,
+        requirements = this.requirements
+    )
 }
 
 class Requires internal constructor() {

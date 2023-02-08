@@ -197,3 +197,11 @@ To learn more about how to use the basic router, you can check our examples:
 
 To learn about how we built the subcommand router, you can check the source code at:
 - [Subcommand Router](src/main/java/pw/mihou/nexus/features/command/router)
+
+#### 💭 Option Validation
+
+Nexus offers a near-barebones way of validating options without doing much code-duplication. It isn't the most flexible, 
+but it suits most developers' needs and prevents a lot of potential code duplication. 
+
+To learn more about how to use the option validation, you can check our example:
+- [Option Validators](examples/option_validators)
