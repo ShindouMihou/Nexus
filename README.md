@@ -100,6 +100,8 @@ object PingCommand: NexusHandler {
 And now, the command has a simple functionality that says "Hello {server}!", but there's a problem, we don't have a guarantee that it is executed on a server, but 
 don't worry, Nexus has a solution and that is through **middlewares** and **afterwares** which is common for many web frameworks.
 
+#### 💭 Command Interceptors
+
 You can create a command interceptor, either a middleware or an afterware, through either two ways:
 1. Creating a repository of interceptors.
 2. Registering them directly onto the framework.
@@ -121,6 +123,8 @@ Middlewares implement the `NexusMiddleware` interface which uses the `NexusMiddl
 - `stop(NexusMesage)`: tells Nexus to stop the command from executing together with a message to be sent.
 - `stopIf(boolean, NexusMessage?)`: tells Nexus to stop the command from executing if the boolean is true, and sends a message when provided.
 - `stopIf(Predicate, NexusMessage?)`: same as above but just a predicate.
+
+#### 💭 Interceptor Repositories
 
 Another way of creating interceptors is through a repository, and you can do that by creating a class that extends the `NexusInterceptorRepository` which 
 contains default methods for creating interceptors in a faster way. We recommend creating interceptors in a manner such as this:
@@ -181,3 +185,15 @@ object SampleInterceptorRepository: NexusInterceptorRepository() {
     }
 }
 ```
+
+#### 💭 Basic Subcommand Router
+
+Nexus offers a simple, basic subcommand router that is minimal and doesn't add much if not any overhead or complexity to 
+your code. It is intended for the very basic needs and can be extended to your liking and serves as a base example for 
+creating subcommand routers in Nexus.
+
+To learn more about how to use the basic router, you can check our examples:
+- [Basic Subcommand Router](examples/router)
+
+To learn about how we built the subcommand router, you can check the source code at:
+- [Subcommand Router](src/main/java/pw/mihou/nexus/features/command/router)
