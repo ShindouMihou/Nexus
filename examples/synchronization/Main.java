@@ -1,7 +1,6 @@
-package pw.mihou.nexus;
-
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.threadpool.NexusThreadPool;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 
@@ -10,17 +9,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Test {
 
-    private static final Nexus nexus = Nexus.builder().build();
-
     public static void main(String[] args) {
-        nexus.listenMany(new AGlobalCommand(), new ASpecificServerCommand());
-        NexusCommand dynamic = nexus.createCommandFrom(new ADynamicCommand());
-
+        Nexus.commands(new AGlobalCommand(), new ASpecificServerCommand());
+        NexusCommand dynamic = Nexus.getCommandManager().get("dynamic", null);
         new DiscordApiBuilder()
                 .setToken(System.getenv("token"))
                 .setAllIntents()
                 .setTotalShards(4)
-                .addListener(nexus)
+                .addListener(Nexus.INSTANCE)
                 .loginAllShards()
                 .forEach(future -> future.thenAccept(discordApi -> {
                     System.out.println("Shard " + discordApi.getCurrentShard() + " is now online.");
@@ -32,24 +28,27 @@ public class Test {
                     // and also allows Nexus to function more completely.
                     // IMPORTANT IMPORTANT IMPORTANT IMPORTANT
                     // ------------------
-                    nexus.getShardManager().put(discordApi);
-
+                    Nexus.getShardingManager().set(discordApi);
                 }).exceptionally(ExceptionLogger.get()));
 
         //---------------------
         // Global synchronization of all commands, recommended at startup.
         // This updates, creates or removes any commands that are missing, outdated or removed.
         //----------------------
-        nexus.getSynchronizer().synchronize()
-                .thenAccept(unused -> System.out.println("Synchronization with Discord's and Nexus' command repository is now complete."))
-                .exceptionally(ExceptionLogger.get());
+        Nexus.getSynchronizer()
+                .synchronize()
+                .addFinalCompletionListener(unused -> System.out.println("Successsfully migrated all commands to Discord."))
+                .addTaskErrorListener(exception -> {
+                    System.out.println("An error occurred while trying to migrate commands to Discord: ");
+                    exception.printStackTrace();
+                });
 
         //------------------
         // Demonstration of dynamic server command updating.
         //-----------------
 
         NexusThreadPool.schedule(() -> {
-            dynamic.addSupportFor(853911163355922434L, 858685857511112736L);
+            dynamic.associate(853911163355922434L, 858685857511112736L);
             System.out.println("Attempting to perform dynamic updates...");
 
             // We recommend using batch update if you performed more than 1 `addSupportFor` methods.
@@ -63,7 +62,7 @@ public class Test {
         }, 1, TimeUnit.MINUTES);
 
         NexusThreadPool.schedule(() -> {
-            dynamic.removeSupportFor(853911163355922434L);
+            dynamic.disassociate(853911163355922434L);
             System.out.println("Attempting to perform dynamic updates...");
 
             // The same information as earlier, batch update will update the entire server slash command list
@@ -85,7 +84,7 @@ public class Test {
      * @param serverId      The server id to synchronize commands to.
      */
     private static void batchUpdate(long serverId) {
-        nexus.getSynchronizer()
+        Nexus.getSynchronizer()
                 .batchUpdate(serverId)
                 .thenAccept(unused -> System.out.println("A batch update was complete. [server="+serverId+"]"))
                 .exceptionally(ExceptionLogger.get());
@@ -101,10 +100,13 @@ public class Test {
      * @param serverIds     The server ids to update the bot on.
      */
     private static void singleUpdate(NexusCommand command, int totalShards, long... serverIds) {
-        nexus.getSynchronizer()
+        Nexus.getSynchronizer()
                 .upsert(command, totalShards, serverIds)
-                .thenAccept(unused -> System.out.println("A batch upsert was complete. [servers="+ Arrays.toString(serverIds) +"]"))
-                .exceptionally(ExceptionLogger.get());
+                .addFinalCompletionListener(unused -> System.out.println("A batch upsert was complete. [servers="+ Arrays.toString(serverIds) +"]"))
+                .addTaskErrorListener(exception -> {
+                    System.out.println("An error occurred while trying to update commands: ");
+                    exception.printStackTrace();
+                });
     }
 
     /**
@@ -117,10 +119,13 @@ public class Test {
      * @param serverIds     The server ids to update the bot on.
      */
     private static void singleDelete(NexusCommand command, int totalShards, long... serverIds) {
-        nexus.getSynchronizer()
+        Nexus.getSynchronizer()
                 .delete(command, totalShards, serverIds)
-                .thenAccept(unused -> System.out.println("A batch delete was complete. [servers="+ Arrays.toString(serverIds) +"]"))
-                .exceptionally(ExceptionLogger.get());
+                .addFinalCompletionListener(unused -> System.out.println("A batch delete was complete. [servers="+ Arrays.toString(serverIds) +"]"))
+                .addTaskErrorListener(exception -> {
+                    System.out.println("An error occurred while trying to delete commands: ");
+                    exception.printStackTrace();
+                });
     }
 
 }

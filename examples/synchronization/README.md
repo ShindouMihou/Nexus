@@ -9,6 +9,13 @@ the batch override and performs single updates for cases where you aren't sure a
 
 You can view a full example of how this synchronization looks from the `Main.java` file on this folder.
 
+> **Warning**
+> Due to the nature of commands being able to have multiple servers, Nexus uses custom handling for Futures and this
+> includes handling errors. To handle errors, please add `.addTaskErrorListener(...)` which is similar to `.exceptionally(...)
+> while `.addTaskCompletionListener(...)` is similar to `.thenAccept(...)` although is scoped towards a single task.
+>
+> If you want to listen to the actual completion of all tasks, you have to use the `.addFinalTaskCompletionListener(...)` instead.
+
 # 🥞 EngineX & Synchronization
 EngineX is a critical factor into the new synchronization system as it allows Nexus to queue any synchronization requests for a specific shard 
 or for any shard available to take without the end-user finding a way where to place the synchronization method. It's workings are a bit complicated but 

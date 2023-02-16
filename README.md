@@ -20,7 +20,7 @@ to different shards without the need for you to bring along a shard parameter ev
 To do so, you can do the following on where you spawn a shard:
 ```kotlin
 val shard: DiscordApi = ...
-Nexus.sharding.put(shard)
+Nexus.sharding.set(shard)
 ```
 
 An example of how to do this would be:
@@ -40,7 +40,7 @@ DiscordApiBuilder()
     .setTotalShards(1)
     .loginAll()
     .forEach { future -> future.thenAccept { shard -> 
-      Nexus.sharding.put(shard)
+      Nexus.sharding.set(shard)
       // other essentials that you may do such as onShardLogin()  
     } }
 ```
@@ -205,3 +205,21 @@ but it suits most developers' needs and prevents a lot of potential code duplica
 
 To learn more about how to use the option validation, you can check our example:
 - [Option Validators](examples/option_validators)
+
+#### 💭 Command Synchronizations
+
+Nexus brings together a simple and straightforward method of synchronization for commands. To synchronize commands, all you 
+have to do is adding the following line:
+```kotlin
+Nexus.synchronizer.synchronize()
+```
+
+> **Warning**
+> Due to the nature of commands being able to have multiple servers, Nexus uses custom handling for Futures and this 
+> includes handling errors. To handle errors, please add `.addTaskErrorListener(...)` which is similar to `.exceptionally(...) 
+> while `.addTaskCompletionListener(...)` is similar to `.thenAccept(...)` although is scoped towards a single task.
+> 
+> If you want to listen to the actual completion of all tasks, you have to use the `.addFinalTaskCompletionListener(...)` instead.
+
+To learn more about how to use the synchronizer to do many things, you can check our example:
+- [Command Synchronization](examples/synchronization)

@@ -14,7 +14,7 @@ public class ADynamicCommand implements NexusHandler {
     // a server slash command. It is ignored in any sort of updates.
     //
     // For more verbosity, Nexus has this as a public static field.
-    private final List<Long> serverIds = List.of(NexusCommand.PLACEHOLDER_SERVER_ID);
+    private final List<Long> serverIds = NexusCommand.with(NexusCommand.PLACEHOLDER_SERVER_ID);
 
     @Override
     public void onEvent(NexusCommandEvent event) {
