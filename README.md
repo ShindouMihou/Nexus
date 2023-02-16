@@ -8,7 +8,15 @@ Nexus is a Javacord framework, originally written in Java, now in Kotlin-Java, d
 the [Velen](https://github.com/ShindouMihou/Velen) framework and takes a more object-ful approach to designing commands, also follows a strict standard of 
 one Discord bot per application.
 
-#### 🎄 Preparing
+#### Table of Contents
+1. [Preparation](#-preparaton)
+2. [Designing Commands](#-designing-commands)
+3. [Commnad Interceptors](#-command-interceptors)
+4. [Basic Subcommand Router](#-basic-subcommand-router)
+5. [Option Validation](#-option-validation)
+6. [Command Synchronizations](#-command-synchronizations)
+
+#### 💭 Preparation
 
 To install Nexus, head to [Jitpack](https://jitpack.io/#pw.mihou/Nexus) and select the release that you want to install, you may also 
 select the branch, commit that you want to install and follow the instructions from there.
@@ -58,7 +66,7 @@ DiscordApiBuilder()
 > Nexus.sharding.remove(shard.currentShard)
 > ```
 
-#### 🍾 Designer
+#### 🍾 Designing Commands
 
 Nexus offers a simple, and straightforward manner of designing commands, but before we can continue designing commands, let us first understand a few 
 fundamental rules that Nexus enforces:
