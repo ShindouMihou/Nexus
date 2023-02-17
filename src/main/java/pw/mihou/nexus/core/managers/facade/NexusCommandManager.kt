@@ -135,6 +135,8 @@ interface NexusCommandManager {
      */
     fun index(applicationCommand: ApplicationCommand)
 
-    fun mention(server: Long?, vararg commands: String) = indexStore.mention(server, *commands)
-    fun mention(server: Long?, command: String) = indexStore.mention(server, command)
+    fun mentionMany(server: Long?, vararg commands: String) =
+        indexStore.mentionMany(server, *commands)
+    fun mentionOne(server: Long?, command: String, override: String? = null, default: String) =
+        indexStore.mentionOne(server, command, override, default)
 }

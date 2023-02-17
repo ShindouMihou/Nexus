@@ -1,7 +1,6 @@
 package pw.mihou.nexus.core.managers.indexes
 
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
-import pw.mihou.nexus.features.command.annotation.IdentifiableAs
 
 interface IndexStore {
 
@@ -35,7 +34,7 @@ interface IndexStore {
      * @param default the default value to use when there is no command like that.
      * @return the mention tags of the command.
      */
-    fun mention(server: Long?, command: String, override: String? = null, default: String): String {
+    fun mentionOne(server: Long?, command: String, override: String? = null, default: String): String {
         val index = get(command, server) ?: return default
         return "</${override ?: index.command}:${index.applicationCommandId}>"
     }
@@ -46,7 +45,7 @@ interface IndexStore {
      * @param names the names of the commands to fetch.
      * @return the mention tags of each commands.
      */
-    fun mention(server: Long?, vararg names: String): Map<String, String> {
+    fun mentionMany(server: Long?, vararg names: String): Map<String, String> {
         val indexes = many(server, *names)
         val map = mutableMapOf<String, String>()
         for (index in indexes) {
