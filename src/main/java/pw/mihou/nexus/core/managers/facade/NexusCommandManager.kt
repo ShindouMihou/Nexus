@@ -134,4 +134,7 @@ interface NexusCommandManager {
      * @param applicationCommand The command to index.
      */
     fun index(applicationCommand: ApplicationCommand)
+
+    fun mention(server: Long?, vararg commands: String) = indexStore.mention(server, *commands)
+    fun mention(server: Long?, command: String) = indexStore.mention(server, command)
 }

@@ -20,6 +20,57 @@ interface IndexStore {
     operator fun get(applicationCommandId: Long): NexusMetaIndex?
 
     /**
+     * Gets the [NexusMetaIndex] that matches the given specifications.
+     * @param command the command name.
+     * @param server the server that this command belongs.
+     * @return the [NexusMetaIndex] that matches.
+     */
+    operator fun get(command: String, server: Long?): NexusMetaIndex?
+
+    /**
+     * Gets one command mention tag from the [IndexStore].
+     * @param server the server to fetch the commands from, if any.
+     * @param command the names of the commands to fetch.
+     * @param override overrides the name of the command, used to add subcommands and related.
+     * @param default the default value to use when there is no command like that.
+     * @return the mention tags of the command.
+     */
+    fun mention(server: Long?, command: String, override: String? = null, default: String): String {
+        val index = get(command, server) ?: return default
+        return "</${override ?: index.command}:${index.applicationCommandId}>"
+    }
+
+    /**
+     * Gets many command mention tags from the [IndexStore].
+     * @param server the server to fetch the commands from, if any.
+     * @param names the names of the commands to fetch.
+     * @return the mention tags of each commands.
+     */
+    fun mention(server: Long?, vararg names: String): Map<String, String> {
+        val indexes = many(server, *names)
+        val map = mutableMapOf<String, String>()
+        for (index in indexes) {
+            map[index.command] = "</${index.command}:${index.applicationCommandId}>"
+        }
+        return map
+    }
+
+    /**
+     * Gets one or more [NexusMetaIndex] from the store.
+     * @param applicationCommandIds the application command identifiers from Discord's side.
+     * @return the [NexusMetaIndex]es that matches.
+     */
+    fun many(vararg applicationCommandIds: Long): List<NexusMetaIndex>
+
+    /**
+     * Gets one or more [NexusMetaIndex] from the store.
+     * @param server the server that these commands belongs to.
+     * @param names the names of the commands to fetch.
+     * @return the [NexusMetaIndex]es that matches.
+     */
+    fun many(server: Long?, vararg names: String): List<NexusMetaIndex>
+
+    /**
      * Adds one or more [NexusMetaIndex] into the store, this is used in scenarios such as mass-synchronization which
      * offers more than one indexes at the same time.
      *
