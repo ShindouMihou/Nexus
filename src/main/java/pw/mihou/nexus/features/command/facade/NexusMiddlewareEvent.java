@@ -10,12 +10,12 @@ import java.util.function.Predicate;
 
 public interface NexusMiddlewareEvent extends NexusCommandEvent {
 
-    default CompletableFuture<Void> defer() {
-        return this.respondLater().thenApply(null);
+    default void defer() {
+        this.respondLater().join();
     }
 
-    default CompletableFuture<Void> deferEphemeral() {
-        return this.respondLaterAsEphemeral().thenApply(null);
+    default void deferEphemeral() {
+        this.respondLaterAsEphemeral().join();
     }
 
     /**

@@ -11,10 +11,11 @@ one Discord bot per application.
 #### Table of Contents
 1. [Preparation](#-preparaton)
 2. [Designing Commands](#-designing-commands)
-3. [Commnad Interceptors](#-command-interceptors)
-4. [Basic Subcommand Router](#-basic-subcommand-router)
-5. [Option Validation](#-option-validation)
-6. [Command Synchronizations](#-command-synchronizations)
+3. [Command Interceptors](#-command-interceptors)
+4. [Deferred Middleware Responses](#-deferred-middleware-responses)
+5. [Basic Subcommand Router](#-basic-subcommand-router)
+6. [Option Validation](#-option-validation)
+7. [Command Synchronizations](#-command-synchronizations)
 
 #### 💭 Preparation
 
@@ -144,6 +145,53 @@ Middlewares implement the `NexusMiddleware` interface which uses the `NexusMiddl
 > You can also enable Nexus to automatically defer middleware responses by enabling `Nexus.configuration.interceptors.autoDeferMiddlewareResponses`, 
 > but note that **it is your responsibility to also make the command that uses the middleware use a deferred response** as Nexus cannot auto-defer 
 > the command responses.
+
+#### 💭 Deferred Middleware Responses
+
+Nexus now supports two primary ways of deferring responses in middlewares, but neither of them will auto-defer for commands, therefore, it is 
+still your responsibility to use deferred responses in the commands themselves. After understanding that, let us look into the two primary ways 
+that one can defer responses in middlewares:
+
+##### Manual Deferring
+
+You can manually defer middlewares by using the `defer` or `deferEphemeral` followed by a response such as `stop(NexusMessage)`. An example of 
+a middleware that defers is as follows:
+```kotlin
+NexusInterceptor.middleware { event -> 
+    event.deferEphemeral().join()
+    event.stop(NexusMessage.from("I have deferred the response!"))
+}
+```
+
+##### Automatic Defers
+
+Automatic defers is a newer feature of Nexus wherein deferring of middlewares is automated. To use this, you have to first enable it on the 
+configuration by using:
+```kotlin
+Nexus.configuration.interceptors.autoDeferMiddlewareResponses = true
+```
+
+Once enabled, all middleware responses should automatically defer if the execution time has surpassed 2.5 seconds, such as this:
+```kotlin
+NexusInterceptor.middleware { event -> 
+    Thread.sleep(3000)
+    event.stop(NexusMessage.from("I have deferred the response!"))
+}
+```
+
+You can even configure more properties such as whether to make the deferred responses ephemeral or when to set an automatic 
+defer by setting either of the properties:
+```kotlin
+// Default values
+Nexus.configuration.interceptors.autoDeferMiddlewaresInMilliseconds = 2500
+Nexus.configuration.interceptors.autoDeferAsEphemeral = true
+```
+
+> **Warning**
+> As stated above, it is your responsibility to use deferred responses in the commands after enabling this. Nexus 
+> will not defer your command responses automatically, you should use methods such as `event.respondLater()` or `event.respondLaterAsEphemeral()` 
+> to handle these cases. Although, these methods may return non-ephemeral or ephemeral depending on the `autoDeferAsEphemeral` 
+> value or depending on how you deferred it manually.
 
 #### 💭 Interceptor Repositories
 
