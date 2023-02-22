@@ -70,6 +70,7 @@ DiscordApiBuilder()
 #### 🍾 Designing Commands
 
 > **Warning**
+>
 > Before we start, a fair warning, it is never recommended to use the `event.interaction.respondLater()` methods of Javacord when using 
 > Nexus because we have special handling for middlewares  that requires coordination between the command and the middleware. It is better 
 > to use `event.respondLater()` or `event.respondLaterAsEphemeral()` instead.
@@ -138,14 +139,6 @@ Middlewares implement the `NexusMiddleware` interface which uses the `NexusMiddl
 - `stopIf(boolean, NexusMessage?)`: tells Nexus to stop the command from executing if the boolean is true, and sends a message when provided.
 - `stopIf(Predicate, NexusMessage?)`: same as above but just a predicate.
 
-> **Note**
-> Deferring middlewares should be done using the `defer` or `deferEphemeral` methods followed by a response such as `stop(NexusMessage)` 
-> as this allows Nexus to handle the deferred response properly. 
-> 
-> You can also enable Nexus to automatically defer middleware responses by enabling `Nexus.configuration.interceptors.autoDeferMiddlewareResponses`, 
-> but note that **it is your responsibility to also make the command that uses the middleware use a deferred response** as Nexus cannot auto-defer 
-> the command responses.
-
 #### 💭 Deferred Middleware Responses
 
 Nexus now supports two primary ways of deferring responses in middlewares, but neither of them will auto-defer for commands, therefore, it is 
@@ -188,6 +181,7 @@ Nexus.configuration.interceptors.autoDeferAsEphemeral = true
 ```
 
 > **Warning**
+>
 > As stated above, it is your responsibility to use deferred responses in the commands after enabling this. Nexus 
 > will not defer your command responses automatically, you should use methods such as `event.respondLater()` or `event.respondLaterAsEphemeral()` 
 > to handle these cases. Although, these methods may return non-ephemeral or ephemeral depending on the `autoDeferAsEphemeral` 
