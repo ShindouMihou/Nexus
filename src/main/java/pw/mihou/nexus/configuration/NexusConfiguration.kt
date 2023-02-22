@@ -9,5 +9,6 @@ class NexusConfiguration internal constructor() {
     @JvmField val commonsInterceptors = NexusCommonsInterceptorsConfiguration()
     @JvmField val loggingTemplates = NexusLoggingTemplatesConfiguration()
     @JvmField val launch = NexusLaunchConfiguration()
+    @JvmField val interceptors = NexusInterceptorsConfiguration()
 
 }

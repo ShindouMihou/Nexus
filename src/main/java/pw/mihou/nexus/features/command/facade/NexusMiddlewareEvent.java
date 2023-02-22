@@ -1,7 +1,6 @@
 package pw.mihou.nexus.features.command.facade;
 
 import pw.mihou.nexus.Nexus;
-import pw.mihou.nexus.features.command.interceptors.repositories.NexusMiddlewareGateRepository;
 import pw.mihou.nexus.features.messages.facade.NexusMessage;
 
 import javax.annotation.Nonnull;
@@ -11,63 +10,19 @@ import java.util.function.Predicate;
 
 public interface NexusMiddlewareEvent extends NexusCommandEvent {
 
-    /**
-     * A middleware-only function that tells Discord that the response will be
-     * taking more than three-seconds because the middleware has to process tasks
-     * that can take more than three-second limit.
-     * @return The future to determine whether the response was accepted or not.
-     */
-    default CompletableFuture<Void> askDelayedResponse() {
-            return CompletableFuture.allOf(Nexus.getResponderRepository().peek(getBaseEvent().getInteraction()));
+    default CompletableFuture<Void> defer() {
+        return this.respondLater().thenApply(null);
     }
 
-    /**
-     * A middleware-only function that tells Discord that the response will be
-     * taking more than three-seconds because the middleware has to process tasks
-     * that can take more than three-second limit.
-     * @return The future to determine whether the response was accepted or not.
-     */
-    default CompletableFuture<Void> askDelayedResponseAsEphemeral() {
-        return CompletableFuture.allOf(Nexus.getResponderRepository().peekEphemeral(getBaseEvent().getInteraction()));
-    }
-
-    /**
-     * A middleware-only function that tells Discord that the response will be
-     * taking more than three-seconds because the middleware has to process tasks
-     * that can take more than three-second limit.
-     *
-     * @param predicate The predicate to determine whether the response should be ephemeral or not.
-     * @return The future to determine whether the response was accepted or not.
-     */
-    default CompletableFuture<Void> askDelayedResponseAsEphemeralIf(boolean predicate) {
-        if (predicate) {
-            return askDelayedResponseAsEphemeral();
-        }
-
-        return askDelayedResponse();
-    }
-
-    /**
-     * A middleware-only function that tells Discord that the response will be
-     * taking more than three-seconds because the middleware has to process tasks
-     * that can take more than three-second limit.
-     *
-     * @param predicate The predicate to determine whether the response should be ephemeral or not.
-     * @return The future to determine whether the response was accepted or not.
-     */
-    default CompletableFuture<Void> askDelayedResponseAsEphemeralIf(Predicate<Void> predicate) {
-        return askDelayedResponseAsEphemeralIf(predicate.test(null));
+    default CompletableFuture<Void> deferEphemeral() {
+        return this.respondLaterAsEphemeral().thenApply(null);
     }
 
     /**
      * Tells the command interceptor handler to move forward with the next
      * middleware if there is any, otherwise executes the command code.
      */
-    default void next() {
-        NexusMiddlewareGateRepository
-                .get(getBaseEvent().getInteraction())
-                .next();
-    }
+    void next();
 
     /**
      * Stops further command execution. This cancels the command from executing
@@ -81,11 +36,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
      * Stops further command execution. This cancels the command from executing
      * and sends a notice to the user.
      */
-    default void stop(NexusMessage response) {
-        NexusMiddlewareGateRepository
-                .get(getBaseEvent().getInteraction())
-                .stop(response);
-    }
+    void stop(NexusMessage response);
 
     /**
      * Stops further command execution if the predicate returns a value

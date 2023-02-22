@@ -68,6 +68,11 @@ DiscordApiBuilder()
 
 #### 🍾 Designing Commands
 
+> **Warning**
+> Before we start, a fair warning, it is never recommended to use the `event.interaction.respondLater()` methods of Javacord when using 
+> Nexus because we have special handling for middlewares  that requires coordination between the command and the middleware. It is better 
+> to use `event.respondLater()` or `event.respondLaterAsEphemeral()` instead.
+
 Nexus offers a simple, and straightforward manner of designing commands, but before we can continue designing commands, let us first understand a few 
 fundamental rules that Nexus enforces:
 1. You cannot have two or more commands with the same name unless you modify one of the commands with the `@IdentifiableAs` annotation, for indexing reasons. ([Read more here]())
@@ -131,6 +136,14 @@ Middlewares implement the `NexusMiddleware` interface which uses the `NexusMiddl
 - `stop(NexusMesage)`: tells Nexus to stop the command from executing together with a message to be sent.
 - `stopIf(boolean, NexusMessage?)`: tells Nexus to stop the command from executing if the boolean is true, and sends a message when provided.
 - `stopIf(Predicate, NexusMessage?)`: same as above but just a predicate.
+
+> **Note**
+> Deferring middlewares should be done using the `defer` or `deferEphemeral` methods followed by a response such as `stop(NexusMessage)` 
+> as this allows Nexus to handle the deferred response properly. 
+> 
+> You can also enable Nexus to automatically defer middleware responses by enabling `Nexus.configuration.interceptors.autoDeferMiddlewareResponses`, 
+> but note that **it is your responsibility to also make the command that uses the middleware use a deferred response** as Nexus cannot auto-defer 
+> the command responses.
 
 #### 💭 Interceptor Repositories
 

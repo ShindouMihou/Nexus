@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.core
 
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
+import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.globalAfterwares
@@ -13,6 +14,9 @@ import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.command.validation.OptionValidation
 import pw.mihou.nexus.features.command.validation.result.ValidationResult
 import pw.mihou.nexus.features.messages.core.NexusMessageCore
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 object NexusCommandDispatcher {
     /**
@@ -27,18 +31,40 @@ object NexusCommandDispatcher {
      */
     fun dispatch(instance: NexusCommandCore, event: SlashCommandCreateEvent) {
         try {
-            val nexusEvent: NexusCommandEvent = NexusCommandEventCore(event, instance)
+            val nexusEvent = NexusCommandEventCore(event, instance)
 
             val middlewares: MutableList<String> = ArrayList()
             middlewares.addAll(globalMiddlewares)
             middlewares.addAll(instance.middlewares)
 
-            val middlewareGate =
+            val middlewareGate: NexusMiddlewareGateCore? = if (Nexus.configuration.interceptors.autoDeferMiddlewareResponses) {
+                val future = CompletableFuture.supplyAsync {
+                    NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
+                }
+                NexusThreadPool.scheduledExecutorService.schedule({
+                    if (future.isDone) {
+                        return@schedule
+                    }
+                    nexusEvent.respondLaterAsEphemeralIf(Nexus.configuration.interceptors.autoDeferAsEphemeral)
+                        .exceptionally(ExceptionLogger.get())
+                }, Nexus.configuration.interceptors.autoDeferMiddlewaresInMilliseconds, TimeUnit.MILLISECONDS)
+                future.join()
+            } else {
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
+            }
 
             if (middlewareGate != null) {
                 val middlewareResponse = middlewareGate.response() as NexusMessageCore?
-                middlewareResponse?.convertTo(nexusEvent.respondNow())?.respond()?.exceptionally(ExceptionLogger.get())
+                if (middlewareResponse != null) {
+                    val updaterFuture = nexusEvent.updater.get()
+                    if (updaterFuture != null) {
+                        val updater = updaterFuture.join()
+                        (middlewareResponse.convertTo(updater) as InteractionOriginalResponseUpdater).update()
+                            .exceptionally(ExceptionLogger.get())
+                    } else {
+                        middlewareResponse.convertTo(nexusEvent.respondNow()).respond().exceptionally(ExceptionLogger.get())
+                    }
+                }
                 return
             }
 
