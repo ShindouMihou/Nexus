@@ -18,7 +18,6 @@ import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
-import pw.mihou.nexus.features.command.responders.NexusResponderRepository
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore
@@ -91,20 +90,15 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     val globalAfterwares: Set<String> get() = configuration.global.afterwares
 
     /**
-     * [NexusResponderRepository] is an internal repository that is used by the framework to manage responders such as InteractionImmediateResponder and
-     * so forth to enable more synchronization between the middlewares and the command execution. It is also the reason that we discourage the use of
-     * the native Javacord responding methods.
-     */
-    @JvmStatic
-    val responderRepository = NexusResponderRepository()
-
-    /**
      * [NexusSynchronizer] is a tool that is used to synchronize commands between Discord and the bot.
      *
      * You can learn more about it at [Understanding Synchronization](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Synchronization).
      */
     @JvmStatic
     val synchronizer = NexusSynchronizer()
+
+    @JvmStatic
+    internal val launcher get() = configuration.launch.launcher
 
     /**
      * Configures the [NexusConfiguration] in a more Kotlin way.

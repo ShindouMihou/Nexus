@@ -1,9 +1,11 @@
 package pw.mihou.nexus.configuration.modules
 
-import java.util.concurrent.CompletableFuture
+import pw.mihou.nexus.core.threadpool.NexusThreadPool
 
 class NexusLaunchConfiguration internal constructor() {
-    @JvmField var launcher: NexusLaunchWrapper = NexusLaunchWrapper { task -> CompletableFuture.runAsync { task.run() } }
+    @JvmField var launcher: NexusLaunchWrapper = NexusLaunchWrapper { task ->
+        NexusThreadPool.executorService.submit { task.run() }
+    }
 }
 
 fun interface NexusLaunchWrapper {

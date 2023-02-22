@@ -16,8 +16,8 @@ public class NexusMessageCore implements NexusMessage {
 
     private final String textVal;
     private final EmbedBuilder embedVal;
-    private Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder> builder =
-            bob -> bob.setFlags(MessageFlag.EPHEMERAL);
+    private Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>> builder = bob -> bob;
+    boolean ephemeral = false;
     private static final AllowedMentions ALLOWED_MENTIONS = new AllowedMentionsBuilder()
             .setMentionRoles(false)
             .setMentionUsers(false)
@@ -58,7 +58,11 @@ public class NexusMessageCore implements NexusMessage {
      * @return The {@link InteractionImmediateResponseBuilder} with all the proper configuration.
      */
     public InteractionImmediateResponseBuilder convertTo(InteractionImmediateResponseBuilder instance) {
-        InteractionImmediateResponseBuilder build = builder.apply(instance);
+        InteractionImmediateResponseBuilder build = (InteractionImmediateResponseBuilder) builder.apply(instance);
+
+        if (ephemeral) {
+            build.setFlags(MessageFlag.EPHEMERAL);
+        }
 
         asString().ifPresent(build::setContent);
         asEmbed().ifPresent(build::addEmbed);
@@ -84,8 +88,14 @@ public class NexusMessageCore implements NexusMessage {
     }
 
     @Override
-    public NexusMessage setBuilder(Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder> builder) {
+    public NexusMessage setBuilder(Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>> builder) {
         this.builder = builder;
+        return this;
+    }
+
+    @Override
+    public NexusMessage setEphemeral(boolean ephemeral) {
+        this.ephemeral = true;
         return this;
     }
 

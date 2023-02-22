@@ -18,14 +18,12 @@ import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 import pw.mihou.nexus.sharding.NexusShardingManager;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface NexusCommandEvent {
@@ -206,11 +204,7 @@ public interface NexusCommandEvent {
      *
      * @return The {@link InteractionOriginalResponseUpdater}.
      */
-    default CompletableFuture<InteractionOriginalResponseUpdater> respondLater() {
-        return Nexus
-                .getResponderRepository()
-                .get(getBaseEvent().getInteraction());
-    }
+    CompletableFuture<InteractionOriginalResponseUpdater> respondLater();
 
     /**
      * Gets the {@link InteractionOriginalResponseUpdater} associated with this command with the
@@ -218,11 +212,7 @@ public interface NexusCommandEvent {
      *
      * @return The {@link InteractionOriginalResponseUpdater} with the ephemeral flag attached.
      */
-    default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral() {
-        return Nexus
-                .getResponderRepository()
-                .getEphemereal(getBaseEvent().getInteraction());
-    }
+    CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral();
 
     /**
      * Gets the {@link InteractionOriginalResponseUpdater} associated with this command with the ephemeral flag
@@ -301,7 +291,8 @@ public interface NexusCommandEvent {
      * @param success       what to do when all the middlewares succeed.
      */
     default void middlewares(List<String> middlewares, Consumer<Void> success) {
-        NexusMiddlewareGateCore middlewareGate = ((NexusMiddlewareGateCore) NexusCommandInterceptorCore.interceptWithMany(middlewares, this));
+        NexusMiddlewareGateCore middlewareGate = NexusCommandInterceptorCore.execute(this,
+                NexusCommandInterceptorCore.middlewares(middlewares));
 
         if (middlewareGate == null) {
             success.accept(null);

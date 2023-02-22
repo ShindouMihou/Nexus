@@ -3,6 +3,7 @@ package pw.mihou.nexus.features.messages.facade;
 import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
+import org.javacord.api.interaction.callback.InteractionMessageBuilderBase;
 import pw.mihou.nexus.features.messages.core.NexusMessageCore;
 
 import java.util.Optional;
@@ -27,7 +28,7 @@ public interface NexusMessage {
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromEphemeral(EmbedBuilder builder) {
-        return new NexusMessageCore(builder).setBuilder(responseBuilder -> responseBuilder.setFlags(MessageFlag.EPHEMERAL));
+        return new NexusMessageCore(builder).setEphemeral(true);
     }
 
     /**
@@ -67,50 +68,50 @@ public interface NexusMessage {
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromEphemereal(String text) {
-        return new NexusMessageCore(text).setBuilder(builder -> builder.setFlags(MessageFlag.EPHEMERAL));
+        return new NexusMessageCore(text).setEphemeral(true);
     }
 
     /**
      * Creates a new {@link NexusMessage} that utilizes the {@link EmbedBuilder} specified with a customized
-     * {@link InteractionImmediateResponseBuilder} configuration.
+     * {@link InteractionMessageBuilderBase} configuration.
      *
      * @param builder The {@link EmbedBuilder} to send to the end-user.
-     * @param interactionImmediateResponseBuilderFunction The {@link InteractionImmediateResponseBuilder} configuration to
+     * @param builderBaseFunction The {@link InteractionMessageBuilderBase} configuration to
      *                                                    utilize when sending the message.
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromWith(EmbedBuilder builder,
-                                 Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder>
-                                         interactionImmediateResponseBuilderFunction) {
-        return from(builder).setBuilder(interactionImmediateResponseBuilderFunction);
+                                 Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>>
+                                         builderBaseFunction) {
+        return from(builder).setBuilder(builderBaseFunction);
     }
 
     /**
      * Creates a new {@link NexusMessage} that utilizes the {@link EmbedBuilder} specified with a customized
-     * {@link InteractionImmediateResponseBuilder} configuration.
+     * {@link InteractionMessageBuilderBase} configuration.
      *
      * @param builder The {@link EmbedBuilder} to send to the end-user.
-     * @param interactionImmediateResponseBuilderFunction The {@link InteractionImmediateResponseBuilder} configuration to
+     * @param builderBaseFunction The {@link InteractionMessageBuilderBase} configuration to
      *                                                    utilize when sending the message.
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromWith(Function<EmbedBuilder, EmbedBuilder> builder,
-                                 Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder>
-                                         interactionImmediateResponseBuilderFunction) {
-        return from(builder).setBuilder(interactionImmediateResponseBuilderFunction);
+                                 Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>>
+                                         builderBaseFunction) {
+        return from(builder).setBuilder(builderBaseFunction);
     }
 
     /**
      * Creates a new {@link NexusMessage} that utilizes the {@link String} specified with a customized
-     * {@link InteractionImmediateResponseBuilder} configuration.
+     * {@link InteractionMessageBuilderBase} configuration.
      *
      * @param text The {@link String} to send to the end-user.
-     * @param interactionImmediateResponseBuilderFunction The {@link InteractionImmediateResponseBuilder} configuration to
+     * @param builderBaseFunction The {@link InteractionMessageBuilderBase} configuration to
      *                                                    utilize when sending the message.
      * @return The new {@link NexusMessage} instance.
      */
     static NexusMessage fromWith(String text,
-                                 Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder>
+                                 Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>>
                                          interactionImmediateResponseBuilderFunction) {
         return from(text).setBuilder(interactionImmediateResponseBuilderFunction);
     }
@@ -122,7 +123,9 @@ public interface NexusMessage {
      * @param builder The builder that is being utilized.
      * @return {@link NexusMessageCore} for chain-calling methods.
      */
-    NexusMessage setBuilder(Function<InteractionImmediateResponseBuilder, InteractionImmediateResponseBuilder> builder);
+    NexusMessage setBuilder(Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>> builder);
+
+    NexusMessage setEphemeral(boolean ephemeral);
 
     /**
      * Retrieves the {@link String} version of this {@link NexusMessage} instance.

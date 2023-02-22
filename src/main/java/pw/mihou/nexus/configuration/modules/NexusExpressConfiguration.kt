@@ -13,7 +13,7 @@ class NexusExpressConfiguration internal constructor() {
     var maximumTimeout = Duration.ofMinutes(10)
 
     /**
-     * Wher to show warnings regarding requests in Express that have expired.
+     * Whether to show warnings regarding requests in Express that have expired.
      */
     @Volatile
     var showExpiredWarnings = false
