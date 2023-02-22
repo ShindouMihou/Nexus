@@ -31,7 +31,7 @@ public interface NexusCommand {
     static List<String> createMiddlewares(String... middlewares) {
         List<String> list = new ArrayList<>();
         for (String middleware : middlewares) {
-            if (!NexusCommandInterceptorCore.has(middleware)) throw new NoSuchMiddlewareException(middleware);
+            if (!NexusCommandInterceptorCore.hasMiddleware(middleware)) throw new NoSuchMiddlewareException(middleware);
             list.add(middleware);
         }
         return list;
@@ -40,7 +40,7 @@ public interface NexusCommand {
     static List<String> createAfterwares(String... afterwares) {
         List<String> list = new ArrayList<>();
         for (String afterware : afterwares) {
-            if (!NexusCommandInterceptorCore.has(afterware)) throw new NoSuchAfterwareException(afterware);
+            if (!NexusCommandInterceptorCore.hasAfterware(afterware)) throw new NoSuchAfterwareException(afterware);
             list.add(afterware);
         }
         return list;

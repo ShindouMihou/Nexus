@@ -106,6 +106,9 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     @JvmStatic
     val synchronizer = NexusSynchronizer()
 
+    @JvmStatic
+    internal val launcher get() = configuration.launch.launcher
+
     /**
      * Configures the [NexusConfiguration] in a more Kotlin way.
      * @param modifier the modifier to modify the state of the framework.

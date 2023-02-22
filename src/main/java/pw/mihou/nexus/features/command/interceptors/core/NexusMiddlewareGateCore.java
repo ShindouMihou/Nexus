@@ -38,7 +38,7 @@ public class NexusMiddlewareGateCore implements NexusMiddlewareGate {
      *
      * @return Is the command allowed to execute any further?
      */
-    public boolean allowed() {
+    public boolean isAllowed() {
         return state.get();
     }
 

@@ -2,6 +2,7 @@ package pw.mihou.nexus.features.command.core
 
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
 import org.javacord.api.util.logging.ExceptionLogger
+import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.globalAfterwares
 import pw.mihou.nexus.Nexus.globalMiddlewares
 import pw.mihou.nexus.Nexus.logger
@@ -32,11 +33,8 @@ object NexusCommandDispatcher {
             middlewares.addAll(globalMiddlewares)
             middlewares.addAll(instance.middlewares)
 
-            val afterwares: MutableList<String> = ArrayList()
-            afterwares.addAll(globalAfterwares)
-            afterwares.addAll(instance.afterwares)
-
-            val middlewareGate = NexusCommandInterceptorCore.interceptWithMany(middlewares, nexusEvent) as NexusMiddlewareGateCore?
+            val middlewareGate =
+                NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
 
             if (middlewareGate != null) {
                 val middlewareResponse = middlewareGate.response() as NexusMessageCore?
@@ -65,7 +63,7 @@ object NexusCommandDispatcher {
                 return
             }
 
-            NexusThreadPool.executorService.submit {
+            Nexus.launcher.launch {
                 try {
                     instance.handler.onEvent(nexusEvent)
                 } catch (throwable: Throwable) {
@@ -76,7 +74,13 @@ object NexusCommandDispatcher {
                 }
             }
 
-            NexusThreadPool.executorService.submit { NexusCommandInterceptorCore.interceptWithMany(afterwares, nexusEvent) }
+            Nexus.launcher.launch {
+                val afterwares: MutableList<String> = ArrayList()
+                afterwares.addAll(globalAfterwares)
+                afterwares.addAll(instance.afterwares)
+
+                NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares))
+            }
         } catch (exception: Exception) {
             logger.error("An uncaught exception occurred within Nexus' dispatcher for command ${instance.name}.")
             exception.printStackTrace()

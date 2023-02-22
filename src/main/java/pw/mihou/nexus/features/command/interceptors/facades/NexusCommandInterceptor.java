@@ -21,7 +21,6 @@ public interface NexusCommandInterceptor {
         }
 
         NexusCommandInterceptorCore.addMiddleware(uuid, middleware);
-
         return uuid;
     }
 
