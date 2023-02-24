@@ -5,12 +5,14 @@ import org.javacord.api.event.interaction.SlashCommandCreateEvent
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
+import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 
@@ -22,22 +24,31 @@ class NexusCommandEventCore(private val event: SlashCommandCreateEvent, private 
     override fun getCommand() = command
     override fun store() = store
     override fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> {
+        var task: Cancellable? = null
+        val deferredTaskRan = AtomicBoolean(false)
         if (updater.get() == null) {
             val timeUntil = Instant.now().toEpochMilli() - event.interaction.creationTimestamp
                 .minusMillis(Nexus.configuration.global.autoDeferAfterMilliseconds)
                 .toEpochMilli()
 
-            Nexus.launch.scheduler.launch(timeUntil) {
+            task = Nexus.launch.scheduler.launch(timeUntil) {
                 if (updater.get() == null) {
                     respondLaterAsEphemeralIf(ephemeral).exceptionally(ExceptionLogger.get())
                 }
+                deferredTaskRan.set(true)
             }
         }
         val future = CompletableFuture<NexusAutoResponse>()
         Nexus.launcher.launch {
             try {
                 val message = response.apply(null)
-                val updater = updater.get()
+                if (!deferredTaskRan.get() && task != null) {
+                    task.cancel(false)
+                }
+                val updater = respondLaterAsEphemeralIf(ephemeral).exceptionally {
+                    future.completeExceptionally(it)
+                    return@exceptionally null
+                }
                 if (updater == null) {
                     val responder = respondNow()
                     if (ephemeral) {

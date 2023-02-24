@@ -44,14 +44,20 @@ object NexusCommandDispatcher {
                 }
                 val timeUntil = Instant.now().toEpochMilli() -
                         event.interaction.creationTimestamp.minusMillis(Nexus.configuration.global.autoDeferAfterMilliseconds).toEpochMilli()
-                Nexus.launch.scheduler.launch(timeUntil) {
+                val deferredTaskRan = AtomicBoolean(false)
+                val task = Nexus.launch.scheduler.launch(timeUntil) {
+                    deferredTaskRan.set(true)
                     if (future.isDone) {
                         return@launch
                     }
                     nexusEvent.respondLaterAsEphemeralIf(Nexus.configuration.interceptors.autoDeferAsEphemeral)
                         .exceptionally(ExceptionLogger.get())
                 }
-                future.join()
+                val gate = future.join()
+                if (!deferredTaskRan.get()) {
+                    task.cancel(false)
+                }
+                gate
             } else {
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
             }
