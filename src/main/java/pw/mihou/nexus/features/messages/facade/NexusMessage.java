@@ -112,8 +112,8 @@ public interface NexusMessage {
      */
     static NexusMessage fromWith(String text,
                                  Function<InteractionMessageBuilderBase<?>, InteractionMessageBuilderBase<?>>
-                                         interactionImmediateResponseBuilderFunction) {
-        return from(text).setBuilder(interactionImmediateResponseBuilderFunction);
+                                         builderBaseFunction) {
+        return from(text).setBuilder(builderBaseFunction);
     }
 
     /**
