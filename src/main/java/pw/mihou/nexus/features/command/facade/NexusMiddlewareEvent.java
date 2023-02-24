@@ -1,11 +1,10 @@
 package pw.mihou.nexus.features.command.facade;
 
-import pw.mihou.nexus.Nexus;
-import pw.mihou.nexus.features.messages.facade.NexusMessage;
+
+import pw.mihou.nexus.features.messages.NexusMessage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public interface NexusMiddlewareEvent extends NexusCommandEvent {

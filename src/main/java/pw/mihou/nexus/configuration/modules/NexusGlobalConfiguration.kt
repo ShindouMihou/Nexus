@@ -40,4 +40,11 @@ class NexusGlobalConfiguration internal constructor() {
      * whether they have a local inheritance class.
      */
     @JvmField @Volatile var inheritance: Any? = null
+
+    /**
+     * When in an automatic defer situation, the framework will automatically defer the response when the time has
+     * surpassed the specified amount. You can specify this to any value less than 3,000 but the default value should
+     * be more than enough even when considering network latencies.
+     */
+    @JvmField @Volatile var autoDeferAfterMilliseconds: Long = 2350
 }

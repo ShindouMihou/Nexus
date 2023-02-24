@@ -15,7 +15,8 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore;
-import pw.mihou.nexus.features.messages.core.NexusMessageCore;
+import pw.mihou.nexus.features.command.responses.NexusAutoResponse;
+import pw.mihou.nexus.features.messages.NexusMessage;
 import pw.mihou.nexus.sharding.NexusShardingManager;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface NexusCommandEvent {
@@ -299,10 +301,21 @@ public interface NexusCommandEvent {
             return;
         }
 
-        NexusMessageCore response = ((NexusMessageCore) middlewareGate.response());
+        NexusMessage response = middlewareGate.response();
         if (response != null) {
-            response.convertTo(respondNow()).respond().exceptionally(ExceptionLogger.get());
+            response.into(respondNow()).respond().exceptionally(ExceptionLogger.get());
         }
     }
+
+    /**
+     * Automatically answers either deferred or non-deferred based on circumstances, to configure the time that it should
+     * consider before deferring (this is based on time now - (interaction creation time - auto defer time)), you can
+     * modify {@link pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration#autoDeferAfterMilliseconds}.
+     *
+     * @param ephemeral whether to respond ephemerally or not.
+     * @param response the response to send to Discord.
+     * @return the response from Discord.
+     */
+    CompletableFuture<NexusAutoResponse> autoDefer(boolean ephemeral, Function<Void, NexusMessage> response);
 
 }
