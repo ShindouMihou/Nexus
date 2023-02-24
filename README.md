@@ -284,7 +284,7 @@ To learn more about how to use the option validation, you can check our example:
 
 #### 💭 Auto-deferring Responses
 
-Nexus supports auto-deferring of responses in both middlewares and commands, but before that, we have to understand a  
+Nexus supports auto-deferring of responses in both middlewares and commands, but before that, we have to understand a 
 thing with slash commands and Nexus, and that is the three-second response requirement before defer. In Nexus, there are two core 
 features that can haggle up that three-second response requirement and that are:
 1. Middlewares
@@ -296,7 +296,7 @@ the [Deferred Middleware Responses](#-deferred-middleware-responses) section.
 
 To enable auto-deferring in commands themselves, you have to use the `event.autoDefer(ephemeral, function)` method instead of the 
 other related methods. It is recommended to actually use this especially when you have long-running middlewares because this will 
-also take care of handling when a middleware actually creates a defer.
+also take care of handling when a middleware actually requests for deferred response.
 
 An example of how this looks is:
 ```kotlin
