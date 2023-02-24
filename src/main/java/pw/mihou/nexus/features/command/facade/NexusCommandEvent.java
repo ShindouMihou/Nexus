@@ -15,7 +15,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore;
-import pw.mihou.nexus.features.messages.core.NexusMessageCore;
+import pw.mihou.nexus.features.messages.NexusMessage;
 import pw.mihou.nexus.sharding.NexusShardingManager;
 
 import java.util.List;
@@ -299,9 +299,9 @@ public interface NexusCommandEvent {
             return;
         }
 
-        NexusMessageCore response = ((NexusMessageCore) middlewareGate.response());
+        NexusMessage response = middlewareGate.response();
         if (response != null) {
-            response.convertTo(respondNow()).respond().exceptionally(ExceptionLogger.get());
+            response.into(respondNow()).respond().exceptionally(ExceptionLogger.get());
         }
     }
 

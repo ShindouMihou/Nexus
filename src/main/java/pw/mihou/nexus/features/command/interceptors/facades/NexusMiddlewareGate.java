@@ -1,6 +1,6 @@
 package pw.mihou.nexus.features.command.interceptors.facades;
 
-import pw.mihou.nexus.features.messages.facade.NexusMessage;
+import pw.mihou.nexus.features.messages.NexusMessage;
 
 import javax.annotation.Nullable;
 

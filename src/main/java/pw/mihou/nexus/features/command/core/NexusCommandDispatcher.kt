@@ -13,7 +13,7 @@ import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptor
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.command.validation.OptionValidation
 import pw.mihou.nexus.features.command.validation.result.ValidationResult
-import pw.mihou.nexus.features.messages.core.NexusMessageCore
+import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -54,15 +54,14 @@ object NexusCommandDispatcher {
             }
 
             if (middlewareGate != null) {
-                val middlewareResponse = middlewareGate.response() as NexusMessageCore?
+                val middlewareResponse = middlewareGate.response()
                 if (middlewareResponse != null) {
                     val updaterFuture = nexusEvent.updater.get()
                     if (updaterFuture != null) {
                         val updater = updaterFuture.join()
-                        (middlewareResponse.convertTo(updater) as InteractionOriginalResponseUpdater).update()
-                            .exceptionally(ExceptionLogger.get())
+                        middlewareResponse.into(updater).update().exceptionally(ExceptionLogger.get())
                     } else {
-                        middlewareResponse.convertTo(nexusEvent.respondNow()).respond().exceptionally(ExceptionLogger.get())
+                        middlewareResponse.into(nexusEvent.respondNow()).respond().exceptionally(ExceptionLogger.get())
                     }
                 }
                 return

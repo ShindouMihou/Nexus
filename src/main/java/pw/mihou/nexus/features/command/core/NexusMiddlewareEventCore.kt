@@ -6,7 +6,7 @@ import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
-import pw.mihou.nexus.features.messages.facade.NexusMessage
+import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.CompletableFuture
 
 class NexusMiddlewareEventCore(val event: NexusCommandEvent, private val gate: NexusMiddlewareGateCore): NexusMiddlewareEvent {
