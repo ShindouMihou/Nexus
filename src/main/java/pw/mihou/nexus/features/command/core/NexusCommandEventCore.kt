@@ -28,7 +28,7 @@ class NexusCommandEventCore(private val event: SlashCommandCreateEvent, private 
                 .toEpochMilli()
 
             Nexus.launch.scheduler.launch(timeUntil) {
-                respondLater().exceptionally(ExceptionLogger.get())
+                respondLaterAsEphemeralIf(ephemeral).exceptionally(ExceptionLogger.get())
             }
         }
         val future = CompletableFuture<NexusAutoResponse>()
