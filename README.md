@@ -345,7 +345,7 @@ Nexus.synchronizer.synchronize()
 
 > **Warning**
 > Due to the nature of commands being able to have multiple servers, Nexus uses custom handling for Futures and this 
-> includes handling errors. To handle errors, please add `.addTaskErrorListener(...)` which is similar to `.exceptionally(...) 
+> includes handling errors. To handle errors, please add `.addTaskErrorListener(...)` which is similar to `.exceptionally(...)`
 > while `.addTaskCompletionListener(...)` is similar to `.thenAccept(...)` although is scoped towards a single task.
 > 
 > If you want to listen to the actual completion of all tasks, you have to use the `.addFinalTaskCompletionListener(...)` instead.
