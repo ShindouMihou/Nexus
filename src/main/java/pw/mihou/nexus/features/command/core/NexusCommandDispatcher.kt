@@ -14,6 +14,7 @@ import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.command.validation.OptionValidation
 import pw.mihou.nexus.features.command.validation.result.ValidationResult
 import pw.mihou.nexus.features.messages.NexusMessage
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -41,13 +42,15 @@ object NexusCommandDispatcher {
                 val future = CompletableFuture.supplyAsync {
                     NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
                 }
-                NexusThreadPool.scheduledExecutorService.schedule({
+                val timeUntil = Instant.now().toEpochMilli() -
+                        event.interaction.creationTimestamp.minusMillis(Nexus.configuration.global.autoDeferAfterMilliseconds).toEpochMilli()
+                Nexus.launch.scheduler.launch(timeUntil) {
                     if (future.isDone) {
-                        return@schedule
+                        return@launch
                     }
                     nexusEvent.respondLaterAsEphemeralIf(Nexus.configuration.interceptors.autoDeferAsEphemeral)
                         .exceptionally(ExceptionLogger.get())
-                }, Nexus.configuration.interceptors.autoDeferMiddlewaresInMilliseconds, TimeUnit.MILLISECONDS)
+                }
                 future.join()
             } else {
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))

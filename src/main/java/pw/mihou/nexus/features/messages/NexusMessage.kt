@@ -10,6 +10,9 @@ class NexusMessage internal constructor(
         fun with(ephemeral: Boolean, builder: InteractionMessageBuilderBase<*>.() -> Unit): NexusMessage {
             return NexusMessage(ephemeral, builder)
         }
+        fun with(builder: InteractionMessageBuilderBase<*>.() -> Unit): NexusMessage {
+            return with(false, builder)
+        }
     }
     fun <T: InteractionMessageBuilderBase<*>> into(instance: T): T {
         builder(instance)

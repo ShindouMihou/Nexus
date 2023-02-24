@@ -15,7 +15,8 @@ one Discord bot per application.
 4. [Deferred Middleware Responses](#-deferred-middleware-responses)
 5. [Basic Subcommand Router](#-basic-subcommand-router)
 6. [Option Validation](#-option-validation)
-7. [Command Synchronizations](#-command-synchronizations)
+7. [Auto-deferring Responses](#-auto-deferring-responses)
+8. [Command Synchronizations](#-command-synchronizations)
 
 #### 💭 Preparation
 
@@ -74,6 +75,8 @@ DiscordApiBuilder()
 > Before we start, a fair warning, it is never recommended to use the `event.interaction.respondLater()` methods of Javacord when using 
 > Nexus because we have special handling for middlewares  that requires coordination between the command and the middleware. It is better 
 > to use `event.respondLater()` or `event.respondLaterAsEphemeral()` instead.
+> 
+> You can even use auto-deferring instead which handles these cases for you, read more at [Auto-deferring Responses](#-auto-deferring-responses)
 
 Nexus offers a simple, and straightforward manner of designing commands, but before we can continue designing commands, let us first understand a few 
 fundamental rules that Nexus enforces:
@@ -107,7 +110,16 @@ object PingCommand: NexusHandler {
 
     override fun onEvent(event: NexusCommandEvent) {
         val server = event.server.orElseThrow()
-        event.respondNowWith("Hello ${server.name}!")
+        // There are two ways to respond in Nexus, one is auto-deferring and the other is manual response.
+        // the example shown here demonstrates auto-defer responses.
+        event.autoDefer(ephemeral = false) {
+            return@autoDefer NexusMessage.with {
+                setContent("Hello ${server.name}")
+            }
+        }
+        
+        // The example below demonstrates manual response wherein it is up to you to manually respond or not.
+        // event.respondNowWith("Hello ${server.name}!")
     }
 }
 ```
@@ -176,7 +188,7 @@ You can even configure more properties such as whether to make the deferred resp
 defer by setting either of the properties:
 ```kotlin
 // Default values
-Nexus.configuration.interceptors.autoDeferMiddlewaresInMilliseconds = 2500
+Nexus.configuration.global.autoDeferAfterMilliseconds = 2350
 Nexus.configuration.interceptors.autoDeferAsEphemeral = true
 ```
 
@@ -184,8 +196,9 @@ Nexus.configuration.interceptors.autoDeferAsEphemeral = true
 >
 > As stated above, it is your responsibility to use deferred responses in the commands after enabling this. Nexus 
 > will not defer your command responses automatically, you should use methods such as `event.respondLater()` or `event.respondLaterAsEphemeral()` 
-> to handle these cases. Although, these methods may return non-ephemeral or ephemeral depending on the `autoDeferAsEphemeral` 
-> value or depending on how you deferred it manually.
+> to handle these cases, otherwise, you can have Nexus auto-defer for you.
+> 
+> To learn more about auto-deferring responses, you can read [Auto-deferring Responses](#-auto-deferring-responses).
 
 #### 💭 Interceptor Repositories
 
@@ -268,6 +281,59 @@ but it suits most developers' needs and prevents a lot of potential code duplica
 
 To learn more about how to use the option validation, you can check our example:
 - [Option Validators](examples/option_validators)
+
+#### 💭 Auto-deferring Responses
+
+Nexus supports auto-deferring of responses in both middlewares and commands, but before that, we have to understand a  
+thing with slash commands and Nexus, and that is the three-second response requirement before defer. In Nexus, there are two core 
+features that can haggle up that three-second response requirement and that are:
+1. Middlewares
+2. Your actual command itself
+
+And to solve an issue where the developer does not know which feature exactly causes an auto-defer, Nexus introduces auto-deferring, but 
+it requires you to enable the feature on both middlewares and the command itself. To enable auto-defer in middlewares, you can check 
+the [Deferred Middleware Responses](#-deferred-middleware-responses) section.
+
+To enable auto-deferring in commands themselves, you have to use the `event.autoDefer(ephemeral, function)` method instead of the 
+other related methods. It is recommended to actually use this especially when you have long-running middlewares because this will 
+also take care of handling when a middleware actually creates a defer.
+
+An example of how this looks is:
+```kotlin
+override fun onEvent(event: NexusCommandEvent) {
+    event.autoDefer(ephemeral = true) { 
+        // ... imagine something long running task
+        return@autoDefer NexusMessage.with { 
+            setContent("Hello!")
+        }
+    }
+}
+```
+
+If you want to receive the response from Discord, it is possible by actually handling the response of the `autoDefer` method:
+```kotlin
+override fun onEvent(event: NexusCommandEvent) {
+    event.autoDefer(ephemeral = true) { 
+        // ... imagine something long running task
+        return@autoDefer NexusMessage.with { 
+            setContent("Hello!")
+        }
+    }.thenAccept { response -> 
+        // Updater is only available if the message went through deferred response.
+        val updater = response.updater
+        // Using `getOrRequestMessage` actually calls `InteractionOriginalResponseUpdater.update()` if the interaction 
+        // answered non-deferred since Javacord or Discord does not offer getting the actual message immediately from 
+        // the response.
+        val message = response.getOrRequestMessage()
+    }
+}
+```
+
+To configure when to defer, you can configure the following setting:
+```kotlin
+// Default values
+Nexus.configuration.global.autoDeferAfterMilliseconds = 2350
+```
 
 #### 💭 Command Synchronizations
 

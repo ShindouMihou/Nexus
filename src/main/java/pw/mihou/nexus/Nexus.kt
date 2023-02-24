@@ -97,6 +97,9 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     @JvmStatic
     val synchronizer = NexusSynchronizer()
 
+    @get:JvmSynthetic
+    internal val launch get() = configuration.launch
+
     @JvmStatic
     internal val launcher get() = configuration.launch.launcher
 
