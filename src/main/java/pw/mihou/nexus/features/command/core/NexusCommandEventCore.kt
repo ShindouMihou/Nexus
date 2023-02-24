@@ -45,10 +45,7 @@ class NexusCommandEventCore(private val event: SlashCommandCreateEvent, private 
                 if (!deferredTaskRan.get() && task != null) {
                     task.cancel(false)
                 }
-                val updater = respondLaterAsEphemeralIf(ephemeral).exceptionally {
-                    future.completeExceptionally(it)
-                    return@exceptionally null
-                }
+                val updater = updater.get()
                 if (updater == null) {
                     val responder = respondNow()
                     if (ephemeral) {
