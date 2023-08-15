@@ -303,7 +303,11 @@ public interface NexusCommandEvent {
 
         NexusMessage response = middlewareGate.response();
         if (response != null) {
-            response.into(respondNow()).respond().exceptionally(ExceptionLogger.get());
+            InteractionImmediateResponseBuilder responder = respondNow();
+            if (response.getEphemeral()) {
+                responder = respondNowAsEphemeral();
+            }
+            response.into(responder).respond().exceptionally(ExceptionLogger.get());
         }
     }
 

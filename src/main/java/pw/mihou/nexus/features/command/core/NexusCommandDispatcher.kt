@@ -1,22 +1,18 @@
 package pw.mihou.nexus.features.command.core
 
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
-import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.globalAfterwares
 import pw.mihou.nexus.Nexus.globalMiddlewares
 import pw.mihou.nexus.Nexus.logger
-import pw.mihou.nexus.core.threadpool.NexusThreadPool
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.command.validation.OptionValidation
 import pw.mihou.nexus.features.command.validation.result.ValidationResult
-import pw.mihou.nexus.features.messages.NexusMessage
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 object NexusCommandDispatcher {
@@ -70,7 +66,11 @@ object NexusCommandDispatcher {
                         val updater = updaterFuture.join()
                         middlewareResponse.into(updater).update().exceptionally(ExceptionLogger.get())
                     } else {
-                        middlewareResponse.into(nexusEvent.respondNow()).respond().exceptionally(ExceptionLogger.get())
+                        var responder = nexusEvent.respondNow()
+                        if (middlewareResponse.ephemeral) {
+                            responder = nexusEvent.respondNowAsEphemeral()
+                        }
+                        middlewareResponse.into(responder).respond().exceptionally(ExceptionLogger.get())
                     }
                 }
                 return
