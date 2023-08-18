@@ -12,8 +12,14 @@ object PingCommand: NexusHandler {
     val description: String = "Ping, Pong!"
 
     override fun onEvent(event: NexusCommandEvent) {
-        val server = event.server.orElseThrow()
-        event.respondNowWith("Hello ${server.name}!")
+        // Auto-deferred response (automatically handles deferring of responses when the framework
+        // detects potentially late response).
+        event.autoDefer(ephemeral = true) {
+           return@autodefer NexusMessage.from("Hello ${event.user.name}")
+        }
+
+        // Manual response (you are in control of deferring, etc.)
+        // event.respondNowWith("Hello ${event.user.name}!")
     }
 }
 ```
@@ -33,8 +39,23 @@ If you want to install Nexus as a dependency, you can head to Jitpack, select a 
 Nexus is used in production by Discord bots, such as:
 - [Beemo](https://beemo.gg): An anti-raid Discord bot that prevents raids on many large servers.
 - [Amelia-chan](https://github.com/Amelia-chan/Amelia): A simple RSS Discord bot for the novel site, ScribbleHub.
+- [Threadscore](https://threadscore.mihou.pw): Gamifying Q&A for Discord.
 
 If you want to add your bot to the list, feel free to add it by creating a pull request!
+
+## Features
+Nexus was created from the ground up to power Discord bots with a simplistic yet flexible developer experience without compromising 
+on performance, allowing developers to build their Discord bots fast and clean.
+- [x] **Object-based commands**
+- [x] **Middlewares, Afterwares**
+- [x] **Supports auto-deferring of responses**
+- [x] **Flexible command synchronization system**
+- [x] **Supports optional validation and subcommand routers**
+- [x] **Clean, developer-oriented API**
+- [x] **Supports persistent slash command indexes, and many more**
+- [x] **Supports different pagination systems**
+
+We recommend reading the [`GitHub Wiki`](https://github.com/ShindouMihou/Nexus/wiki) to learn more about the different features of Nexus.
 
 ## License
 
