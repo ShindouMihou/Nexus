@@ -17,7 +17,7 @@ public interface NexusCommand {
     long PLACEHOLDER_SERVER_ID = 0L;
 
     static Map<DiscordLocale, String> createLocalized(Pair<DiscordLocale, String>... entries) {
-        return Arrays.stream(entries).collect(Collectors.toMap((pair) -> pair.component1(), (value) -> value.component2()));
+        return Arrays.stream(entries).collect(Collectors.toMap(Pair::component1, Pair::component2));
     }
 
     static List<SlashCommandOption> createOptions(SlashCommandOption... options) {
@@ -112,17 +112,6 @@ public interface NexusCommand {
     }
 
     /**
-     * Adds the specified server to the list of servers to
-     * register this command with.
-     *
-     * @param serverIds The server ids to add support for this command.
-     * @return {@link NexusCommand} instance for chain-calling methods.
-     * @see NexusCommand#associate(Long...)
-     */
-    @Deprecated()
-    NexusCommand addSupportFor(Long... serverIds);
-
-    /**
      * Associates this command from the given servers, this can be used to include this command into the command list
      * of the server after batching updating.
      * <br><br>
@@ -149,17 +138,6 @@ public interface NexusCommand {
      * @return the current and updated {@link NexusCommand} instance for chain-calling methods.
      */
     NexusCommand disassociate(Long... serverIds);
-
-    /**
-     * Removes the specified server to the list of servers to
-     * register this command with.
-     *
-     * @param serverIds The server ids to remove support for this command.
-     * @return {@link NexusCommand} instance for chain-calling methods.
-     * @see NexusCommand#disassociate(Long...)
-     */
-    @Deprecated()
-    NexusCommand removeSupportFor(Long... serverIds);
 
     /**
      * Gets a specific custom field that is annotated with {@link pw.mihou.nexus.core.reflective.annotations.Share} from
@@ -243,14 +221,6 @@ public interface NexusCommand {
     default Optional<String> getNameLocalization(DiscordLocale locale) {
         return Optional.ofNullable(getDescriptionLocalizations().get(locale));
     }
-
-    /**
-     * Gets the server id of the command.
-     *
-     * @return The server ID of the command.
-     */
-    @Deprecated
-    long getServerId();
 
     /**
      * Transforms this into a slash command builder that can be used to create the slash command.
