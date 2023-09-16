@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.synchronizer
 
 import org.javacord.api.interaction.ApplicationCommand
+import org.javacord.api.interaction.ApplicationCommandBuilder
 import org.javacord.api.interaction.SlashCommandBuilder
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.async.NexusLaunchable
@@ -14,6 +15,23 @@ import java.util.concurrent.CompletableFuture
 class NexusSynchronizer internal constructor() {
 
     @Volatile var methods: NexusSynchronizeMethods = NexusDefaultSynchronizeMethods
+    private val inclusions: MutableMap<Long, MutableList<ApplicationCommandBuilder<*, *, *>>> = mutableMapOf()
+
+    companion object {
+        private const val GLOBAL_SCOPE = -550L
+    }
+
+    /**
+     * Includes the given builders to the [batchUpdate] and [synchronize], this is to accommodate situations wherein
+     * we may have stuff, such as User and Message Context Menus, that we want to include, but keeps getting overridden,
+     * by the [NexusSynchronizer].
+     *
+     * @param server The server to link these builders, use null to indicate global.
+     * @param commands All the command builders that are linked to the server or global (if server is null).
+     */
+    fun include(server: Long? = null, vararg commands: ApplicationCommandBuilder<*, *, *>) {
+        inclusions.computeIfAbsent(server ?: GLOBAL_SCOPE) { mutableListOf() }.addAll(commands)
+    }
 
     /**
      * Deletes a command from a specific server.
@@ -47,7 +65,11 @@ class NexusSynchronizer internal constructor() {
      */
     fun batchUpdate(server: Long): CompletableFuture<Void> {
         val manager: NexusCommandManager = Nexus.commandManager
-        val serverCommands = manager.commandsAssociatedWith(server).map { command -> command.asSlashCommand() }.toHashSet()
+        val serverCommands = manager.commandsAssociatedWith(server)
+            .map { command -> command.asSlashCommand() as ApplicationCommandBuilder<*, *, *> }
+            .toHashSet()
+
+        inclusions[server]?.let { serverCommands += it }
 
         return Nexus.express.awaitAvailable()
             .thenCompose { shard -> methods.bulkOverwriteServer(shard, serverCommands, server) }
@@ -94,7 +116,11 @@ class NexusSynchronizer internal constructor() {
         val manager: NexusCommandManager = Nexus.commandManager
 
         val serverCommands = manager.serverCommands
-        val globalCommands = manager.globalCommands.map { command -> command.asSlashCommand() }.toHashSet()
+        val globalCommands = manager.globalCommands
+            .map { command -> command.asSlashCommand() as ApplicationCommandBuilder<*, *, *> }
+            .toHashSet()
+
+        inclusions[GLOBAL_SCOPE]?.let { globalCommands += it }
 
         try {
             Nexus.express
@@ -111,16 +137,17 @@ class NexusSynchronizer internal constructor() {
             return@NexusLaunchable
         }
 
-        val serverMappedCommands: MutableMap<Long, MutableSet<SlashCommandBuilder>> = mutableMapOf()
+        val serverMappedCommands: MutableMap<Long, MutableSet<ApplicationCommandBuilder<*, *, *>>> = mutableMapOf()
+
+        for ((id, value) in inclusions.entries) {
+            if (id == GLOBAL_SCOPE) continue
+            serverMappedCommands.computeIfAbsent(id) { HashSet() } += value
+        }
 
         for (`$command` in serverCommands) {
             for (serverId in `$command`.serverIds) {
                 if (serverId == NexusCommand.PLACEHOLDER_SERVER_ID) continue
-                if (!serverMappedCommands.containsKey(serverId)) {
-                    serverMappedCommands[serverId] = HashSet()
-                }
-
-                serverMappedCommands[serverId]!!.add(`$command`.asSlashCommand())
+                serverMappedCommands.computeIfAbsent(serverId) { HashSet() } += `$command`.asSlashCommand()
             }
         }
 
