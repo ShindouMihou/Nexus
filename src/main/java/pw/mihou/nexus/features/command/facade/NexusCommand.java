@@ -3,6 +3,7 @@ package pw.mihou.nexus.features.command.facade;
 import kotlin.Pair;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
+import org.javacord.api.interaction.internal.SlashCommandUpdaterDelegate;
 import pw.mihou.nexus.core.exceptions.NoSuchAfterwareException;
 import pw.mihou.nexus.core.exceptions.NoSuchMiddlewareException;
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
@@ -174,6 +175,12 @@ public interface NexusCommand {
     boolean isDefaultDisabled();
 
     /**
+     * Checks whether the command is not-safe-for-work or not.
+     * @return Whether the command is not-safe-for-work or not.
+     */
+    boolean isNsfw();
+
+    /**
      * Gets the permission types required to have this command enabled for that user.
      *
      * @return The permission types required for this command to be enabled for
@@ -226,6 +233,7 @@ public interface NexusCommand {
         getNameLocalizations().forEach(builder::addNameLocalization);
         getDescriptionLocalizations().forEach(builder::addDescriptionLocalization);
 
+        builder.setNsfw(isNsfw());
         if (isDefaultDisabled()) {
             builder.setDefaultDisabled();
         }
@@ -260,6 +268,7 @@ public interface NexusCommand {
         getNameLocalizations().forEach(updater::addNameLocalization);
         getDescriptionLocalizations().forEach(updater::addDescriptionLocalization);
 
+        // TODO: Add support for `nsfw` update once new version out. Refers to (https://github.com/Javacord/Javacord/pull/1225).
         if (isDefaultDisabled()) {
             updater.setDefaultDisabled();
         }
