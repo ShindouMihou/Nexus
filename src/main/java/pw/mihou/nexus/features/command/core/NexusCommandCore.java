@@ -46,9 +46,6 @@ public class NexusCommandCore implements NexusCommand {
     public List<OptionValidation<?>> validators = Collections.emptyList();
 
     @WithDefault
-    public Duration cooldown = Duration.ofSeconds(5);
-
-    @WithDefault
     public List<String> middlewares = Collections.emptyList();
 
     @WithDefault
@@ -84,11 +81,6 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public List<SlashCommandOption> getOptions() {
         return options;
-    }
-
-    @Override
-    public Duration getCooldown() {
-        return cooldown;
     }
 
     @Override
@@ -162,7 +154,6 @@ public class NexusCommandCore implements NexusCommand {
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", options=" + options +
-                ", cooldown=" + cooldown +
                 ", serverId=" + getServerIds().toString() +
                 '}';
     }

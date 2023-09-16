@@ -6,9 +6,11 @@ import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent
 import pw.mihou.nexus.features.command.interceptors.commons.modules.ratelimiter.facade.NexusRatelimitData
 import pw.mihou.nexus.features.command.interceptors.commons.modules.ratelimiter.facade.NexusRatelimiter
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.jvm.optionals.getOrDefault
 
 internal class NexusRatelimiterCore : NexusRatelimiter {
 
@@ -74,7 +76,7 @@ internal class NexusRatelimiterCore : NexusRatelimiter {
         return TimeUnit.MILLISECONDS.toSeconds(
             dataCore!!.getRatelimitedTimestampInMillisOn(server)
                     +
-                    commandCore.cooldown.toMillis()
+                    commandCore.get("cooldown", Duration::class.java).getOrDefault(Duration.ofSeconds(5)).toMillis()
         ) - TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
     }
 

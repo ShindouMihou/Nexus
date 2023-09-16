@@ -87,13 +87,6 @@ public interface NexusCommand {
     List<SlashCommandOption> getOptions();
 
     /**
-     * Gets the cooldown of the command.
-     *
-     * @return The cooldown of the command.
-     */
-    Duration getCooldown();
-
-    /**
      * Gets all the servers that this command is for.
      *
      * @return A list of server ids that this command is for.
