@@ -10,6 +10,7 @@ import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore
 import pw.mihou.nexus.features.command.interceptors.core.NexusMiddlewareGateCore
 import pw.mihou.nexus.features.command.validation.OptionValidation
+import pw.mihou.nexus.features.command.validation.middleware.OptionValidationMiddleware
 import pw.mihou.nexus.features.command.validation.result.ValidationResult
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
@@ -31,6 +32,7 @@ object NexusCommandDispatcher {
             val nexusEvent = NexusCommandEventCore(event, instance)
 
             val middlewares: MutableList<String> = ArrayList()
+            middlewares.add(OptionValidationMiddleware.NAME)
             middlewares.addAll(globalMiddlewares)
             middlewares.addAll(instance.middlewares)
 
@@ -83,20 +85,6 @@ object NexusCommandDispatcher {
                 )
             }
 
-            val validationResult = validate(validations = instance.validators, nexusEvent)
-
-            if (validationResult != null) {
-                if (validationResult.error == null) {
-                    return
-                }
-
-                val responder = nexusEvent.respondNow()
-                validationResult.error.convertTo(responder)
-
-                responder.respond().exceptionally(ExceptionLogger.get())
-                return
-            }
-
             Nexus.launcher.launch {
                 try {
                     instance.handler.onEvent(nexusEvent)
@@ -120,19 +108,4 @@ object NexusCommandDispatcher {
             exception.printStackTrace()
         }
     }
-}
-
-private fun validate(validations: List<OptionValidation<*>>, event: NexusCommandEvent): ValidationResult? {
-    var blocker: ValidationResult? = null
-
-    for (validation in validations) {
-        val result = validation.validate(event)
-
-        if (!result.hasPassed) {
-            blocker = result
-            break
-        }
-    }
-
-    return blocker
 }
