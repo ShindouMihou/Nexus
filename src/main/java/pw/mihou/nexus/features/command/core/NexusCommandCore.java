@@ -59,6 +59,8 @@ public class NexusCommandCore implements NexusCommand {
     @WithDefault
     public boolean defaultDisabled = false;
     @WithDefault
+    public boolean nsfw = false;
+    @WithDefault
     public List<PermissionType> defaultEnabledForPermissions = Collections.emptyList();
     @InjectReferenceClass
     public NexusHandler handler;
@@ -131,6 +133,11 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public boolean isDefaultDisabled() {
         return defaultDisabled;
+    }
+
+    @Override
+    public boolean isNsfw() {
+        return nsfw;
     }
 
     @Override
