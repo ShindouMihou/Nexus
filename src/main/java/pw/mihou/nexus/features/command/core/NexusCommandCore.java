@@ -97,11 +97,6 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
-    public NexusCommand addSupportFor(Long... serverIds) {
-        return associate(serverIds);
-    }
-
-    @Override
     public NexusCommand associate(Long... serverIds) {
         this.serverIds = Stream.concat(this.serverIds.stream(), Stream.of(serverIds)).toList();
         return this;
@@ -113,11 +108,6 @@ public class NexusCommandCore implements NexusCommand {
         this.serverIds = this.serverIds.stream().filter(snowflake -> !excludedSnowflakes.contains(snowflake)).toList();
 
         return this;
-    }
-
-    @Override
-    public NexusCommand removeSupportFor(Long... serverIds) {
-        return disassociate(serverIds);
     }
 
     @Override
@@ -164,11 +154,6 @@ public class NexusCommandCore implements NexusCommand {
     @Override
     public Map<DiscordLocale, String> getDescriptionLocalizations() {
         return descriptionLocalizations;
-    }
-
-    @Override
-    public long getServerId() {
-        return serverIds.get(0);
     }
 
     @Override
