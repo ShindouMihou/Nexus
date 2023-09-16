@@ -28,7 +28,7 @@ interface ValidationError {
         @JvmStatic
         @JvmSynthetic
         fun create(embed: EmbedBuilder, modifier: (ValidationEmbedError.() -> Unit) = {}): ValidationEmbedError {
-            val validationError = ValidationEmbedError(embed)
+            val validationError = ValidationEmbedError(embedTemplate(embed))
             modifier(validationError)
 
             return validationError
