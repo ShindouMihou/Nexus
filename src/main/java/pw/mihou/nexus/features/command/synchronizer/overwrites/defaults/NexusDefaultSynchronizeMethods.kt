@@ -2,6 +2,7 @@ package pw.mihou.nexus.features.command.synchronizer.overwrites.defaults
 
 import org.javacord.api.DiscordApi
 import org.javacord.api.interaction.ApplicationCommand
+import org.javacord.api.interaction.ApplicationCommandBuilder
 import org.javacord.api.interaction.SlashCommand
 import org.javacord.api.interaction.SlashCommandBuilder
 import pw.mihou.nexus.Nexus
@@ -13,14 +14,14 @@ import java.util.concurrent.CompletableFuture
 
 object NexusDefaultSynchronizeMethods : NexusSynchronizeMethods {
 
-    override fun bulkOverwriteGlobal(shard: DiscordApi, slashCommands: Set<SlashCommandBuilder>) =
+    override fun bulkOverwriteGlobal(shard: DiscordApi, applicationCommands: Set<ApplicationCommandBuilder<*, *, *>>) =
         shard
-            .bulkOverwriteGlobalApplicationCommands(slashCommands)
+            .bulkOverwriteGlobalApplicationCommands(applicationCommands)
             .and { Nexus.configuration.loggingTemplates.GLOBAL_COMMANDS_SYNCHRONIZED(it).debug() }
 
-    override fun bulkOverwriteServer(shard: DiscordApi, slashCommands: Set<SlashCommandBuilder>, serverId: Long) =
+    override fun bulkOverwriteServer(shard: DiscordApi, applicationCommands: Set<ApplicationCommandBuilder<*, *, *>>, serverId: Long) =
         shard
-            .bulkOverwriteServerApplicationCommands(serverId, slashCommands)
+            .bulkOverwriteServerApplicationCommands(serverId, applicationCommands)
             .and { Nexus.configuration.loggingTemplates.SERVER_COMMANDS_SYNCHRONIZED(serverId, it).debug() }
 
     override fun deleteForServer(shard: DiscordApi, command: NexusCommand, serverId: Long): CompletableFuture<Void> {
