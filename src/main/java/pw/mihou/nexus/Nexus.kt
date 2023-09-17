@@ -19,6 +19,7 @@ import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
+import pw.mihou.nexus.features.command.validation.middleware.OptionValidationMiddleware
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore
@@ -28,6 +29,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
 
     init {
         NexusCommandInterceptor.addRepository(NexusCommonInterceptorsCore())
+        NexusCommandInterceptor.addMiddleware(OptionValidationMiddleware.NAME, OptionValidationMiddleware)
     }
 
     /**
