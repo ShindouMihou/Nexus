@@ -8,7 +8,7 @@ import pw.mihou.nexus.configuration.NexusConfiguration
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter
 import pw.mihou.nexus.core.managers.core.NexusCommandManagerCore
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
-import pw.mihou.nexus.core.reflective.NexusReflectiveCore
+import pw.mihou.nexus.core.reflective.NexusReflection
 import pw.mihou.nexus.core.threadpool.NexusThreadPool
 import pw.mihou.nexus.express.NexusExpress
 import pw.mihou.nexus.express.core.NexusExpressCore
@@ -147,7 +147,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      */
     @JvmStatic
     fun <Any : NexusHandler> manifest(model: Any): NexusCommand {
-        return (NexusReflectiveCore.command(model) as NexusCommand)
+        return (NexusReflection.copy(model, NexusCommandCore::class.java) as NexusCommand)
     }
 
     /**

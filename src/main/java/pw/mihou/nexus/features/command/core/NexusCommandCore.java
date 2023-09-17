@@ -28,6 +28,7 @@ public class NexusCommandCore implements NexusCommand {
     private Map<String, Object> nexusCustomFields;
 
     @Required
+    @Uuid
     public String name;
 
     @WithDefault
@@ -162,6 +163,16 @@ public class NexusCommandCore implements NexusCommand {
                 ", description='" + description + '\'' +
                 ", options=" + options +
                 ", serverId=" + getServerIds().toString() +
+                ", middlewares=" + middlewares.toString() +
+                ", afterwares=" + afterwares.toString() +
+                ", nameLocalizations=" + nameLocalizations.toString() +
+                ", descriptionLocalizations=" + descriptionLocalizations.toString() +
+                ", defaultEnabledForPermissions=" + defaultEnabledForPermissions.toString() +
+                ", shared=" + nexusCustomFields.toString() +
+                ", defaultDisabled=" + defaultDisabled +
+                ", defaultEnabledForEveryone=" + defaultEnabledForEveryone +
+                ", enabledInDms=" + enabledInDms +
+                ", nsfw=" + nsfw +
                 '}';
     }
 }

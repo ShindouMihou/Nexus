@@ -29,6 +29,7 @@ public class CommandGenerationTests {
                 command,
                 "The command instance which shouldn't be null is somehow null."
         );
+        System.out.println(command);
     }
 
     @Test
@@ -50,6 +51,7 @@ public class CommandGenerationTests {
                 command.getName().equals("fulfilled") && command.getDescription().equals("fulfilled"),
                 "The value of the command name or description does not match the value of the class."
         );
+        System.out.println(command);
     }
 
     @Test
@@ -61,6 +63,7 @@ public class CommandGenerationTests {
                 Nexus.getCommandManager().get(((NexusCommandCore) command).uuid),
                 "The command was not found in the command manager despite being added."
         );
+        System.out.println(command);
     }
 
     @Test
@@ -83,6 +86,7 @@ public class CommandGenerationTests {
                 "This should be visible to middlewares and afterwares.",
                 "The shared field's value does not match the intended value."
         );
+        System.out.println(command);
     }
 
     @Test
@@ -99,6 +103,7 @@ public class CommandGenerationTests {
                 NexusCommonInterceptors.NEXUS_RATELIMITER,
                 "The middleware does not match the intended value."
         );
+        System.out.println(command);
     }
 
     @Test
@@ -115,6 +120,7 @@ public class CommandGenerationTests {
                 NexusCommonInterceptors.NEXUS_RATELIMITER,
                 "The afterwares does not match the intended value."
         );
+        System.out.println(command);
     }
 
     @Test
