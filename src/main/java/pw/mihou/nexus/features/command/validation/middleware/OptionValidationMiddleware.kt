@@ -12,9 +12,6 @@ import pw.mihou.nexus.features.messages.NexusMessage
 object OptionValidationMiddleware: NexusMiddleware {
     const val NAME = "nexus::native.validation"
 
-    init {
-        NexusCommandInterceptor.addMiddleware(NAME, this)
-    }
     override fun onBeforeCommand(event: NexusMiddlewareEvent) {
         val command = event.command as NexusCommandCore
         if (command.validators.isEmpty()) {
