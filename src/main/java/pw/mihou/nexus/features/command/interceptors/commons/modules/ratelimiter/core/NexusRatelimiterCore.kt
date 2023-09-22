@@ -89,6 +89,8 @@ class NexusRatelimiterCore internal constructor(): NexusRatelimiter {
             event.userId, event.serverId.orElse(event.userId),
             event.command as NexusCommandCore
         )
+        event.store("nexus::is_ratelimited", ratelimitData.ratelimited)
+        event.store("nexus::ratelimit_remaining", ratelimitData.remaining)
         if (ratelimitData.ratelimited) {
             if (!ratelimitData.notified) {
                 event.stop(
