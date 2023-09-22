@@ -275,6 +275,16 @@ public interface NexusCommandEvent {
     }
 
     /**
+     * Gets the value of the given key from the {@link NexusCommandEvent#store()}.
+     *
+     * @param key   The key to get from the {@link NexusCommandEvent#store()}.*
+     * @return The value mapped with the key in {@link NexusCommandEvent#store()}, otherwise null.
+     */
+    default Object get(String key) {
+        return store().get(key);
+    }
+
+    /**
      * A short-hand expression for placing a key-value pair to {@link NexusCommandEvent#store()}.
      *
      * @param key   The key to insert to the store.
