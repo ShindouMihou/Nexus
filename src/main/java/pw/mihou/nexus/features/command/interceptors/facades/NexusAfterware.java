@@ -12,4 +12,11 @@ public interface NexusAfterware extends NexusCommandInterceptor {
      */
     void onAfterCommandExecution(NexusCommandEvent event);
 
+    /**
+     * This is executed when the command failed to dispatch, an example of this scenario is when a middleware
+     * prevented the dispatching of the command.
+     * @param event the event to execute.
+     */
+    default void onFailedDispatch(NexusCommandEvent event) {}
+
 }

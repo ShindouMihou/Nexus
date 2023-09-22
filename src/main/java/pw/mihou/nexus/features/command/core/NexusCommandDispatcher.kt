@@ -28,14 +28,20 @@ object NexusCommandDispatcher {
      * @param event     The [SlashCommandCreateEvent] event to dispatch.
      */
     fun dispatch(instance: NexusCommandCore, event: SlashCommandCreateEvent) {
+        val nexusEvent = NexusCommandEventCore(event, instance)
+
+        val middlewares: MutableList<String> = ArrayList()
+        middlewares.add(OptionValidationMiddleware.NAME)
+        middlewares.addAll(globalMiddlewares)
+        middlewares.addAll(instance.middlewares)
+
+        val afterwares: MutableList<String> = ArrayList()
+        afterwares.addAll(globalAfterwares)
+        afterwares.addAll(instance.afterwares)
+
+        var dispatched = false
+
         try {
-            val nexusEvent = NexusCommandEventCore(event, instance)
-
-            val middlewares: MutableList<String> = ArrayList()
-            middlewares.add(OptionValidationMiddleware.NAME)
-            middlewares.addAll(globalMiddlewares)
-            middlewares.addAll(instance.middlewares)
-
             val middlewareGate: NexusMiddlewareGateCore? = if (Nexus.configuration.interceptors.autoDeferMiddlewareResponses) {
                 val future = CompletableFuture.supplyAsync {
                     NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.middlewares(middlewares))
@@ -85,6 +91,7 @@ object NexusCommandDispatcher {
                 )
             }
 
+            dispatched = true
             Nexus.launcher.launch {
                 try {
                     instance.handler.onEvent(nexusEvent)
@@ -97,15 +104,15 @@ object NexusCommandDispatcher {
             }
 
             Nexus.launcher.launch {
-                val afterwares: MutableList<String> = ArrayList()
-                afterwares.addAll(globalAfterwares)
-                afterwares.addAll(instance.afterwares)
-
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares))
             }
         } catch (exception: Exception) {
             logger.error("An uncaught exception occurred within Nexus' dispatcher for command ${instance.name}.")
             exception.printStackTrace()
+        } finally {
+            if (!dispatched) {
+                NexusCommandInterceptorCore.failedDispatch(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares))
+            }
         }
     }
 }
