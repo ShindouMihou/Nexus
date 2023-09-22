@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.optionals.getOrDefault
 
-internal class NexusRatelimiterCore : NexusRatelimiter {
+class NexusRatelimiterCore internal constructor(): NexusRatelimiter {
 
     private val ratelimits: MutableMap<Entity, NexusRatelimitData?> = ConcurrentHashMap()
 

@@ -6,6 +6,7 @@ import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptor
  * {@link NexusInterceptorRepository} is an extendable interface that can be used
  * to define one or more interceptors which calling the register function.
  */
+@Deprecated(forRemoval = true)
 public abstract class NexusInterceptorRepository {
 
     /**

@@ -7,7 +7,6 @@ import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.managers.indexes.exceptions.IndexIdentifierConflictException;
 import pw.mihou.nexus.features.command.core.NexusCommandCore;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
-import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors;
 
 import static org.junit.jupiter.api.Assertions.*;
 

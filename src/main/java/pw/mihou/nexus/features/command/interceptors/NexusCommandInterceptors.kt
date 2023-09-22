@@ -1,6 +1,8 @@
 package pw.mihou.nexus.features.command.interceptors
 
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
+import pw.mihou.nexus.core.reflective.NexusReflection
+import pw.mihou.nexus.features.command.interceptors.annotations.Name
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware
 import pw.mihou.nexus.features.command.interceptors.facades.NexusInterceptorRepository
@@ -47,11 +49,33 @@ object NexusCommandInterceptors {
     }
 
     /**
-     * Adds the provided repository to the registry. This calls the [NexusInterceptorRepository.define] method,
-     * adding all the middlewares and afterwares inside.
+     * Adds the provided repository to the registry. Any [NexusInterceptorRepository] will be handled like
+     * how it is done in the older versions, but any other classes will be loaded via reflection through the
+     * newer mechanism.
+     *
      * @param repository the repository to add.
      */
-    fun add(repository: NexusInterceptorRepository) {
-        interceptors.addRepository(repository)
+    fun add(repository: Any) {
+        if (repository is NexusInterceptorRepository) {
+            interceptors.addRepository(repository)
+            return
+        }
+
+        NexusReflection.accumulate(repository) { field ->
+            if (field.type != NexusMiddleware::class.java && field.type != NexusAfterware::class.java) return@accumulate
+            val name =
+                if (field.isAnnotationPresent(Name::class.java)) field.getAnnotation(Name::class.java).value
+                else field.name
+
+            if (field.type == NexusMiddleware::class.java || field.type.isAssignableFrom(NexusMiddleware::class.java)) {
+                interceptors.addMiddleware(name, field.get(repository) as NexusMiddleware)
+                return@accumulate
+            }
+
+            if (field.type == NexusAfterware::class.java || field.type.isAssignableFrom(NexusAfterware::class.java)) {
+                interceptors.addAfterware(name, field.get(repository) as NexusAfterware)
+                return@accumulate
+            }
+        }
     }
 }

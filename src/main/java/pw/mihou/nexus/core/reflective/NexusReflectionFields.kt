@@ -13,14 +13,15 @@ import java.util.*
 
 class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
-    private val fields = mutableMapOf<String, Any>()
+    private val _fields = mutableMapOf<String, Any>()
     private val _shared = mutableMapOf<String, Any>()
 
     val shared: Map<String, Any> get() = Collections.unmodifiableMap(_shared)
+    val fields: Map<String, Any> get() = Collections.unmodifiableMap(_fields)
 
     @Suppress("UNCHECKED_CAST")
     operator fun <R> get(key: String): R? {
-        return fields[key.lowercase()]?.let { it as? R }
+        return _fields[key.lowercase()]?.let { it as? R }
     }
 
     private val to = reference::class.java
@@ -51,7 +52,7 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
             if (!field.isAnnotationPresent(WithDefault::class.java)) continue
             field.isAccessible = true
             try {
-                fields[field.name.lowercase()]  = field.get(reference)
+                _fields[field.name.lowercase()]  = field.get(reference)
             } catch (e: IllegalAccessException) {
                 throw IllegalStateException("Unable to complete reflection due to IllegalAccessException. [class=${to.name},field=${field.name}]")
             }
@@ -109,7 +110,7 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
     /**
      * Pulls all the fields from the `clazz` to their respective fields depending on the annotation, for example, if there
-     * is a [Share] annotation present, it will be recorded under [sharedFields] otherwise it will be under [fields].
+     * is a [Share] annotation present, it will be recorded under [sharedFields] otherwise it will be under [_fields].
      *
      * @param clazz the class to reference.
      */
@@ -123,7 +124,7 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
                     return@forEach
                 }
 
-                fields[it.name.lowercase()]  = value
+                _fields[it.name.lowercase()]  = value
             } catch  (e: IllegalAccessException) {
                 throw IllegalStateException("Unable to complete reflection due to IllegalAccessException. [class=${clazz.name},field=${it.name}]")
             }
@@ -136,7 +137,7 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
     private fun ensureHasRequired() {
         for (field in to.declaredFields) {
             if (!field.isAnnotationPresent(Required::class.java)) continue
-            if (fields[field.name.lowercase()] == null) {
+            if (_fields[field.name.lowercase()] == null) {
                 throw IllegalStateException("${field.name} is a required field, therefore, needs to have a value in class ${from::class.java.name}.")
             }
         }

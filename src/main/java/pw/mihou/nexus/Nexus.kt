@@ -17,8 +17,7 @@ import pw.mihou.nexus.features.command.core.NexusCommandDispatcher
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.command.interceptors.NexusCommandInterceptors
-import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore
-import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
+import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
 import pw.mihou.nexus.features.command.validation.middleware.OptionValidationMiddleware
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging
@@ -29,7 +28,7 @@ import pw.mihou.nexus.sharding.NexusShardingManager
 object Nexus: SlashCommandCreateListener, ButtonClickListener {
 
     init {
-        NexusCommandInterceptors.add(NexusCommonInterceptorsCore())
+        NexusCommandInterceptors.add(NexusCommonInterceptors)
         NexusCommandInterceptors.middleware(OptionValidationMiddleware.NAME, OptionValidationMiddleware)
     }
 
