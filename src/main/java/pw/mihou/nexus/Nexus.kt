@@ -109,6 +109,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * [NexusCommandInterceptors] is the interface between the interceptor registry (middlewares and afterwares) and
      * the [Nexus] interface, allowing simpler and more straightforward interceptor additions.
      */
+    @JvmStatic
     val interceptors = NexusCommandInterceptors
 
     /**

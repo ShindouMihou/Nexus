@@ -13,7 +13,7 @@ public class AnonymousInterceptors implements NexusHandler {
     private final String description = "An example of how a command can share custom fields to a middleware, etc.";
 
     private final List<String> middlewares = List.of(
-            NexusCommandInterceptor.middleware((event) -> event.stopIf(event.getServer().isEmpty()))
+            Nexus.getInterceptors().middleware((event) -> event.stopIf(event.getServer().isEmpty()))
     );
 
     @Override
