@@ -16,6 +16,7 @@ import pw.mihou.nexus.features.command.core.NexusCommandCore
 import pw.mihou.nexus.features.command.core.NexusCommandDispatcher
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusHandler
+import pw.mihou.nexus.features.command.interceptors.NexusCommandInterceptors
 import pw.mihou.nexus.features.command.interceptors.commons.core.NexusCommonInterceptorsCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
@@ -28,8 +29,8 @@ import pw.mihou.nexus.sharding.NexusShardingManager
 object Nexus: SlashCommandCreateListener, ButtonClickListener {
 
     init {
-        NexusCommandInterceptor.addRepository(NexusCommonInterceptorsCore())
-        NexusCommandInterceptor.addMiddleware(OptionValidationMiddleware.NAME, OptionValidationMiddleware)
+        NexusCommandInterceptors.add(NexusCommonInterceptorsCore())
+        NexusCommandInterceptors.middleware(OptionValidationMiddleware.NAME, OptionValidationMiddleware)
     }
 
     /**
@@ -104,6 +105,12 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
 
     @JvmStatic
     internal val launcher get() = configuration.launch.launcher
+
+    /**
+     * [NexusCommandInterceptors] is the interface between the interceptor registry (middlewares and afterwares) and
+     * the [Nexus] interface, allowing simpler and more straightforward interceptor additions.
+     */
+    val interceptors = NexusCommandInterceptors
 
     /**
      * Configures the [NexusConfiguration] in a more Kotlin way.

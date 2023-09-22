@@ -1,5 +1,6 @@
 package pw.mihou.nexus.features.command.interceptors.facades;
 
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner;
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
 
@@ -11,17 +12,11 @@ public interface NexusCommandInterceptor {
      *
      * @param middleware The middleware functionality.
      * @return The name of the middleware to generated.
+     * @see Nexus#getInterceptors
      */
+    @Deprecated(forRemoval = true)
     static String middleware(NexusMiddleware middleware) {
-        String uuid = NexusUuidAssigner.request();
-
-        if (NexusCommandInterceptorCore.has(uuid)) {
-            NexusUuidAssigner.deny(uuid);
-            return middleware(middleware);
-        }
-
-        NexusCommandInterceptorCore.addMiddleware(uuid, middleware);
-        return uuid;
+        return Nexus.INSTANCE.getInterceptors().middleware(middleware);
     }
 
     /**
@@ -30,18 +25,12 @@ public interface NexusCommandInterceptor {
      *
      * @param afterware The afterware functionality.
      * @return The name of the afterware to generated.
+     * @see Nexus#getInterceptors
      */
+    @Deprecated(forRemoval = true)
     static String afterware(NexusAfterware afterware) {
-        String uuid = NexusUuidAssigner.request();
+        return Nexus.INSTANCE.getInterceptors().afterware(afterware);
 
-        if (NexusCommandInterceptorCore.has(uuid)) {
-            NexusUuidAssigner.deny(uuid);
-            return afterware(afterware);
-        }
-
-        NexusCommandInterceptorCore.addAfterware(uuid, afterware);
-
-        return uuid;
     }
 
     /**
@@ -50,11 +39,11 @@ public interface NexusCommandInterceptor {
      * @param name The name of the middleware to add.
      * @param middleware The middleware functionality.
      * @return The name of the middleware for quick-use.
+     * @see Nexus#getInterceptors
      */
+    @Deprecated(forRemoval = true)
     static String addMiddleware(String name, NexusMiddleware middleware) {
-        NexusCommandInterceptorCore.addMiddleware(name, middleware);
-
-        return name;
+        return Nexus.INSTANCE.getInterceptors().middleware(name, middleware);
     }
 
     /**
@@ -63,11 +52,12 @@ public interface NexusCommandInterceptor {
      * @param name The name of the afterware to add.
      * @param afterware The afterware functionality.
      * @return The name of the afterware for quick-use.
+     * @see Nexus#getInterceptors
      */
+    @Deprecated(forRemoval = true)
     static String addAfterware(String name, NexusAfterware afterware) {
-        NexusCommandInterceptorCore.addAfterware(name, afterware);
+        return Nexus.INSTANCE.getInterceptors().afterware(name, afterware);
 
-        return name;
     }
 
     /**
@@ -75,9 +65,11 @@ public interface NexusCommandInterceptor {
      * storage.
      *
      * @param repository    The repository to add.
+     * @see Nexus#getInterceptors
      */
+    @Deprecated(forRemoval = true)
     static void addRepository(NexusInterceptorRepository repository) {
-        NexusCommandInterceptorCore.addRepository(repository);
+        Nexus.INSTANCE.getInterceptors().add(repository);
     }
 
 }
