@@ -55,10 +55,10 @@ internal object NexusCommandInterceptorCore {
     fun hasMiddleware(name: String) = interceptors.containsKey(name) && interceptors[name] is NexusMiddleware
 
     @JvmStatic
-    fun middlewares(names: List<String>): List<NexusMiddleware> = names
-        .map { interceptors[it] }
-        .filter { it != null && it is NexusMiddleware }
-        .map { it as NexusMiddleware }
+    fun middlewares(names: List<String>): Map<String, NexusMiddleware> = names
+        .map { it to interceptors[it] }
+        .filter { it.second != null && it.second is NexusMiddleware }
+        .associate { it.first to it.second as NexusMiddleware }
 
     @JvmStatic
     fun afterwares(names: List<String>): List<NexusAfterware> = names
@@ -67,12 +67,13 @@ internal object NexusCommandInterceptorCore {
         .map { it as NexusAfterware }
 
     @JvmStatic
-    fun execute(event: NexusCommandEvent, middlewares: List<NexusMiddleware>): NexusMiddlewareGateCore? {
+    fun execute(event: NexusCommandEvent, middlewares: Map<String, NexusMiddleware>): NexusMiddlewareGateCore? {
         val gate = NexusMiddlewareGateCore()
-        for (middleware in middlewares) {
+        for ((name, middleware) in middlewares) {
             try {
                 middleware.onBeforeCommand(NexusMiddlewareEventCore(event, gate))
                 if (!gate.isAllowed) {
+                    event.store(NexusAfterware.BLOCKING_MIDDLEWARE_KEY, name)
                     return gate
                 }
             } catch (exception: Exception) {

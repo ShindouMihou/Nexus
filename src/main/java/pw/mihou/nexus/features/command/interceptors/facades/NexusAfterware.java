@@ -5,6 +5,12 @@ import pw.mihou.nexus.features.command.facade.NexusCommandEvent;
 public interface NexusAfterware extends NexusCommandInterceptor {
 
     /**
+     * The key in {@link NexusCommandEvent#get(String)} to identify which middleware blocked the execution.
+     * This should only be used in {@link NexusAfterware#onFailedDispatch(NexusCommandEvent)}.
+     */
+    public static final String BLOCKING_MIDDLEWARE_KEY = "$.engine::blocker";
+
+    /**
      * This is executed after the command was executed. You can expect functionality such as
      * `respondNow` and similar to be expired.
      *

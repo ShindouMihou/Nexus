@@ -39,10 +39,14 @@ object NexusLogAfterware: NexusAfterware {
                 "${CYAN}ratelimited_until=$RESET${NumberFormat.getInstance().format(ratelimitRemaining)}s$RESET "
             else ""
 
+        val blocker = event[NexusAfterware.BLOCKING_MIDDLEWARE_KEY] as? String
+        val blocked = if (blocker != null) "${CYAN}blocker=$RESET$blocker " else ""
+
         Nexus.logger.info("${RED}FAILED_DISPATCH: $RESET" +
                 "${CYAN}command=$RESET${event.interaction.fullCommandName} " +
                 "${CYAN}user=$RESET${event.user.discriminatedName} " +
                 "$ratelimited$ratelimitedUntil" +
+                blocked +
                 "Failed to dispatch, likely due to a middleware rejecting the request. " +
                 "It took ${if (elapsed > 2500) RED else GREEN}${NumberFormat.getInstance().format(elapsed)}ms" +
                 "$RESET.")
