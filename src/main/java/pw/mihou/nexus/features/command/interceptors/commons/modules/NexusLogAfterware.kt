@@ -15,10 +15,21 @@ object NexusLogAfterware: NexusAfterware {
     private const val GREEN = "\u001B[32m"
     override fun onAfterCommandExecution(event: NexusCommandEvent) {
         val elapsed = Instant.now().toEpochMilli() - event.interaction.creationTimestamp.toEpochMilli()
-        Nexus.logger.info("" +
+        Nexus.logger.info("${GREEN}DISPATCHED: $RESET" +
                 "${CYAN}command=$RESET${event.interaction.fullCommandName} " +
                 "${CYAN}user=$RESET${event.user.discriminatedName} " +
                 "Dispatched within ${if (elapsed > 2500) RED else GREEN}${NumberFormat.getInstance().format(elapsed)}ms" +
+                "$RESET.")
+    }
+
+    override fun onFailedDispatch(event: NexusCommandEvent) {
+        val elapsed = Instant.now().toEpochMilli() - event.interaction.creationTimestamp.toEpochMilli()
+
+        Nexus.logger.info("${RED}FAILED_DISPATCH: $RESET" +
+                "${CYAN}command=$RESET${event.interaction.fullCommandName} " +
+                "${CYAN}user=$RESET${event.user.discriminatedName} " +
+                "Failed to dispatch, likely due to a middleware rejecting the request. " +
+                "It took ${if (elapsed > 2500) RED else GREEN}${NumberFormat.getInstance().format(elapsed)}ms" +
                 "$RESET.")
     }
 }

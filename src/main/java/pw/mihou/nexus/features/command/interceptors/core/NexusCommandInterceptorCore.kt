@@ -94,4 +94,15 @@ internal object NexusCommandInterceptorCore {
         }
     }
 
+    fun failedDispatch(event: NexusCommandEvent, afterwares: List<NexusAfterware>) {
+        for (afterware in afterwares) {
+            try {
+                afterware.onFailedDispatch(event)
+            } catch (exception: Exception) {
+                Nexus.logger.error("An uncaught exception was caught while trying to execute a afterware's failed dispatch.")
+                exception.printStackTrace()
+            }
+        }
+    }
+
 }
