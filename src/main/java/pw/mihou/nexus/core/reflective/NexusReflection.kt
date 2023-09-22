@@ -1,10 +1,27 @@
 package pw.mihou.nexus.core.reflective
 
+import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.core.reflective.annotations.*
 import pw.mihou.nexus.features.command.annotation.IdentifiableAs
+import java.lang.reflect.Field
 
 object NexusReflection {
+
+    /**
+     * Accumulates all the declared fields of the `from` parameter, this is useful for cases such as
+     * interceptor repositories.
+     *
+     * @param from the origin object where all the fields will be accumulated from.
+     * @param accumulator the accumulator to use.
+     */
+    fun accumulate(from: Any, accumulator: (field: Field) -> Unit) {
+        val instance = from::class.java
+        for (field in instance.declaredFields) {
+            field.isAccessible = true
+            accumulator(field)
+        }
+    }
 
     /**
      * Mirrors the fields from origin (`from`) to a new instance of the `to` class.
