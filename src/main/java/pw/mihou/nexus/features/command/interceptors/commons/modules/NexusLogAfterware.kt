@@ -36,7 +36,7 @@ object NexusLogAfterware: NexusAfterware {
 
         val ratelimitedUntil =
             if (isRatelimited != null && ratelimitRemaining != null && isRatelimited)
-                "${CYAN}ratelimited_until=${NumberFormat.getInstance().format(ratelimitRemaining)}s$RESET "
+                "${CYAN}ratelimited_until=$RESET${NumberFormat.getInstance().format(ratelimitRemaining)}s$RESET "
             else ""
 
         Nexus.logger.info("${RED}FAILED_DISPATCH: $RESET" +
