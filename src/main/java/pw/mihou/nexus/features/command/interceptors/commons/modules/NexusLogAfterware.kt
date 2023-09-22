@@ -18,7 +18,7 @@ object NexusLogAfterware: NexusAfterware {
         val ratelimited = if ((event["nexus::is_ratelimited"] as? Boolean != null)) "${CYAN}ratelimited=${RESET}false" else ""
         Nexus.logger.info("${GREEN}DISPATCHED: $RESET" +
                 "${CYAN}command=$RESET${event.interaction.fullCommandName} " +
-                "${CYAN}user=$RESET${event.user.discriminatedName} d" +
+                "${CYAN}user=$RESET${event.user.discriminatedName} " +
                 "$ratelimited " +
                 "Dispatched within ${if (elapsed > 2500) RED else GREEN}${NumberFormat.getInstance().format(elapsed)}ms" +
                 "$RESET.")
@@ -28,7 +28,7 @@ object NexusLogAfterware: NexusAfterware {
         val elapsed = Instant.now().toEpochMilli() - event.interaction.creationTimestamp.toEpochMilli()
 
         val isRatelimited = event["nexus::is_ratelimited"] as? Boolean
-        val ratelimitRemaining = event["nexus::ratelimit_remaining"] as? Duration
+        val ratelimitRemaining = event["nexus::ratelimit_remaining"] as? Long
 
         val ratelimited =
             if (isRatelimited != null) "${CYAN}ratelimited=${if(isRatelimited) RED else GREEN}${isRatelimited}$RESET "
@@ -36,7 +36,7 @@ object NexusLogAfterware: NexusAfterware {
 
         val ratelimitedUntil =
             if (isRatelimited != null && ratelimitRemaining != null && isRatelimited)
-                "${CYAN}ratelimited_until=${NumberFormat.getInstance().format(ratelimitRemaining.toMillis())}ms$RESET "
+                "${CYAN}ratelimited_until=${NumberFormat.getInstance().format(ratelimitRemaining)}s$RESET "
             else ""
 
         Nexus.logger.info("${RED}FAILED_DISPATCH: $RESET" +
