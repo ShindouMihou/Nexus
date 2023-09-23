@@ -54,19 +54,16 @@ internal object NexusCommandInterceptorCore {
     @JvmStatic
     fun hasMiddleware(name: String) = interceptors.containsKey(name) && interceptors[name] is NexusMiddleware
 
-    @JvmStatic
     internal fun middlewares(names: List<String>): Map<String, NexusMiddleware> = names
         .map { it to interceptors[it] }
         .filter { it.second != null && it.second is NexusMiddleware }
         .associate { it.first to it.second as NexusMiddleware }
 
-    @JvmStatic
     internal fun afterwares(names: List<String>): List<NexusAfterware> = names
         .map { interceptors[it] }
         .filter { it != null && it is NexusAfterware }
         .map { it as NexusAfterware }
 
-    @JvmStatic
     internal fun execute(event: NexusCommandEvent, middlewares: Map<String, NexusMiddleware>): NexusMiddlewareGateCore? {
         val gate = NexusMiddlewareGateCore()
         for ((name, middleware) in middlewares) {
@@ -84,23 +81,16 @@ internal object NexusCommandInterceptorCore {
         return null
     }
 
-    internal fun execute(event: NexusCommandEvent, afterwares: List<NexusAfterware>) {
+    internal fun execute(event: NexusCommandEvent, afterwares: List<NexusAfterware>, dispatched: Boolean = true) {
         for (afterware in afterwares) {
             try {
-                afterware.onAfterCommandExecution(event)
+                if (dispatched) {
+                    afterware.onAfterCommandExecution(event)
+                } else {
+                    afterware.onFailedDispatch(event)
+                }
             } catch (exception: Exception) {
-                Nexus.logger.error("An uncaught exception was caught while trying to execute a afterware.")
-                exception.printStackTrace()
-            }
-        }
-    }
-
-    internal fun failedDispatch(event: NexusCommandEvent, afterwares: List<NexusAfterware>) {
-        for (afterware in afterwares) {
-            try {
-                afterware.onFailedDispatch(event)
-            } catch (exception: Exception) {
-                Nexus.logger.error("An uncaught exception was caught while trying to execute a afterware's failed dispatch.")
+                Nexus.logger.error("An uncaught exception was caught while trying to execute an afterware.")
                 exception.printStackTrace()
             }
         }

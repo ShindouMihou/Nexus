@@ -111,7 +111,7 @@ object NexusCommandDispatcher {
             exception.printStackTrace()
         } finally {
             if (!dispatched) {
-                NexusCommandInterceptorCore.failedDispatch(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares))
+                NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares), dispatched = false)
             }
         }
     }
