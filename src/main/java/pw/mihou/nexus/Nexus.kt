@@ -43,7 +43,10 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * be from Nexus. (it can get messy, don't recommend).
      */
     @JvmStatic
-    val logger: NexusLoggingAdapter get() = configuration.global.logger
+    @set:JvmName("setLogger")
+    var logger: NexusLoggingAdapter
+        get() = configuration.global.logger
+        set(value) { configuration.global.logger = value }
 
     /**
      * [NexusExpress] is a local shard router that any developer including internal methods uses as a simple, straightforward
