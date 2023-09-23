@@ -7,13 +7,13 @@ import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.core.NexusMiddlewareEventCore
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
-import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent
-import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddlewareGate
-import java.util.stream.Stream
+import pw.mihou.nexus.features.command.validation.middleware.OptionValidationMiddleware
 
 internal object NexusCommandInterceptorCore {
 
-    private val interceptors: MutableMap<String, NexusCommandInterceptor> = mutableMapOf()
+    private val interceptors: MutableMap<String, NexusCommandInterceptor> = mutableMapOf(
+        OptionValidationMiddleware.NAME to OptionValidationMiddleware
+    )
 
     /**
      * Adds one middleware to [Nexus].
