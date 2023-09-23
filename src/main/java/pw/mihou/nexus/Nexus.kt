@@ -26,10 +26,6 @@ import pw.mihou.nexus.sharding.NexusShardingManager
 
 object Nexus: SlashCommandCreateListener, ButtonClickListener {
 
-    init {
-        NexusCommandInterceptors.middleware(OptionValidationMiddleware.NAME, OptionValidationMiddleware)
-    }
-
     /**
      * The [NexusConfiguration] that is being used by this one and only instance of [Nexus]. It contains all the
      * globally configurable parameters of Nexus and is recommended to be configured.
