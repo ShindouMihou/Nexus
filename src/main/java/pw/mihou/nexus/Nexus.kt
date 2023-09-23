@@ -52,7 +52,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * [NexusExpress] is a local shard router that any developer including internal methods uses as a simple, straightforward
      * router to route their different events, actions to specific or any available shards.
      *
-     * You can learn more about this at [Understanding Nexus Express](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Nexus-Express).
+     * You can learn more about this at [Understanding Nexus Express](https://github.com/ShindouMihou/Nexus/wiki/Nexus-Express-Way).
      */
     @JvmStatic
     val express: NexusExpress = NexusExpressCore()
@@ -61,7 +61,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * [NexusShardingManager] is the simple sharding manager of Nexus that keeps a record of all the shards that the bot has active.
      * It is recommended and even required to set this up properly to have the framework running at its optimal and proper.
      *
-     * You can learn more at [Understanding Nexus Sharding Manager](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Nexus-Sharding-Manager).
+     * You can learn more at [Understanding Nexus Sharding Manager](https://github.com/ShindouMihou/Nexus/wiki/Sharding-Manager).
      */
     @JvmStatic
     @get:JvmName("getShardingManager")
@@ -87,7 +87,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
      * Global afterwares are afterwares that are prepended into the commands, these are first-order afterwares which means these are executed
      * first before any second-order afterwares (e.g. ones specified by the command).
      *
-     * You can learn more about afterwares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Command-Interceptors).
+     * You can learn more about afterwares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Command-Interceptors).
      */
     @JvmStatic
     val globalAfterwares: Set<String> get() = configuration.global.afterwares
@@ -95,7 +95,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     /**
      * [NexusSynchronizer] is a tool that is used to synchronize commands between Discord and the bot.
      *
-     * You can learn more about it at [Understanding Synchronization](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Synchronization).
+     * You can learn more about it at [Understanding Synchronization](https://github.com/ShindouMihou/Nexus/wiki/Command-Synchronization).
      */
     @JvmStatic
     val synchronizer = NexusSynchronizer()
@@ -163,7 +163,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     /**
      * Adds one or more global middlewares.
      *
-     * You can learn more about middlewares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Command-Interceptors).
+     * You can learn more about middlewares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Command-Interceptors).
      * @see [globalMiddlewares]
      */
     @JvmStatic
@@ -175,7 +175,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     /**
      * Adds one or more global afterwares.
      *
-     * You can learn more about afterwares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Understanding-Command-Interceptors).
+     * You can learn more about afterwares at [Understanding Command Interceptors](https://github.com/ShindouMihou/Nexus/wiki/Command-Interceptors).
      * @see [globalAfterwares]
      */
     @JvmStatic
