@@ -58,7 +58,10 @@ class NexusContextMenu: NexusApplicationCommand {
             .setName(name)
             .setNsfw(nsfw)
             .setEnabledInDms(enabledInDms)
-            .setDefaultEnabledForPermissions(*requiredPermissions.toTypedArray())
+
+        if  (requiredPermissions.isNotEmpty()) {
+            builder.setDefaultEnabledForPermissions(*requiredPermissions.toTypedArray())
+        }
 
         nameLocalizations.forEach { builder.addNameLocalization(it.key, it.value) }
         return builder
@@ -71,7 +74,10 @@ class NexusContextMenu: NexusApplicationCommand {
         }
             .setName(name)
             .setEnabledInDms(enabledInDms)
-            .setDefaultEnabledForPermissions(*requiredPermissions.toTypedArray())
+
+        if  (requiredPermissions.isNotEmpty()) {
+            builder.setDefaultEnabledForPermissions(*requiredPermissions.toTypedArray())
+        }
 
         nameLocalizations.forEach { builder.addNameLocalization(it.key, it.value) }
         return builder
