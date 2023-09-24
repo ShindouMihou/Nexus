@@ -70,6 +70,9 @@ class NexusSynchronizer internal constructor() {
             .toHashSet()
 
         inclusions[server]?.let { serverCommands += it }
+        manager.contextMenusAssociatedWith(server)
+            .map { contextMenu -> contextMenu.builder }
+            .forEach { serverCommands += it }
 
         return Nexus.express.awaitAvailable()
             .thenCompose { shard -> methods.bulkOverwriteServer(shard, serverCommands, server) }
@@ -116,11 +119,15 @@ class NexusSynchronizer internal constructor() {
         val manager: NexusCommandManager = Nexus.commandManager
 
         val serverCommands = manager.serverCommands
+        val serverContextMenus = manager.serverContextMenus
         val globalCommands = manager.globalCommands
             .map { command -> command.asSlashCommand() as ApplicationCommandBuilder<*, *, *> }
             .toHashSet()
 
         inclusions[GLOBAL_SCOPE]?.let { globalCommands += it }
+        manager.globalContextMenus
+            .map { contextMenu -> contextMenu.builder }
+            .forEach { globalCommands += it }
 
         try {
             Nexus.express
@@ -133,7 +140,7 @@ class NexusSynchronizer internal constructor() {
             error(NexusSynchronizerException(null, null, exception))
         }
 
-        if (serverCommands.isEmpty()) {
+        if (serverCommands.isEmpty() && serverContextMenus.isEmpty()) {
             return@NexusLaunchable
         }
 
@@ -148,6 +155,13 @@ class NexusSynchronizer internal constructor() {
             for (serverId in `$command`.serverIds) {
                 if (serverId == NexusCommand.PLACEHOLDER_SERVER_ID) continue
                 serverMappedCommands.computeIfAbsent(serverId) { HashSet() } += `$command`.asSlashCommand()
+            }
+        }
+
+        for (contextMenu in serverContextMenus) {
+            for (serverId in contextMenu.serverIds) {
+                if (serverId == NexusCommand.PLACEHOLDER_SERVER_ID) continue
+                serverMappedCommands.computeIfAbsent(serverId) { HashSet() } += contextMenu.builder
             }
         }
 

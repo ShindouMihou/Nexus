@@ -54,7 +54,8 @@ internal object NexusCommandInterceptorCore {
     @JvmStatic
     fun hasMiddleware(name: String) = interceptors.containsKey(name) && interceptors[name] is NexusMiddleware
 
-    internal fun middlewares(names: List<String>): Map<String, NexusMiddleware> = names
+    @JvmStatic
+    fun middlewares(names: List<String>): Map<String, NexusMiddleware> = names
         .map { it to interceptors[it] }
         .filter { it.second != null && it.second is NexusMiddleware }
         .associate { it.first to it.second as NexusMiddleware }
@@ -64,7 +65,8 @@ internal object NexusCommandInterceptorCore {
         .filter { it != null && it is NexusAfterware }
         .map { it as NexusAfterware }
 
-    internal fun execute(event: NexusCommandEvent, middlewares: Map<String, NexusMiddleware>): NexusMiddlewareGateCore? {
+    @JvmStatic
+    fun execute(event: NexusCommandEvent, middlewares: Map<String, NexusMiddleware>): NexusMiddlewareGateCore? {
         val gate = NexusMiddlewareGateCore()
         for ((name, middleware) in middlewares) {
             try {

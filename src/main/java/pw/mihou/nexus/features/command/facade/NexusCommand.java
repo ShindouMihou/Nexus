@@ -3,17 +3,16 @@ package pw.mihou.nexus.features.command.facade;
 import kotlin.Pair;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.*;
-import org.javacord.api.interaction.internal.SlashCommandUpdaterDelegate;
 import pw.mihou.nexus.core.exceptions.NoSuchAfterwareException;
 import pw.mihou.nexus.core.exceptions.NoSuchMiddlewareException;
+import pw.mihou.nexus.core.managers.facade.NexusApplicationCommand;
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore;
 import pw.mihou.nexus.features.command.validation.OptionValidation;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public interface NexusCommand {
+public interface NexusCommand extends NexusApplicationCommand {
 
     long PLACEHOLDER_SERVER_ID = 0L;
 

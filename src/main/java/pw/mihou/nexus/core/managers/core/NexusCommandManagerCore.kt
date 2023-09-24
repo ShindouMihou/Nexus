@@ -1,12 +1,14 @@
 package pw.mihou.nexus.core.managers.core
 
+import org.javacord.api.event.interaction.MessageContextMenuCommandEvent
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
+import org.javacord.api.event.interaction.UserContextMenuCommandEvent
 import org.javacord.api.interaction.ApplicationCommand
-import org.javacord.api.interaction.SlashCommand
-import org.javacord.api.interaction.SlashCommandInteraction
+import org.javacord.api.interaction.ApplicationCommandInteraction
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.info
+import pw.mihou.nexus.core.managers.facade.NexusApplicationCommand
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
 import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.indexes.defaults.InMemoryIndexStore
@@ -14,10 +16,18 @@ import pw.mihou.nexus.core.managers.indexes.exceptions.IndexIdentifierConflictEx
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
 import pw.mihou.nexus.features.command.core.NexusCommandCore
 import pw.mihou.nexus.features.command.facade.NexusCommand
-import java.util.*
+import pw.mihou.nexus.features.contexts.enums.ContextMenuKinds
+import pw.mihou.nexus.features.contexts.NexusContextMenu
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
     private val commandsDelegate: MutableMap<String, NexusCommand> = HashMap()
+    private val contextMenusDelegate: MutableMap<String, NexusContextMenu> = HashMap()
+
+    override val contextMenus: Collection<NexusContextMenu>
+        get() = contextMenusDelegate.values
+
     override val commands: Collection<NexusCommand>
         get() = commandsDelegate.values
 
@@ -25,13 +35,21 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
 
     override fun add(command: NexusCommand): NexusCommandManager {
         if (commandsDelegate[command.uuid] != null)
-            throw IndexIdentifierConflictException(command)
+            throw IndexIdentifierConflictException(command.name)
 
         commandsDelegate[(command as NexusCommandCore).uuid] = command
         return this
     }
 
-    override operator fun get(applicationId: Long): NexusCommand? = indexStore[applicationId]?.take()
+    override fun add(contextMenu: NexusContextMenu): NexusCommandManager {
+        if (contextMenusDelegate[contextMenu.uuid] != null)
+            throw IndexIdentifierConflictException(contextMenu.name)
+
+        contextMenusDelegate[contextMenu.uuid] = contextMenu
+        return this
+    }
+
+    override operator fun get(applicationId: Long): NexusCommand? = indexStore[applicationId]?.takeCommand()
     override operator fun get(uuid: String): NexusCommand? = commandsDelegate[uuid]
     override operator fun get(name: String, server: Long?): NexusCommand? {
         return commands.firstOrNull { command ->
@@ -46,25 +64,41 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         }
     }
 
+    override fun getContextMenu(applicationId: Long): NexusContextMenu? {
+        return indexStore[applicationId]?.takeContextMenu()
+    }
+
+    override fun getContextMenu(uuid: String): NexusContextMenu? {
+        return contextMenusDelegate[uuid]
+    }
+
+    override fun getContextMenu(name: String, kind: ContextMenuKinds, server: Long?): NexusContextMenu? {
+        return contextMenus.firstOrNull { contextMenu ->
+            when(server) {
+                null -> {
+                    contextMenu.name.equals(name, ignoreCase = true) && contextMenu.kind == kind
+                }
+                else -> {
+                    contextMenu.name.equals(name, ignoreCase = true) && contextMenu.serverIds.contains(server) && contextMenu.kind == kind
+                }
+            }
+        }
+    }
+
     override fun export(): List<NexusMetaIndex> {
         return indexStore.all()
     }
 
-    private fun toIndex(applicationCommandId: Long, command: NexusCommand, server: Long?): NexusMetaIndex {
-        return NexusMetaIndex(command = command.uuid, applicationCommandId = applicationCommandId, server = server)
+    private fun toIndex(applicationCommandId: Long, command: String, server: Long?): NexusMetaIndex {
+        return NexusMetaIndex(command = command, applicationCommandId = applicationCommandId, server = server)
     }
 
-    /**
-     * This performs indexing based on the data analyzed from the [SlashCommandCreateEvent] and
-     * returns the results for post-processing.
-     *
-     * @param event The event to handle.
-     */
     fun acceptEvent(event: SlashCommandCreateEvent): NexusCommand? {
         val interaction = event.slashCommandInteraction
 
-        if (get(interaction.commandId) != null) {
-            return get(interaction.commandId)
+        val indexedCommand = get(interaction.commandId)
+        if (indexedCommand != null) {
+            return indexedCommand
         }
 
         return if (interaction.server.isPresent) {
@@ -78,18 +112,32 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         } else index(interaction, get(interaction.commandName, null), null)
     }
 
-    /**
-     * An internal method that is used by [acceptEvent] as a short-hand to index the command if the command is
-     * present and also return the command at the same time.
-     *
-     * @param interaction the interaction received from the event.
-     * @param command the command that was identified.
-     * @param server the server that the command is associated or was called.
-     *
-     * @return the command.
-     */
-    private fun index(interaction: SlashCommandInteraction, command: NexusCommand?, server: Long?): NexusCommand? {
-        return command?.apply { indexStore.add(toIndex(interaction.commandId, this, server)) }
+    fun acceptEvent(event: UserContextMenuCommandEvent): NexusContextMenu? {
+        return acceptContextMenuEvent(ContextMenuKinds.USER, event.userContextMenuInteraction)
+    }
+
+    fun acceptEvent(event: MessageContextMenuCommandEvent): NexusContextMenu? {
+        return acceptContextMenuEvent(ContextMenuKinds.MESSAGE, event.messageContextMenuInteraction)
+    }
+
+    private fun acceptContextMenuEvent(kind: ContextMenuKinds, interaction: ApplicationCommandInteraction): NexusContextMenu? {
+        val indexedContextMenu  = getContextMenu(interaction.commandId)
+        if (indexedContextMenu != null) {
+            return indexedContextMenu
+        }
+
+        return if (interaction.server.isPresent) {
+            val server = interaction.server.get().id
+
+            return when (val contextMenu = getContextMenu(interaction.commandName, kind, server)) {
+                null -> index(interaction, getContextMenu(interaction.commandName, kind, null), null)
+                else -> index(interaction, contextMenu, server)
+            }
+        } else index(interaction, getContextMenu(interaction.commandName, kind, null), null)
+    }
+
+    private fun <Command: NexusApplicationCommand> index(interaction: ApplicationCommandInteraction, uuid: Command?, server: Long?): Command? {
+        return uuid?.apply { indexStore.add(toIndex(interaction.commandId, this.uuid, server)) }
     }
 
     override fun index() {
@@ -99,29 +147,29 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         Nexus.express
             .awaitAvailable()
             .thenAcceptAsync { shard ->
-                val slashCommands: Set<SlashCommand> = shard.globalSlashCommands.join()
-
-                // Clearing the entire index store to make sure that we don't have any outdated indexes.
+                val applicationCommands  = shard.globalApplicationCommands.join()
                 indexStore.clear()
-                for (slashCommand in slashCommands) {
-                    index(slashCommand)
+                for (applicationCommand in applicationCommands) {
+                    index(applicationCommand)
                 }
 
                 val servers: MutableSet<Long> = HashSet()
                 for (serverCommand in serverCommands) {
                     servers.addAll(serverCommand.serverIds)
                 }
+                for (serverContextMenu in serverContextMenus) {
+                    servers.addAll(serverContextMenu.serverIds)
+                }
 
                 for (server in servers) {
                     if (server == 0L) continue
-
-                    val slashCommandSet: Set<SlashCommand> = Nexus.express
+                    val applicationCommandSet: Set<ApplicationCommand>  = Nexus.express
                         .await(server)
-                        .thenComposeAsync { it.slashCommands }
+                        .thenComposeAsync { it.api.getServerApplicationCommands(it) }
                         .join()
 
-                    for (slashCommand in slashCommandSet) {
-                        index(slashCommand)
+                    for (applicationCommand in applicationCommandSet) {
+                        index(applicationCommand)
                     }
                 }
 
@@ -131,11 +179,11 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
             .join()
     }
 
-    private fun manifest(command: NexusCommand, snowflake: Long, server: Long?) =
-        toIndex(applicationCommandId = snowflake, command = command, server = server)
+    private fun <Command: NexusApplicationCommand> manifest(command: Command, snowflake: Long, server: Long?) =
+        toIndex(applicationCommandId = snowflake, command = command.uuid, server = server)
 
-    override fun index(command: NexusCommand, snowflake: Long, server: Long?) {
-        indexStore.add(toIndex(applicationCommandId = snowflake, command = command, server = server))
+    override fun <Command: NexusApplicationCommand> index(command: Command, snowflake: Long, server: Long?) {
+        indexStore.add(toIndex(applicationCommandId = snowflake, command = command.uuid, server = server))
     }
 
     override fun index(applicationCommandList: Set<ApplicationCommand>) {

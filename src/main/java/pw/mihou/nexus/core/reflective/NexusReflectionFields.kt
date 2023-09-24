@@ -24,6 +24,16 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
         return _fields[key.lowercase()]?.let { it as? R }
     }
 
+    fun stringify(key: String): String? {
+        return _fields[key.lowercase()]?.let {
+            if (it is String)  {
+                return it
+            }
+
+            return it.toString()
+        }
+    }
+
     private val to = reference::class.java
 
     init {
@@ -41,6 +51,10 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
     fun referenceWithAnnotation(annotation: Class<out Annotation>): Field? {
         return to.declaredFields.find { it.isAnnotationPresent(annotation) }
+    }
+
+    fun referencesWithAnnotation(annotation: Class<out Annotation>): List<Field> {
+        return to.declaredFields.filter { it.isAnnotationPresent(annotation) }
     }
 
     /**
