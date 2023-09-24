@@ -49,7 +49,7 @@ class NexusContextMenu: NexusApplicationCommand {
     @InjectReferenceClass
     lateinit var handler: NexusContextMenuHandler<*, *>
 
-    val isServerOnly get() = serverIds.isEmpty()
+    val isServerOnly get() = serverIds.isNotEmpty()
     val builder: ApplicationCommandBuilder<*, *, *> get() {
         val builder = when(kind) {
             ContextMenuKinds.USER -> UserContextMenuBuilder()
