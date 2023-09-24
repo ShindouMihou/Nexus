@@ -45,6 +45,10 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
             load(instantiate(parent)::class.java)
         }
 
+        if (from::class.java.superclass != null) {
+            load(from::class.java.superclass)
+        }
+
         load(from::class.java)
         ensureHasRequired()
     }
