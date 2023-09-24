@@ -14,7 +14,7 @@ abstract class NexusUserContextMenu: NexusContextMenuHandler<UserContextMenuComm
 }
 
 abstract class NexusMessageContextMenu: NexusContextMenuHandler<MessageContextMenuCommandEvent, MessageContextMenuInteraction> {
-    val kind = ContextMenuKinds.USER
+    val kind = ContextMenuKinds.MESSAGE
 }
 
 @MustImplement(clazz = NexusContextMenuHandler::class)
