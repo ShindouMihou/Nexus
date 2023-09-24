@@ -4,7 +4,9 @@ import org.javacord.api.interaction.ApplicationCommand
 import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
 import pw.mihou.nexus.features.command.facade.NexusCommand
-import java.util.*
+import pw.mihou.nexus.features.contexts.enums.ContextMenuKinds
+import pw.mihou.nexus.features.contexts.NexusContextMenu
+import kotlin.collections.HashSet
 
 interface NexusCommandManager {
     /**
@@ -14,6 +16,11 @@ interface NexusCommandManager {
      * @return All the commands stored in Nexus's command registry.
      */
     val commands: Collection<NexusCommand>
+
+    /**
+     * Gets all the context menus that are stored inside the Nexus registry.
+     */
+    val contextMenus: Collection<NexusContextMenu>
 
     /**
      * An index store is a store that is being utilized to store [NexusMetaIndex] that allows Nexus to match commands faster
@@ -46,6 +53,19 @@ interface NexusCommandManager {
         }
 
     /**
+     * Gets all the global context menus that are stored inside the Nexus registry.
+     */
+    val globalContextMenus: Set<NexusContextMenu>
+        get() {
+            val contextMenus: MutableSet<NexusContextMenu> = HashSet()
+            for (contextMenu in this.contextMenus) {
+                if (contextMenu.isServerOnly) continue
+                contextMenus.add(contextMenu)
+            }
+            return contextMenus
+        }
+
+    /**
      * Gets all the server commands that are stored inside the Nexus registry of commands.
      * <br></br><br></br>
      * In this scenario, the definition of a server command is a command that does have an association
@@ -63,6 +83,19 @@ interface NexusCommandManager {
             }
             
             return commands
+        }
+
+    /**
+     * Gets all the server-locked context menus that are stored inside the Nexus registry.
+     */
+    val serverContextMenus: Set<NexusContextMenu>
+        get() {
+            val contextMenus: MutableSet<NexusContextMenu> = HashSet()
+            for (contextMenu in this.contextMenus) {
+                if (!contextMenu.isServerOnly) continue
+                contextMenus.add(contextMenu)
+            }
+            return contextMenus
         }
 
     /**
@@ -85,10 +118,34 @@ interface NexusCommandManager {
         return commands
     }
 
+    /**
+     * Gets all the context menus that have an association with the given server.
+     * <br></br><br></br>
+     * This method does a complete O(n) loop over the context menus to identify any context menus that matches the
+     * [List.contains] predicate over its server ids.
+     *
+     * @param server The server to find all associated context menus of.
+     * @return All associated context menus of the given server.
+     */
+    fun contextMenusAssociatedWith(server: Long): Set<NexusContextMenu> {
+        val contextMenus: MutableSet<NexusContextMenu> = HashSet()
+        for (contextMenu in this.contextMenus) {
+            if (!contextMenu.serverIds.contains(server)) continue
+            contextMenus.add(contextMenu)
+        }
+        return contextMenus
+    }
+
     fun add(command: NexusCommand): NexusCommandManager
+    fun add(contextMenu: NexusContextMenu): NexusCommandManager
+
     operator fun get(applicationId: Long): NexusCommand?
     operator fun get(uuid: String): NexusCommand?
     operator fun get(name: String, server: Long? = null): NexusCommand?
+
+    fun getContextMenu(applicationId: Long): NexusContextMenu?
+    fun getContextMenu(uuid: String): NexusContextMenu?
+    fun getContextMenu(name: String, kind: ContextMenuKinds, server: Long? = null): NexusContextMenu?
 
     /**
      * Exports the indexes that was created which can then be used to create a database copy of the given indexes.
@@ -115,7 +172,7 @@ interface NexusCommandManager {
      * @param snowflake The snowflake that will be associated with the given command.
      * @param server    The server where this index should be associated with, can be null to mean global command.
      */
-    fun index(command: NexusCommand, snowflake: Long, server: Long?)
+    fun <Command: NexusApplicationCommand> index(command: Command, snowflake: Long, server: Long?)
 
     /**
      * Creates an index of all the slash commands provided. This will map all the commands based on properties

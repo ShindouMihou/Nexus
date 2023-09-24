@@ -32,7 +32,7 @@ class SubcommandRouter {
             return
         }
 
-        throw NoSuchElementException("No routes can be found for ${event.baseEvent.slashCommandInteraction.fullCommandName}.")
+        throw NoSuchElementException("No routes can be found for ${event.event.slashCommandInteraction.fullCommandName}.")
     }
 
     class RouteBuilder(private val modifier: (name: String, route: Routeable) -> Unit) {

@@ -54,7 +54,7 @@ object NexusCommandDispatcher {
                     if (future.isDone) {
                         return@launch
                     }
-                    nexusEvent.respondLaterAsEphemeralIf(Nexus.configuration.interceptors.autoDeferAsEphemeral)
+                    nexusEvent.respondLaterEphemerallyIf(Nexus.configuration.interceptors.autoDeferAsEphemeral)
                         .exceptionally(ExceptionLogger.get())
                 }
                 val gate = future.join()
@@ -76,7 +76,7 @@ object NexusCommandDispatcher {
                     } else {
                         var responder = nexusEvent.respondNow()
                         if (middlewareResponse.ephemeral) {
-                            responder = nexusEvent.respondNowAsEphemeral()
+                            responder = nexusEvent.respondNowEphemerally()
                         }
                         middlewareResponse.into(responder).respond().exceptionally(ExceptionLogger.get())
                     }

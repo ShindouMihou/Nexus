@@ -14,7 +14,7 @@ public interface NexusMiddlewareEvent extends NexusCommandEvent {
     }
 
     default void deferEphemeral() {
-        this.respondLaterAsEphemeral().join();
+        this.respondLaterEphemerally().join();
     }
 
     /**

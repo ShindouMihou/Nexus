@@ -1,9 +1,13 @@
 package pw.mihou.nexus
 
 import org.javacord.api.event.interaction.ButtonClickEvent
+import org.javacord.api.event.interaction.MessageContextMenuCommandEvent
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
+import org.javacord.api.event.interaction.UserContextMenuCommandEvent
 import org.javacord.api.listener.interaction.ButtonClickListener
+import org.javacord.api.listener.interaction.MessageContextMenuCommandListener
 import org.javacord.api.listener.interaction.SlashCommandCreateListener
+import org.javacord.api.listener.interaction.UserContextMenuCommandListener
 import pw.mihou.nexus.configuration.NexusConfiguration
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter
 import pw.mihou.nexus.core.managers.core.NexusCommandManagerCore
@@ -18,13 +22,15 @@ import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.command.interceptors.NexusCommandInterceptors
 import pw.mihou.nexus.features.command.synchronizer.NexusSynchronizer
-import pw.mihou.nexus.features.command.validation.middleware.OptionValidationMiddleware
+import pw.mihou.nexus.features.contexts.NexusContextMenu
+import pw.mihou.nexus.features.contexts.core.NexusContextMenuDispatcher
+import pw.mihou.nexus.features.contexts.facade.NexusContextMenuHandler
 import pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewEventCore
 import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore
 import pw.mihou.nexus.sharding.NexusShardingManager
 
-object Nexus: SlashCommandCreateListener, ButtonClickListener {
+object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCommandListener, MessageContextMenuCommandListener {
 
     /**
      * The [NexusConfiguration] that is being used by this one and only instance of [Nexus]. It contains all the
@@ -136,12 +142,36 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     }
 
     /**
+     * Adds one or more context menus onto the command manager.
+     * @param contextMenus the context menus to add to the command manager.
+     */
+    @JvmStatic
+    fun <Any:NexusContextMenuHandler<*, *>> contextMenus(vararg contextMenus: Any): List<NexusContextMenu> {
+        val list = mutableListOf<NexusContextMenu>()
+
+        for (contextMenu in contextMenus) {
+            list.add(manifest(contextMenu).apply { commandManager.add(this) })
+        }
+
+        return list
+    }
+
+    /**
      * Adds one command onto the command manager.
      * @param command the command to add to the command manager.
      */
     @JvmStatic
     fun <Any:NexusHandler> command(command: Any): NexusCommand {
         return manifest(command).apply { commandManager.add(this) }
+    }
+
+    /**
+     * Adds one context menu onto the command manager.
+     * @param contextMenu the context menu to add to the command manager.
+     */
+    @JvmStatic
+    fun <Any : NexusContextMenuHandler<*, *>> contextMenu(contextMenu: Any): NexusContextMenu {
+        return manifest(contextMenu).apply { commandManager.add(this) }
     }
 
     /**
@@ -154,6 +184,18 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
     @JvmStatic
     fun <Any : NexusHandler> manifest(model: Any): NexusCommand {
         return (NexusReflection.copy(model, NexusCommandCore::class.java) as NexusCommand)
+    }
+
+    /**
+     * Manifests a model into a [NexusContextMenu] instance by mapping all the fields that are understood by the
+     * engine into the instance. This doesn't auto-add the context menu into the manager.
+     *
+     * @param model the model to manifest into a [NexusContextMenu] instance.
+     * @return the [NexusContextMenu] instance that was manifested.
+     */
+    @JvmStatic
+    fun <Any : NexusContextMenuHandler<*, *>> manifest(model: Any): NexusContextMenu {
+        return (NexusReflection.copy(model, NexusContextMenu::class.java) as NexusContextMenu)
     }
 
     /**
@@ -216,6 +258,30 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener {
                 exception.printStackTrace()
             }
         }
+    }
+
+    /**
+     * An internal method that is used to receive events from Javacord to dispatch to the right context menu. You should not
+     * use this method at all unless you want to send your own [UserContextMenuCommandEvent] that you somehow managed to
+     * create.
+     *
+     * @param event The [UserContextMenuCommandEvent] received from Javacord.
+     */
+    override fun onUserContextMenuCommand(event: UserContextMenuCommandEvent) {
+        val contextMenu = (commandManager as NexusCommandManagerCore).acceptEvent(event) ?: return
+        NexusContextMenuDispatcher.dispatch(event, contextMenu)
+    }
+
+    /**
+     * An internal method that is used to receive events from Javacord to dispatch to the right context menu. You should not
+     * use this method at all unless you want to send your own [MessageContextMenuCommandEvent] that you somehow managed to
+     * create.
+     *
+     * @param event The [MessageContextMenuCommandEvent] received from Javacord.
+     */
+    override fun onMessageContextMenuCommand(event: MessageContextMenuCommandEvent) {
+        val contextMenu = (commandManager as NexusCommandManagerCore).acceptEvent(event) ?: return
+        NexusContextMenuDispatcher.dispatch(event, contextMenu)
     }
 
 }

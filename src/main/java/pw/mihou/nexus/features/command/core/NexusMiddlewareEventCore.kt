@@ -11,15 +11,15 @@ import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
-class NexusMiddlewareEventCore(val event: NexusCommandEvent, private val gate: NexusMiddlewareGateCore): NexusMiddlewareEvent {
-    override fun getBaseEvent(): SlashCommandCreateEvent = event.baseEvent
-    override fun getCommand(): NexusCommand = event.command
-    override fun respondLater(): CompletableFuture<InteractionOriginalResponseUpdater> = event.respondLater()
+class NexusMiddlewareEventCore(private val _event: NexusCommandEvent, private val gate: NexusMiddlewareGateCore): NexusMiddlewareEvent {
+    override val event: SlashCommandCreateEvent = _event.event
+    override fun getCommand(): NexusCommand = _event.command
+    override fun respondLater(): CompletableFuture<InteractionOriginalResponseUpdater> = _event.respondLater()
 
-    override fun respondLaterAsEphemeral(): CompletableFuture<InteractionOriginalResponseUpdater> = event.respondLaterAsEphemeral()
-    override fun store(): MutableMap<String, Any> = event.store()
+    override fun respondLaterAsEphemeral(): CompletableFuture<InteractionOriginalResponseUpdater> = _event.respondLaterEphemerally()
+    override fun store(): MutableMap<String, Any> = _event.store()
     override fun autoDefer(ephemeral: Boolean, response: Function<Void, NexusMessage>): CompletableFuture<NexusAutoResponse> {
-        return event.autoDefer(ephemeral, response)
+        return _event.autoDefer(ephemeral, response)
     }
 
     override fun next() {

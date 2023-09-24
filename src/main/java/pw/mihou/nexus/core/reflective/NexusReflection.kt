@@ -43,9 +43,19 @@ object NexusReflection {
         }
 
         var uuid: String? = null
-        val uuidField = fields.referenceWithAnnotation(Uuid::class.java)
-        if (uuidField != null) {
-            uuid = fields[uuidField.name]
+        val uuidFields = fields.referencesWithAnnotation(Uuid::class.java)
+        if (uuidFields.isNotEmpty()) {
+            if (uuidFields.size == 1) {
+                uuid = fields.stringify(uuidFields[0].name)
+            } else {
+                for (field in uuidFields) {
+                    if (uuid == null) {
+                        uuid = fields.stringify(field.name)
+                    } else {
+                        uuid += ":" + fields.stringify(field.name)
+                    }
+                }
+            }
         }
 
         if (from::class.java.isAnnotationPresent(IdentifiableAs::class.java)) {

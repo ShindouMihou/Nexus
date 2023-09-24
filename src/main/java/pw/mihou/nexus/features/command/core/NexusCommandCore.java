@@ -3,12 +3,12 @@ package pw.mihou.nexus.features.command.core;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.DiscordLocale;
 import org.javacord.api.interaction.SlashCommandOption;
+import org.jetbrains.annotations.NotNull;
 import pw.mihou.nexus.core.reflective.annotations.*;
 import pw.mihou.nexus.features.command.validation.OptionValidation;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -66,6 +66,7 @@ public class NexusCommandCore implements NexusCommand {
     @InjectReferenceClass
     public NexusHandler handler;
 
+    @NotNull
     @Override
     public String getUuid() {
         return uuid;
