@@ -51,7 +51,7 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
         if (from::class.java.isAnnotationPresent(Inherits::class.java)) {
             val parent = from::class.java.getAnnotation(Inherits::class.java).value.java
-            if (parent::class.java.isAnnotationPresent(Inherits::class.java)) {
+            if (parent.isAnnotationPresent(Inherits::class.java)) {
                 Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
                         "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
             }
