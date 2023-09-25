@@ -1,6 +1,11 @@
 package pw.mihou.nexus.configuration.modules
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.slf4j.helpers.NOPLogger
+import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusConsoleLoggingAdapter
 import pw.mihou.nexus.core.logger.adapters.defaults.NexusDefaultLoggingAdapter
 
 class NexusGlobalConfiguration internal constructor() {
@@ -31,7 +36,9 @@ class NexusGlobalConfiguration internal constructor() {
      * You can leave this as default if you are using an SLF4J-based logger such as Logback or
      * if you are using a Log4j logger but with a SLF4J bridge as the default logging adapter uses SLF4J.
      */
-    @Volatile var logger: NexusLoggingAdapter = NexusDefaultLoggingAdapter()
+    @Volatile var logger: NexusLoggingAdapter =
+        if (LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) == null || LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) is NOPLogger) NexusConsoleLoggingAdapter()
+        else NexusDefaultLoggingAdapter()
 
     /**
      * To enable global inheritance, wherein all the commands inherits properties from the class provided below, you can
