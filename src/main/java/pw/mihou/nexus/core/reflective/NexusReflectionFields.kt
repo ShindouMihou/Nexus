@@ -38,15 +38,22 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
     init {
         initDefaults()
-        Nexus.configuration.global.inheritance?.let { parent -> load(parent::class.java) }
+        Nexus.configuration.global.inheritance?.let { parent ->
+            if (parent::class.java.isAnnotationPresent(Inherits::class.java)) {
+                Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
+                        "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
+            }
+            load(parent::class.java, parent)
+        }
 
         if (from::class.java.isAnnotationPresent(Inherits::class.java)) {
             val parent = from::class.java.getAnnotation(Inherits::class.java).value.java
-            load(instantiate(parent)::class.java)
-        }
-
-        if (from::class.java.superclass != null) {
-            load(from::class.java.superclass)
+            if (parent::class.java.isAnnotationPresent(Inherits::class.java)) {
+                Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
+                        "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
+            }
+            val instantiatedParent = instantiate(parent)
+            load(instantiatedParent::class.java, instantiatedParent)
         }
 
         load(from::class.java)
@@ -131,12 +138,16 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
      * is a [Share] annotation present, it will be recorded under [sharedFields] otherwise it will be under [_fields].
      *
      * @param clazz the class to reference.
+     * @param ref the reference object.
      */
-    private fun load(clazz : Class<*>) {
+    private fun load(clazz : Class<*>, ref: Any = from) {
+        if (ref::class.java.superclass != null) {
+            load(ref::class.java.superclass)
+        }
         clazz.declaredFields.forEach {
             it.isAccessible = true
             try {
-                val value = it.get(from) ?: return
+                val value = it.get(ref) ?: return
                 if (it.isAnnotationPresent(Share::class.java)) {
                     _shared[it.name.lowercase()] = value
                     return@forEach
