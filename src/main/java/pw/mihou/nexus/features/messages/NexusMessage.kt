@@ -41,3 +41,8 @@ class NexusMessage internal constructor(
         return instance
     }
 }
+
+@JvmSynthetic
+fun EmbedBuilder.toNexusMessage(ephemeral: Boolean = false, builder: NexusMessageBuilder = {}) = NexusMessage.from(ephemeral, builder, this)
+@JvmSynthetic
+fun String.toNexusMessage(ephemeral: Boolean = false, builder: NexusMessageBuilder = {}) = NexusMessage.from(this, ephemeral, builder)
