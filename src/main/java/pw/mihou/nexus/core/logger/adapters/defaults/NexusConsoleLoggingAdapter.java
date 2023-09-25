@@ -100,12 +100,13 @@ public class NexusConsoleLoggingAdapter implements NexusLoggingAdapter {
             printStream.println(format(message, level, values));
 
             if (!message.contains("{}")) {
-                @Nullable Object object = Arrays.stream(values).findFirst().orElse(null);
-                if (object instanceof Exception) {
-                    ((Exception) object).printStackTrace();
-                } else if (object instanceof Throwable) {
-                    ((Throwable) object).printStackTrace();
-                }
+                Arrays.stream(values).forEach(object -> {
+                    if (object instanceof Exception) {
+                        ((Exception) object).printStackTrace();
+                    } else if (object instanceof Throwable) {
+                        ((Throwable) object).printStackTrace();
+                    }
+                });
             }
         }
     }
