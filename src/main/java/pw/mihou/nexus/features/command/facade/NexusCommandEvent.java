@@ -46,6 +46,7 @@ public interface NexusCommandEvent extends NexusInteractionEvent<SlashCommandCre
         return getEvent();
     }
 
+    @NotNull
     default SlashCommandInteraction getInteraction() {
         return getEvent().getSlashCommandInteraction();
     }
