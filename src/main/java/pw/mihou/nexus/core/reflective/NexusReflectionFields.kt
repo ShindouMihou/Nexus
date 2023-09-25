@@ -43,6 +43,9 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
                 Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
                         "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
             }
+            if (parent::class.java.superclass != null) {
+                load(parent::class.java.superclass, parent)
+            }
             load(parent::class.java, parent)
         }
 
@@ -53,7 +56,14 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
                         "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
             }
             val instantiatedParent = instantiate(parent)
+            if (parent.superclass != null) {
+                load(parent.superclass, instantiatedParent)
+            }
             load(instantiatedParent::class.java, instantiatedParent)
+        }
+
+        if (from::class.java.superclass != null) {
+            load(from::class.java.superclass)
         }
 
         load(from::class.java)
@@ -141,9 +151,6 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
      * @param ref the reference object.
      */
     private fun load(clazz : Class<*>, ref: Any = from) {
-        if (ref::class.java.superclass != null) {
-            load(ref::class.java.superclass)
-        }
         clazz.declaredFields.forEach {
             it.isAccessible = true
             try {
