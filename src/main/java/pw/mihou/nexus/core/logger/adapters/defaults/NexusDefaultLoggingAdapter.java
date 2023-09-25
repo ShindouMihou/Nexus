@@ -2,11 +2,12 @@ package pw.mihou.nexus.core.logger.adapters.defaults;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.mihou.nexus.Nexus;
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 
 public class NexusDefaultLoggingAdapter implements NexusLoggingAdapter {
 
-    private final Logger logger = LoggerFactory.getLogger("Nexus.Core");
+    private final Logger logger = LoggerFactory.getLogger(Nexus.class);
 
     @Override
     public void info(String message, Object... values) {

@@ -35,14 +35,6 @@ import pw.mihou.nexus.sharding.NexusShardingManager
 
 object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCommandListener, MessageContextMenuCommandListener {
 
-    init { loadDefaults() }
-
-    private fun loadDefaults() {
-        if (LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) == null || LoggerFactory.getLogger(Nexus::class.java) == null) {
-            logger = NexusConsoleLoggingAdapter()
-        }
-    }
-
     /**
      * The [NexusConfiguration] that is being used by this one and only instance of [Nexus]. It contains all the
      * globally configurable parameters of Nexus and is recommended to be configured.
