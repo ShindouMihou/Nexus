@@ -5,6 +5,7 @@ import pw.mihou.nexus.core.exceptions.NotInheritableException
 import pw.mihou.nexus.core.reflective.annotations.Required
 import pw.mihou.nexus.core.reflective.annotations.Share
 import pw.mihou.nexus.core.reflective.annotations.WithDefault
+import pw.mihou.nexus.features.command.core.NexusCommandCore
 import pw.mihou.nexus.features.inheritance.Inherits
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -38,15 +39,17 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
     init {
         initDefaults()
-        Nexus.configuration.global.inheritance?.let { parent ->
-            if (parent::class.java.isAnnotationPresent(Inherits::class.java)) {
-                Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
-                        "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
+        if (reference is NexusCommandCore) {
+            Nexus.configuration.global.inheritance?.let { parent ->
+                if (parent::class.java.isAnnotationPresent(Inherits::class.java)) {
+                    Nexus.logger.warn("Nexus doesn't support @Inherits on parent-level, instead, use superclasses " +
+                            "such as abstract classes instead. Causing class: ${parent::class.java.name}.")
+                }
+                if (parent::class.java.superclass != null) {
+                    load(parent::class.java.superclass, parent)
+                }
+                load(parent::class.java, parent)
             }
-            if (parent::class.java.superclass != null) {
-                load(parent::class.java.superclass, parent)
-            }
-            load(parent::class.java, parent)
         }
 
         if (from::class.java.isAnnotationPresent(Inherits::class.java)) {
