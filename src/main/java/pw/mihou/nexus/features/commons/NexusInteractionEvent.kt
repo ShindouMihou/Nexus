@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
 
+@JvmDefaultWithCompatibility
 interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org.javacord.api.interaction.InteractionBase> {
 
     /**

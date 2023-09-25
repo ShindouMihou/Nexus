@@ -16,7 +16,7 @@ public interface NexusCommandInterceptor {
      */
     @Deprecated(forRemoval = true)
     static String middleware(NexusMiddleware middleware) {
-        return Nexus.INSTANCE.getInterceptors().middleware(middleware);
+        return Nexus.getInterceptors().middleware(middleware);
     }
 
     /**
@@ -29,7 +29,7 @@ public interface NexusCommandInterceptor {
      */
     @Deprecated(forRemoval = true)
     static String afterware(NexusAfterware afterware) {
-        return Nexus.INSTANCE.getInterceptors().afterware(afterware);
+        return Nexus.getInterceptors().afterware(afterware);
 
     }
 
@@ -43,7 +43,7 @@ public interface NexusCommandInterceptor {
      */
     @Deprecated(forRemoval = true)
     static String addMiddleware(String name, NexusMiddleware middleware) {
-        return Nexus.INSTANCE.getInterceptors().middleware(name, middleware);
+        return Nexus.getInterceptors().middleware(name, middleware);
     }
 
     /**
@@ -56,7 +56,7 @@ public interface NexusCommandInterceptor {
      */
     @Deprecated(forRemoval = true)
     static String addAfterware(String name, NexusAfterware afterware) {
-        return Nexus.INSTANCE.getInterceptors().afterware(name, afterware);
+        return Nexus.getInterceptors().afterware(name, afterware);
 
     }
 
@@ -69,7 +69,7 @@ public interface NexusCommandInterceptor {
      */
     @Deprecated(forRemoval = true)
     static void addRepository(NexusInterceptorRepository repository) {
-        Nexus.INSTANCE.getInterceptors().add(repository);
+        Nexus.getInterceptors().add(repository);
     }
 
 }
