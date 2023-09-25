@@ -9,6 +9,7 @@ import org.javacord.api.entity.server.Server
 import org.javacord.api.entity.user.User
 import org.javacord.api.event.interaction.ApplicationCommandEvent
 import org.javacord.api.interaction.ApplicationCommandInteraction
+import org.javacord.api.interaction.Interaction
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import java.util.*
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
 
-interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: ApplicationCommandInteraction> {
+interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org.javacord.api.interaction.InteractionBase> {
 
     /**
      * Gets the base event that was received from Javacord. This is usually nothing
@@ -31,8 +32,7 @@ interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: App
      *
      * @return The interaction that was received from Javacord.
      */
-    @Suppress("UNCHECKED_CAST")
-    val interaction get() = event.interaction as Interaction
+    val interaction: Interaction
 
     /**
      * Gets the user received from Javacord.
