@@ -1,11 +1,11 @@
 package pw.mihou.nexus.features.command.facade
 
+import org.javacord.api.entity.message.MessageFlag
 import org.javacord.api.event.interaction.SlashCommandCreateEvent
 import org.javacord.api.interaction.SlashCommandInteraction
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.util.logging.ExceptionLogger
-import org.javacord.api.entity.message.MessageFlag
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.sharding
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.execute
@@ -19,6 +19,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
 
+@JvmDefaultWithCompatibility
 interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, SlashCommandInteraction> {
 
     /**
@@ -32,7 +33,6 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
     val baseEvent: SlashCommandCreateEvent get() = event
 
     override val interaction: SlashCommandInteraction get() = event.slashCommandInteraction
-
     override val event: SlashCommandCreateEvent
 
     /**

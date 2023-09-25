@@ -26,4 +26,7 @@ kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+    compilerOptions {
+        freeCompilerArgs.add('-Xjvm-default=all')
+    }
 }
