@@ -108,9 +108,9 @@ class NexusReflectionFields(private val from: Any, private val reference: Any) {
 
             // Detecting singleton instances, whether by Kotlin, or self-declared by the authors.
             // This is important because we don't want to doubly-instantiate the instance.
-            try  {
+            try {
                 singleton = clazz.getField("INSTANCE")
-            } catch (_: NoSuchFieldError)  {
+            } catch (_: NoSuchFieldException)  {
                 for (field in clazz.declaredFields) {
                     if (field.name.equals("INSTANCE")
                         || field::class.java.name.equals(clazz.name)
