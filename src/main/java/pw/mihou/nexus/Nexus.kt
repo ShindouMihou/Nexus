@@ -8,8 +8,11 @@ import org.javacord.api.listener.interaction.ButtonClickListener
 import org.javacord.api.listener.interaction.MessageContextMenuCommandListener
 import org.javacord.api.listener.interaction.SlashCommandCreateListener
 import org.javacord.api.listener.interaction.UserContextMenuCommandListener
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import pw.mihou.nexus.configuration.NexusConfiguration
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusConsoleLoggingAdapter
 import pw.mihou.nexus.core.managers.core.NexusCommandManagerCore
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
 import pw.mihou.nexus.core.reflective.NexusReflection
@@ -31,6 +34,14 @@ import pw.mihou.nexus.features.paginator.feather.core.NexusFeatherViewPagerCore
 import pw.mihou.nexus.sharding.NexusShardingManager
 
 object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCommandListener, MessageContextMenuCommandListener {
+
+    init { loadDefaults() }
+
+    private fun loadDefaults() {
+        if (LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) == null || LoggerFactory.getLogger(Nexus::class.java) == null) {
+            logger = NexusConsoleLoggingAdapter()
+        }
+    }
 
     /**
      * The [NexusConfiguration] that is being used by this one and only instance of [Nexus]. It contains all the
