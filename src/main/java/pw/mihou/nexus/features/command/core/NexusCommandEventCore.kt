@@ -16,12 +16,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 
-class NexusCommandEventCore(override val event: SlashCommandCreateEvent, private val command: NexusCommand) : NexusCommandEvent {
-    private val store: Map<String, Any> = HashMap()
+class NexusCommandEventCore(override val event: SlashCommandCreateEvent, override val command: NexusCommand) : NexusCommandEvent {
+    private val store: MutableMap<String, Any> = HashMap()
     var updater: AtomicReference<CompletableFuture<InteractionOriginalResponseUpdater>?> = AtomicReference(null)
 
-    override fun getCommand() = command
-    override fun store() = store
+    override fun store(): MutableMap<String, Any> = store
+
     override fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> {
         var task: Cancellable? = null
         val deferredTaskRan = AtomicBoolean(false)
@@ -76,7 +76,7 @@ class NexusCommandEventCore(override val event: SlashCommandCreateEvent, private
         return updater.updateAndGet { interaction.respondLater() }!!
     }
 
-    override fun respondLaterAsEphemeral(): CompletableFuture<InteractionOriginalResponseUpdater> {
+    override fun respondLaterEphemerally(): CompletableFuture<InteractionOriginalResponseUpdater> {
         return updater.updateAndGet { interaction.respondLater(true) }!!
     }
 }

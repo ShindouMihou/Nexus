@@ -12,9 +12,9 @@ import java.util.function.Function
 
 class NexusMiddlewareEventCore(private val _event: NexusCommandEvent, private val gate: NexusMiddlewareGateCore): NexusMiddlewareEvent {
     override val event: SlashCommandCreateEvent get() = _event.event
-    override fun getCommand(): NexusCommand = _event.command
+    override val command: NexusCommand get() = _event.command
     override fun store(): MutableMap<String, Any> = _event.store()
-    override fun autoDefer(ephemeral: Boolean, response: Function<Void, NexusMessage>): CompletableFuture<NexusAutoResponse> {
+    override fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> {
         return _event.autoDefer(ephemeral, response)
     }
 
