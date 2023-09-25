@@ -13,7 +13,7 @@ object NexusContextMenuDispatcher {
     fun dispatch(event: UserContextMenuCommandEvent, contextMenu: NexusContextMenu) {
         Nexus.launcher.launch  {
             try {
-                val contextMenuEvent = NexusContextMenuEvent<UserContextMenuCommandEvent, UserContextMenuInteraction>(contextMenu, event)
+                val contextMenuEvent = NexusContextMenuEvent<UserContextMenuCommandEvent, UserContextMenuInteraction>(contextMenu, event, event.userContextMenuInteraction)
                 @Suppress("UNCHECKED_CAST")
                 (contextMenu.handler as? NexusContextMenuHandler<UserContextMenuCommandEvent, UserContextMenuInteraction>)?.onEvent(contextMenuEvent)
                     ?: throw IllegalStateException("Received user context menu event for a non-user-context menu handler.")
@@ -29,7 +29,7 @@ object NexusContextMenuDispatcher {
     fun dispatch(event: MessageContextMenuCommandEvent, contextMenu: NexusContextMenu) {
         Nexus.launcher.launch  {
             try {
-                val contextMenuEvent = NexusContextMenuEvent<MessageContextMenuCommandEvent, MessageContextMenuInteraction>(contextMenu, event)
+                val contextMenuEvent = NexusContextMenuEvent<MessageContextMenuCommandEvent, MessageContextMenuInteraction>(contextMenu, event, event.messageContextMenuInteraction)
                 @Suppress("UNCHECKED_CAST")
                 (contextMenu.handler as? NexusContextMenuHandler<MessageContextMenuCommandEvent, MessageContextMenuInteraction>)?.onEvent(contextMenuEvent)
                     ?: throw IllegalStateException("Received message context menu event for a non-message-context menu handler.")

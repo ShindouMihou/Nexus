@@ -8,6 +8,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
+import org.javacord.api.interaction.Interaction;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
@@ -43,6 +44,10 @@ public interface NexusCommandEvent extends NexusInteractionEvent<SlashCommandCre
     @Deprecated(forRemoval = true)
     default SlashCommandCreateEvent getBaseEvent() {
         return getEvent();
+    }
+
+    default SlashCommandInteraction getInteraction() {
+        return getEvent().getSlashCommandInteraction();
     }
 
     @NotNull
