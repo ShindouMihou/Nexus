@@ -234,7 +234,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCo
      */
     override fun onSlashCommandCreate(event: SlashCommandCreateEvent) {
         val command = (commandManager as NexusCommandManagerCore).acceptEvent(event) as NexusCommandCore? ?: return
-        NexusThreadPool.executorService.submit { NexusCommandDispatcher.dispatch(command, event) }
+        launcher.launch { NexusCommandDispatcher.dispatch(command, event) }
     }
 
     private val FEATHER_KEY_DELIMITER_REGEX = "\\[\\$;".toRegex()
@@ -252,7 +252,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCo
         val keys = event.buttonInteraction.customId.split(FEATHER_KEY_DELIMITER_REGEX, limit = 3)
         if (keys.size < 3 || !NexusFeatherPaging.views.containsKey(keys[0])) return
 
-        NexusThreadPool.executorService.submit {
+        launcher.launch {
             try {
                 NexusFeatherPaging.views[keys[0]]!!
                     .onEvent(NexusFeatherViewEventCore(event, NexusFeatherViewPagerCore(keys[1], keys[0]), keys[2]))
