@@ -37,17 +37,14 @@ class NexusLaunchable<PrimaryResult, SecondaryResult>
                         try {
                             stack.on(result)
                         } catch (exception: Exception) {
-                            Nexus.logger.error("An uncaught exception was caught in a launchable.")
-                            exception.printStackTrace()
+                            Nexus.logger.error("An uncaught exception was caught in a launchable.", exception)
                         }
                     }
                 }
             } catch (exception: Exception) {
                 finalFuture.completeExceptionally(exception)
                 if (stack.taskErrorStack.isEmpty()) {
-                    Nexus.logger.error("An uncaught exception was caught in a launchable.")
-                    exception.printStackTrace()
-
+                    Nexus.logger.error("An uncaught exception was caught in a launchable.", exception)
                     return@launch
                 }
 

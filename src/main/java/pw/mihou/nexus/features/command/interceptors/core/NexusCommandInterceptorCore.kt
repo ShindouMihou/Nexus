@@ -76,8 +76,7 @@ internal object NexusCommandInterceptorCore {
                     return gate
                 }
             } catch (exception: Exception) {
-                Nexus.logger.error("An uncaught exception was caught while trying to execute a middleware.")
-                exception.printStackTrace()
+                Nexus.logger.error("An uncaught exception was caught while trying to execute a middleware.", exception)
             }
         }
         return null
@@ -92,8 +91,7 @@ internal object NexusCommandInterceptorCore {
                     afterware.onFailedDispatch(event)
                 }
             } catch (exception: Exception) {
-                Nexus.logger.error("An uncaught exception was caught while trying to execute an afterware.")
-                exception.printStackTrace()
+                Nexus.logger.error("An uncaught exception was caught while trying to execute an afterware.", exception)
             }
         }
     }

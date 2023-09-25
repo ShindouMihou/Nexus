@@ -19,9 +19,7 @@ object NexusContextMenuDispatcher {
                     ?: throw IllegalStateException("Received user context menu event for a non-user-context menu handler.")
             } catch (throwable: Throwable) {
                 Nexus.logger.error("An uncaught exception was received by Nexus User Context Menu Dispatcher for the " +
-                        "command ${contextMenu.name} with the following stacktrace."
-                )
-                throwable.printStackTrace()
+                        "command ${contextMenu.name} with the following stacktrace.", throwable)
             }
         }
     }
@@ -35,9 +33,7 @@ object NexusContextMenuDispatcher {
                     ?: throw IllegalStateException("Received message context menu event for a non-message-context menu handler.")
             } catch (throwable: Throwable) {
                 Nexus.logger.error("An uncaught exception was received by Nexus Message Context Menu Dispatcher for the " +
-                        "command ${contextMenu.name} with the following stacktrace."
-                )
-                throwable.printStackTrace()
+                        "command ${contextMenu.name} with the following stacktrace.", throwable)
             }
         }
     }
