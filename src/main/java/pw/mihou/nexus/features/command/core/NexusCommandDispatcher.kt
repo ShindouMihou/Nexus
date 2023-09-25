@@ -97,9 +97,7 @@ object NexusCommandDispatcher {
                     instance.handler.onEvent(nexusEvent)
                 } catch (throwable: Throwable) {
                     logger.error("An uncaught exception was received by Nexus Command Dispatcher for the " +
-                            "command ${instance.name} with the following stacktrace."
-                    )
-                    throwable.printStackTrace()
+                            "command ${instance.name} with the following stacktrace.", throwable)
                 }
             }
 
@@ -107,8 +105,7 @@ object NexusCommandDispatcher {
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares))
             }
         } catch (exception: Exception) {
-            logger.error("An uncaught exception occurred within Nexus' dispatcher for command ${instance.name}.")
-            exception.printStackTrace()
+            logger.error("An uncaught exception occurred within Nexus' dispatcher for command ${instance.name}.", exception)
         } finally {
             if (!dispatched) {
                 NexusCommandInterceptorCore.execute(nexusEvent, NexusCommandInterceptorCore.afterwares(afterwares), dispatched = false)

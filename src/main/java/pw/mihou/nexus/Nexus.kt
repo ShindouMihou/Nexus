@@ -257,8 +257,7 @@ object Nexus: SlashCommandCreateListener, ButtonClickListener, UserContextMenuCo
                 NexusFeatherPaging.views[keys[0]]!!
                     .onEvent(NexusFeatherViewEventCore(event, NexusFeatherViewPagerCore(keys[1], keys[0]), keys[2]))
             } catch (exception: Throwable) {
-                logger.error("An uncaught exception was received by Nexus Feather with the following stacktrace.")
-                exception.printStackTrace()
+                logger.error("An uncaught exception was received by Nexus Feather with the following stacktrace.", exception)
             }
         }
     }
