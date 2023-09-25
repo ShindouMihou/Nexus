@@ -24,8 +24,6 @@ import pw.mihou.nexus.sharding.NexusShardingManager;
 
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -93,7 +91,9 @@ public interface NexusCommandEvent extends NexusInteractionEvent<SlashCommandCre
      * @see NexusCommandEvent#respondLaterEphemerally
      */
     @Deprecated(forRemoval = true)
-    CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral();
+    default CompletableFuture<InteractionOriginalResponseUpdater> respondLaterAsEphemeral() {
+        return respondLaterEphemerally();
+    }
 
     /**
      * Gets the {@link InteractionOriginalResponseUpdater} associated with this command with the ephemeral flag
