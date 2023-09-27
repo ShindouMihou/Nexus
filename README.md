@@ -1,8 +1,11 @@
-#  Nexus
+![Splashscreen](https://github.com/ShindouMihou/Nexus/assets/69381903/e2e2118b-07c4-4c49-9322-0507dc1ebf5c)
 
-*Slash Commands for Javacord, simplified.*
+#
 
-Nexus is a Javacord framework, written in Kotlin-Java, designed to enable developers to add slash commands to their Discord bots with simplicity. It is the successor of the [Velen](https://github.com/ShindouMihou/velen) framework and takes an "object-based" approach to designing commands.
+<div align="center"><i>Discord Bot Framework for Javacord, simplified.</i></div>
+<br/>
+
+Nexus is a Javacord framework, written in Kotlin-Java, designed to enable developers to add application commands to their Discord bots with simplicity. It is the successor of the [Velen](https://github.com/ShindouMihou/velen) framework and takes an "object-based" approach to designing application commands (slash commands, context menus, etc).
 
 ## Example
 
@@ -20,6 +23,16 @@ object PingCommand: NexusHandler {
 
         // Manual response (you are in control of deferring, etc.)
         // event.respondNowWith("Hello ${event.user.name}!")
+    }
+}
+```
+```kotlin
+object ReportUserContextMenu: NexusUserContextMenu() {
+    val name = "test"
+
+    override fun onEvent(event: NexusContextMenuEvent<UserContextMenuCommandEvent, UserContextMenuInteraction>) {
+        val target = event.interaction.target
+        event.respondNowEphemerallyWith("${target.discriminatedName} has been reported to our servers!")
     }
 }
 ```
@@ -47,6 +60,7 @@ If you want to add your bot to the list, feel free to add it by creating a pull 
 Nexus was created from the ground up to power Discord bots with a simplistic yet flexible developer experience without compromising 
 on performance, allowing developers to build their Discord bots fast and clean.
 - [x] **Object-based commands**
+- [x] **Object-based context menus**
 - [x] **Middlewares, Afterwares**
 - [x] **Supports auto-deferring of responses**
 - [x] **Flexible command synchronization system**
