@@ -222,6 +222,7 @@ public class NexusPaginatorCore<I> extends NexusPaginatorEventCore implements Ne
     public void destroy(String instanceUuid) {
         instanceKeys.remove(instanceUuid);
         instances.get(uuid).remove(instanceUuid);
+        NexusUuidAssigner.deny(instanceUuid);
     }
 
     /**

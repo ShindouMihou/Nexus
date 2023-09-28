@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface NexusFeatherViewEvent {
 
-    ButtonClickEvent getEvent();
+    ButtonClickEvent event();
 
     /**
      * Gets the {@link NexusFeatherViewPager} of this event which contains critical fields that enables
@@ -22,7 +22,7 @@ public interface NexusFeatherViewEvent {
      *
      * @return The {@link NexusFeatherViewPager} of this event.
      */
-    NexusFeatherViewPager getPager();
+    NexusFeatherViewPager pager();
 
     /**
      * Gets the action of this view event. An action is a defined event that is specified during the creation
@@ -31,7 +31,7 @@ public interface NexusFeatherViewEvent {
      *
      * @return The action of this view event.
      */
-    String getAction();
+    String action();
 
     /**
      * Gets the interaction received from Javacord.
@@ -39,7 +39,7 @@ public interface NexusFeatherViewEvent {
      * @return The interaction that was received from Javacord.
      */
     default ButtonInteraction getInteraction() {
-        return getEvent().getButtonInteraction();
+        return event().getButtonInteraction();
     }
 
     /**
@@ -114,7 +114,7 @@ public interface NexusFeatherViewEvent {
      * @return The Discord API shard that was in charge of this event.
      */
     default DiscordApi getApi() {
-        return getEvent().getApi();
+        return event().getApi();
     }
 
     /**
@@ -123,7 +123,7 @@ public interface NexusFeatherViewEvent {
      * @return The message of this event.
      */
     default Message getMessage() {
-        return getEvent().getButtonInteraction().getMessage();
+        return event().getButtonInteraction().getMessage();
     }
 
 }

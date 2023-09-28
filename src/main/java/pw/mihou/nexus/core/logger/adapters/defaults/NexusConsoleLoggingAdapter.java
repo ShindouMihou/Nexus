@@ -1,10 +1,13 @@
 package pw.mihou.nexus.core.logger.adapters.defaults;
 
+import org.jetbrains.annotations.Nullable;
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter;
 import pw.mihou.nexus.core.logger.adapters.defaults.configuration.NexusConsoleLoggingConfiguration;
 import pw.mihou.nexus.core.logger.adapters.defaults.configuration.enums.NexusConsoleLoggingLevel;
 
+import java.io.PrintStream;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class NexusConsoleLoggingAdapter implements NexusLoggingAdapter {
@@ -90,7 +93,21 @@ public class NexusConsoleLoggingAdapter implements NexusLoggingAdapter {
      */
     private void log(String message, NexusConsoleLoggingLevel level, Object... values) {
         if (configuration.allowed().contains(level)) {
-            System.out.println(format(message, level, values));
+            PrintStream printStream = System.out;
+            if (level == NexusConsoleLoggingLevel.ERROR) {
+                printStream = System.err;
+            }
+            printStream.println(format(message, level, values));
+
+            if (!message.contains("{}")) {
+                Arrays.stream(values).forEach(object -> {
+                    if (object instanceof Exception) {
+                        ((Exception) object).printStackTrace();
+                    } else if (object instanceof Throwable) {
+                        ((Throwable) object).printStackTrace();
+                    }
+                });
+            }
         }
     }
 

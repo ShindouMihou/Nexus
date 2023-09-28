@@ -12,14 +12,12 @@ public class ADynamicCommand implements NexusHandler {
 
     // 0L is recognized by Nexus as a switch to recognize this command as
     // a server slash command. It is ignored in any sort of updates.
-    private final List<Long> serverIds = List.of(
-            0L
-    );
+    //
+    // For more verbosity, Nexus has this as a public static field.
+    private final List<Long> serverIds = NexusCommand.with(NexusCommand.PLACEHOLDER_SERVER_ID);
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow()
-                .setContent("Dyna-dynam-iteee!")
-                .respond();
+        event.respondNowWith("Dyna-dynam-iteee!");
     }
 }

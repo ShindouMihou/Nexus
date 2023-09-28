@@ -1,7 +1,7 @@
 package pw.mihou.nexus.features.command.interceptors.core;
 
 import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddlewareGate;
-import pw.mihou.nexus.features.messages.facade.NexusMessage;
+import pw.mihou.nexus.features.messages.NexusMessage;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,7 +38,7 @@ public class NexusMiddlewareGateCore implements NexusMiddlewareGate {
      *
      * @return Is the command allowed to execute any further?
      */
-    public boolean allowed() {
+    public boolean isAllowed() {
         return state.get();
     }
 

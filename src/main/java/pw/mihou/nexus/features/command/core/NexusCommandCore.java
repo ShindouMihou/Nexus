@@ -3,12 +3,12 @@ package pw.mihou.nexus.features.command.core;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.interaction.DiscordLocale;
 import org.javacord.api.interaction.SlashCommandOption;
-import pw.mihou.nexus.core.NexusCore;
+import org.jetbrains.annotations.NotNull;
 import pw.mihou.nexus.core.reflective.annotations.*;
+import pw.mihou.nexus.features.command.validation.OptionValidation;
 import pw.mihou.nexus.features.command.facade.NexusCommand;
 import pw.mihou.nexus.features.command.facade.NexusHandler;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -28,6 +28,7 @@ public class NexusCommandCore implements NexusCommand {
     private Map<String, Object> nexusCustomFields;
 
     @Required
+    @Uuid
     public String name;
 
     @WithDefault
@@ -43,34 +44,33 @@ public class NexusCommandCore implements NexusCommand {
     public List<SlashCommandOption> options = Collections.emptyList();
 
     @WithDefault
-    public Duration cooldown = Duration.ofSeconds(5);
+    public List<OptionValidation<?>> validators = Collections.emptyList();
 
     @WithDefault
     public List<String> middlewares = Collections.emptyList();
 
     @WithDefault
     public List<String> afterwares = Collections.emptyList();
-
     @WithDefault
     public List<Long> serverIds = new ArrayList<>();
-
     @WithDefault
     public boolean defaultEnabledForEveryone = true;
-
     @WithDefault
     public boolean enabledInDms = true;
-
     @WithDefault
     public boolean defaultDisabled = false;
-
+    @WithDefault
+    public boolean nsfw = false;
     @WithDefault
     public List<PermissionType> defaultEnabledForPermissions = Collections.emptyList();
-
-    @InjectNexusCore
-    public NexusCore core;
-
     @InjectReferenceClass
     public NexusHandler handler;
+
+    @NotNull
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
 
     @Override
     public String getName() {
@@ -88,27 +88,21 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
-    public Duration getCooldown() {
-        return cooldown;
-    }
-
-    @Override
     public List<Long> getServerIds() {
         return serverIds;
     }
 
     @Override
-    public NexusCommand addSupportFor(Long... serverIds) {
+    public NexusCommand associate(Long... serverIds) {
         this.serverIds = Stream.concat(this.serverIds.stream(), Stream.of(serverIds)).toList();
         return this;
     }
 
     @Override
-    public NexusCommand removeSupportFor(Long... serverIds) {
-        List<Long> mutableList = new ArrayList<>(this.serverIds);
-        mutableList.removeAll(Arrays.stream(serverIds).toList());
+    public NexusCommand disassociate(Long... serverIds) {
+        List<Long> excludedSnowflakes = Arrays.asList(serverIds);
+        this.serverIds = this.serverIds.stream().filter(snowflake -> !excludedSnowflakes.contains(snowflake)).toList();
 
-        this.serverIds = mutableList.stream().toList();
         return this;
     }
 
@@ -144,6 +138,11 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
+    public boolean isNsfw() {
+        return nsfw;
+    }
+
+    @Override
     public List<PermissionType> getDefaultEnabledForPermissions() {
         return defaultEnabledForPermissions;
     }
@@ -159,18 +158,22 @@ public class NexusCommandCore implements NexusCommand {
     }
 
     @Override
-    public long getServerId() {
-        return serverIds.get(0);
-    }
-
-    @Override
     public String toString() {
         return "NexusCommandCore{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", options=" + options +
-                ", cooldown=" + cooldown +
                 ", serverId=" + getServerIds().toString() +
+                ", middlewares=" + middlewares.toString() +
+                ", afterwares=" + afterwares.toString() +
+                ", nameLocalizations=" + nameLocalizations.toString() +
+                ", descriptionLocalizations=" + descriptionLocalizations.toString() +
+                ", defaultEnabledForPermissions=" + defaultEnabledForPermissions.toString() +
+                ", shared=" + nexusCustomFields.toString() +
+                ", defaultDisabled=" + defaultDisabled +
+                ", defaultEnabledForEveryone=" + defaultEnabledForEveryone +
+                ", enabledInDms=" + enabledInDms +
+                ", nsfw=" + nsfw +
                 '}';
     }
 }

@@ -10,8 +10,6 @@ public class AGlobalCommand implements NexusHandler {
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow()
-                .setContent("Pong! Ping! Hello Global!")
-                .respond();
+        event.respondNowWith("Pong! Ping! Hello Global!");
     }
 }

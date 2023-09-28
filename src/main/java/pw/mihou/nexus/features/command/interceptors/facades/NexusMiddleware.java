@@ -1,7 +1,7 @@
 package pw.mihou.nexus.features.command.interceptors.facades;
 
 import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent;
-import pw.mihou.nexus.features.messages.facade.NexusMessage;
+import pw.mihou.nexus.features.messages.NexusMessage;
 
 public interface NexusMiddleware extends NexusCommandInterceptor {
 

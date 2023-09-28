@@ -9,14 +9,10 @@ public class ASpecificServerCommand implements NexusHandler {
 
     private final String name = "specificServer";
     private final String description = "This is a command dedicated to a specific server!";
-    private final List<Long> serverIds = List.of(
-            807084089013174272L
-    );
+    private final List<Long> serverIds = NexusCommand.with(807084089013174272L);
 
     @Override
     public void onEvent(NexusCommandEvent event) {
-        event.respondNow()
-                .setContent("This command is dedicated to this server!")
-                .respond();
+        event.respondNow("This command is dedicated to this server!");
     }
 }

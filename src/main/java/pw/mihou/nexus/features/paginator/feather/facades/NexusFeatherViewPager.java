@@ -13,7 +13,7 @@ public interface NexusFeatherViewPager {
      *
      * @return The key of this view event.
      */
-    String getKey();
+    String key();
 
     /**
      * Gets the type of this view event. A type, otherwise known as event, is the event specified
@@ -23,18 +23,18 @@ public interface NexusFeatherViewPager {
      *
      * @return The type of this view event.
      */
-    String getType();
+    String type();
 
     /**
      * Makes one component that is identifiable by {@link pw.mihou.nexus.features.paginator.feather.NexusFeatherPaging}
      * and can be routed to the same event as this one.
      *
-     * @param newKey The new key of this component, can be found as the next {@link NexusFeatherViewPager#getKey()}.
-     * @param action The action of this component, can be found as the next {@link NexusFeatherViewEvent#getAction()}
+     * @param newKey The new key of this component, can be found as the next {@link NexusFeatherViewPager#key()}.
+     * @param action The action of this component, can be found as the next {@link NexusFeatherViewEvent#action()}
      * @return A {@link ButtonBuilder} with the custom identifier specified in a custom manner.
      */
     default ButtonBuilder makeWith(String newKey, String action) {
-        return new ButtonBuilder().setCustomId(getType() + "[$;" + newKey + "[$;" + action);
+        return new ButtonBuilder().setCustomId(type() + "[$;" + newKey + "[$;" + action);
     }
 
     /**
@@ -45,11 +45,11 @@ public interface NexusFeatherViewPager {
      * It is recommended to use this method only for initial creation and
      * {@link NexusFeatherViewPager#makeWith(String, String)} for next keys, etc.
      *
-     * @param action The action of this component, can be found as the next {@link NexusFeatherViewEvent#getAction()}
+     * @param action The action of this component, can be found as the next {@link NexusFeatherViewEvent#action()}
      * @return A {@link ButtonBuilder} with the custom identifier specified in a custom manner.
      */
     default ButtonBuilder makeWithCurrentKey(String action) {
-        return new ButtonBuilder().setCustomId(getType() + "[$;" + getKey() + "[$;" + action);
+        return new ButtonBuilder().setCustomId(type() + "[$;" + key() + "[$;" + action);
     }
 
 }
