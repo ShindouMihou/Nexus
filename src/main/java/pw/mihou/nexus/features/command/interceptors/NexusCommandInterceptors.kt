@@ -5,7 +5,6 @@ import pw.mihou.nexus.core.reflective.NexusReflection
 import pw.mihou.nexus.features.command.interceptors.annotations.Name
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore
 import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware
-import pw.mihou.nexus.features.command.interceptors.facades.NexusInterceptorRepository
 import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware
 
 object NexusCommandInterceptors {
@@ -49,18 +48,13 @@ object NexusCommandInterceptors {
     }
 
     /**
-     * Adds the provided repository to the registry. Any [NexusInterceptorRepository] will be handled like
-     * how it is done in the older versions, but any other classes will be loaded via reflection through the
-     * newer mechanism.
+     * Adds the provided repository to the registry. In this new mechanism, we load all the [NexusAfterware] and
+     * [NexusMiddleware] variables in the class into the registry with a name based on their field name or the name
+     * provided using [Name] annotation.
      *
      * @param repository the repository to add.
      */
     fun add(repository: Any) {
-        if (repository is NexusInterceptorRepository) {
-            interceptors.addRepository(repository)
-            return
-        }
-
         NexusReflection.accumulate(repository) { field ->
             if (field.type != NexusMiddleware::class.java && field.type != NexusAfterware::class.java) return@accumulate
             val name =
