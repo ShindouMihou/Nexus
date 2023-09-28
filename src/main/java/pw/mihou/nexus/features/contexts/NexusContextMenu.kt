@@ -83,4 +83,16 @@ class NexusContextMenu: NexusApplicationCommand {
         return builder
     }
 
+    override fun toString(): String {
+        return "NexusContextMenu{" +
+                "kind='$kind'," +
+                "name='$name'," +
+                "nameLocalizations=$nameLocalizations," +
+                "nsfw=$nsfw," +
+                "requiredPermissions=$requiredPermissions," +
+                "serverIds=$serverIds" +
+                "enabledInDms=$enabledInDms" +
+                "}"
+    }
+
 }
