@@ -4,7 +4,7 @@ import org.javacord.api.entity.permission.PermissionType
 import org.javacord.api.event.interaction.MessageContextMenuCommandEvent
 import org.javacord.api.event.interaction.UserContextMenuCommandEvent
 import org.javacord.api.interaction.*
-import pw.mihou.nexus.core.managers.facade.NexusApplicationCommand
+import pw.mihou.nexus.features.commons.NexusApplicationCommand
 import pw.mihou.nexus.core.reflective.annotations.*
 import pw.mihou.nexus.features.contexts.enums.ContextMenuKinds
 import pw.mihou.nexus.features.contexts.facade.NexusContextMenuHandler

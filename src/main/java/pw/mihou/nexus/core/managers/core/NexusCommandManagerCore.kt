@@ -8,7 +8,7 @@ import org.javacord.api.interaction.ApplicationCommandInteraction
 import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.info
-import pw.mihou.nexus.core.managers.facade.NexusApplicationCommand
+import pw.mihou.nexus.features.commons.NexusApplicationCommand
 import pw.mihou.nexus.core.managers.facade.NexusCommandManager
 import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.indexes.defaults.InMemoryIndexStore

@@ -4,6 +4,7 @@ import org.javacord.api.interaction.ApplicationCommand
 import pw.mihou.nexus.core.managers.indexes.IndexStore
 import pw.mihou.nexus.core.managers.records.NexusMetaIndex
 import pw.mihou.nexus.features.command.facade.NexusCommand
+import pw.mihou.nexus.features.commons.NexusApplicationCommand
 import pw.mihou.nexus.features.contexts.enums.ContextMenuKinds
 import pw.mihou.nexus.features.contexts.NexusContextMenu
 import kotlin.collections.HashSet
