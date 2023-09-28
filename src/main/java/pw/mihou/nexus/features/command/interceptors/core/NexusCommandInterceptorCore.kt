@@ -2,7 +2,6 @@ package pw.mihou.nexus.features.command.interceptors.core
 
 import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
-import pw.mihou.nexus.features.command.interceptors.facades.NexusInterceptorRepository
 import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.core.NexusMiddlewareEventCore
@@ -33,15 +32,6 @@ internal object NexusCommandInterceptorCore {
     @JvmStatic
     fun addAfterware(name: String, afterware: NexusAfterware) {
         interceptors[name] = afterware
-    }
-
-    /**
-     * Adds one repository of command interceptors to [Nexus].
-     * @param repository the repository to add.
-     */
-    @JvmStatic
-    fun addRepository(repository: NexusInterceptorRepository) {
-        repository.define()
     }
 
     @JvmStatic
