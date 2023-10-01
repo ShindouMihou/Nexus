@@ -4,6 +4,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.core.NexusCommandCore
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusMiddlewareEvent
+import pw.mihou.nexus.features.command.interceptors.annotations.Name
 import pw.mihou.nexus.features.command.interceptors.commons.modules.ratelimiter.facade.NexusRatelimitData
 import pw.mihou.nexus.features.command.interceptors.commons.modules.ratelimiter.facade.NexusRatelimiter
 import java.time.Duration
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.optionals.getOrDefault
 
+@Name("nexus.ratelimiter")
 class NexusRatelimiterCore internal constructor(): NexusRatelimiter {
 
     private val ratelimits: MutableMap<Entity, NexusRatelimitData?> = ConcurrentHashMap()

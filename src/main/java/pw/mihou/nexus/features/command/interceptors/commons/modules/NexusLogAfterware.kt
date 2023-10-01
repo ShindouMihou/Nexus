@@ -2,11 +2,13 @@ package pw.mihou.nexus.features.command.interceptors.commons.modules
 
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
+import pw.mihou.nexus.features.command.interceptors.annotations.Name
 import pw.mihou.nexus.features.command.interceptors.facades.NexusAfterware
 import java.text.NumberFormat
 import java.time.Duration
 import java.time.Instant
 
+@Name("nexus.log")
 object NexusLogAfterware: NexusAfterware {
 
     private const val RESET = "\u001B[0m"
