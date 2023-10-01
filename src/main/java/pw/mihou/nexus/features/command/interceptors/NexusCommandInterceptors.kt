@@ -10,6 +10,17 @@ import pw.mihou.nexus.features.command.interceptors.facades.NexusMiddleware
 object NexusCommandInterceptors {
     private val interceptors = NexusCommandInterceptorCore
 
+    /**
+     * Tries to get the declared name through the annotation of the class.
+     * @param clazz the class to analyze.
+     * @return the name from the class or null.
+     */
+    private fun tryGetNameFrom(clazz: Class<*>): String? {
+        if (clazz.isAnnotationPresent(Name::class.java)) {
+            return clazz.getAnnotation(Name::class.java).value
+        }
+        return null
+    }
 
     /**
      * Adds the provided middleware into the registry, when there is no name provided, the framework
@@ -21,6 +32,10 @@ object NexusCommandInterceptors {
      */
     @JvmOverloads
     fun middleware(name: String? = null, middleware: NexusMiddleware): String {
+        @Suppress("NAME_SHADOWING") var name = name
+        if (name == null) {
+            name = tryGetNameFrom(middleware::class.java)
+        }
         val uuid = name ?: NexusUuidAssigner.request()
         if (name == null && NexusCommandInterceptorCore.has(uuid))  {
             return middleware(null, middleware)
@@ -39,6 +54,10 @@ object NexusCommandInterceptors {
      */
     @JvmOverloads
     fun afterware(name: String? = null, afterware: NexusAfterware): String {
+        @Suppress("NAME_SHADOWING") var name = name
+        if (name == null) {
+            name = tryGetNameFrom(afterware::class.java)
+        }
         val uuid = name ?: NexusUuidAssigner.request()
         if (name == null && NexusCommandInterceptorCore.has(uuid))  {
             return afterware(null, afterware)
