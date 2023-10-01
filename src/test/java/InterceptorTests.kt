@@ -14,7 +14,7 @@ class InterceptorTests {
     @Order(1)
     fun `add named middleware class`() {
         val middlewareName = Nexus.interceptors.middleware(null, NamedMiddleware)
-        println(middlewareName)
+        Nexus.logger.info(middlewareName)
 
         assertEquals("pw.mihou.middleware", middlewareName, "Middleware name doesn't match intended name.")
         assertTrue(NexusCommandInterceptorCore.has("pw.mihou.middleware"), "Middleware wasn't added.")

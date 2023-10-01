@@ -7,6 +7,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.logger.adapters.NexusLoggingAdapter
 import pw.mihou.nexus.core.logger.adapters.defaults.NexusConsoleLoggingAdapter
 import pw.mihou.nexus.core.logger.adapters.defaults.NexusDefaultLoggingAdapter
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusFasterConsoleLoggingAdapter
 
 class NexusGlobalConfiguration internal constructor() {
 
@@ -37,7 +38,7 @@ class NexusGlobalConfiguration internal constructor() {
      * if you are using a Log4j logger but with a SLF4J bridge as the default logging adapter uses SLF4J.
      */
     @Volatile var logger: NexusLoggingAdapter =
-        if (LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) == null || LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) is NOPLogger) NexusConsoleLoggingAdapter()
+        if (LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) == null || LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) is NOPLogger) NexusFasterConsoleLoggingAdapter
         else NexusDefaultLoggingAdapter()
 
     /**
