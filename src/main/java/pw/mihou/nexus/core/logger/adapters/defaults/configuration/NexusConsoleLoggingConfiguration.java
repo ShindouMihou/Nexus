@@ -1,5 +1,6 @@
 package pw.mihou.nexus.core.logger.adapters.defaults.configuration;
 
+import pw.mihou.nexus.core.logger.adapters.defaults.NexusFasterConsoleLoggingAdapter;
 import pw.mihou.nexus.core.logger.adapters.defaults.configuration.enums.NexusConsoleLoggingLevel;
 
 import javax.annotation.Nonnull;
@@ -11,6 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @see NexusFasterConsoleLoggingAdapter
+ */
 public class NexusConsoleLoggingConfiguration {
 
     private final DateTimeFormatter dateFormat;

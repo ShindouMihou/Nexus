@@ -10,6 +10,10 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * @see NexusFasterConsoleLoggingAdapter
+ */
+@Deprecated()
 public class NexusConsoleLoggingAdapter implements NexusLoggingAdapter {
 
     private final NexusConsoleLoggingConfiguration configuration;
