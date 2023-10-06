@@ -151,6 +151,9 @@ interface NexusCommandManager {
     fun getContextMenu(uuid: String): NexusContextMenu?
     fun getContextMenu(name: String, kind: ContextMenuKinds, server: Long? = null): NexusContextMenu?
 
+    fun removeContextMenu(uuid: String)
+    fun removeSlashCommand(uuid: String)
+
     /**
      * Exports the indexes that was created which can then be used to create a database copy of the given indexes.
      * <br></br><br></br>
