@@ -4,6 +4,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.core.reflective.annotations.*
 import pw.mihou.nexus.features.command.annotation.IdentifiableAs
+import pw.mihou.nexus.features.commons.annotations.RandomUuid
 import java.lang.reflect.Field
 
 object NexusReflection {
@@ -60,6 +61,10 @@ object NexusReflection {
 
         if (from::class.java.isAnnotationPresent(IdentifiableAs::class.java)) {
             uuid = from::class.java.getAnnotation(IdentifiableAs::class.java).key
+        }
+
+        if (from::class.java.isAnnotationPresent(RandomUuid::class.java)) {
+            uuid = NexusUuidAssigner.request()
         }
 
         for (field in instance::class.java.declaredFields) {
