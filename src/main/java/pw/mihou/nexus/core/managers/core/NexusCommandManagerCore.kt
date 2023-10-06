@@ -49,16 +49,6 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         return this
     }
 
-    override fun remove(command: NexusCommand): NexusCommandManager {
-        removeContextMenu(command.uuid)
-        return this
-    }
-
-    override fun remove(contextMenu: NexusContextMenu): NexusCommandManager {
-        removeContextMenu(contextMenu.uuid)
-        return this
-    }
-
     override operator fun get(applicationId: Long): NexusCommand? = indexStore[applicationId]?.takeCommand()
     override operator fun get(uuid: String): NexusCommand? = commandsDelegate[uuid]
     override operator fun get(name: String, server: Long?): NexusCommand? {
@@ -93,14 +83,6 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
                 }
             }
         }
-    }
-
-    override fun removeContextMenu(uuid: String) {
-        contextMenusDelegate.remove(uuid)
-    }
-
-    override fun removeSlashCommand(uuid: String) {
-        commandsDelegate.remove(uuid)
     }
 
     override fun export(): List<NexusMetaIndex> {

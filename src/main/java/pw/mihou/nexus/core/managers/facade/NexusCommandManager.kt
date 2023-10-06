@@ -140,9 +140,6 @@ interface NexusCommandManager {
     fun add(command: NexusCommand): NexusCommandManager
     fun add(contextMenu: NexusContextMenu): NexusCommandManager
 
-    fun remove(command: NexusCommand): NexusCommandManager
-    fun remove(contextMenu: NexusContextMenu): NexusCommandManager
-
     operator fun get(applicationId: Long): NexusCommand?
     operator fun get(uuid: String): NexusCommand?
     operator fun get(name: String, server: Long? = null): NexusCommand?
@@ -150,9 +147,6 @@ interface NexusCommandManager {
     fun getContextMenu(applicationId: Long): NexusContextMenu?
     fun getContextMenu(uuid: String): NexusContextMenu?
     fun getContextMenu(name: String, kind: ContextMenuKinds, server: Long? = null): NexusContextMenu?
-
-    fun removeContextMenu(uuid: String)
-    fun removeSlashCommand(uuid: String)
 
     /**
      * Exports the indexes that was created which can then be used to create a database copy of the given indexes.
