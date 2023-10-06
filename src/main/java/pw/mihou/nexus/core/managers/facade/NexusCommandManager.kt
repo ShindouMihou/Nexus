@@ -140,6 +140,9 @@ interface NexusCommandManager {
     fun add(command: NexusCommand): NexusCommandManager
     fun add(contextMenu: NexusContextMenu): NexusCommandManager
 
+    fun remove(command: NexusCommand): NexusCommandManager
+    fun remove(contextMenu: NexusContextMenu): NexusCommandManager
+
     operator fun get(applicationId: Long): NexusCommand?
     operator fun get(uuid: String): NexusCommand?
     operator fun get(name: String, server: Long? = null): NexusCommand?

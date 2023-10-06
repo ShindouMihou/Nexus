@@ -49,6 +49,16 @@ class NexusCommandManagerCore internal constructor() : NexusCommandManager  {
         return this
     }
 
+    override fun remove(command: NexusCommand): NexusCommandManager {
+        commandsDelegate.remove(command.uuid)
+        return this
+    }
+
+    override fun remove(contextMenu: NexusContextMenu): NexusCommandManager {
+        contextMenusDelegate.remove(contextMenu.uuid)
+        return this
+    }
+
     override operator fun get(applicationId: Long): NexusCommand? = indexStore[applicationId]?.takeCommand()
     override operator fun get(uuid: String): NexusCommand? = commandsDelegate[uuid]
     override operator fun get(name: String, server: Long?): NexusCommand? {
