@@ -120,10 +120,15 @@ class React(private val api: DiscordApi) {
         private var contents: String? = null
         private var components: MutableList<LowLevelComponent> = mutableListOf()
         private var listeners: MutableList<GloballyAttachableListener> = mutableListOf()
+        private var uuids: MutableList<String> = mutableListOf()
 
         private fun attachListeners(api: DiscordApi): Unsubscribe {
             val listenerManagers = listeners.map { api.addListener(it) }
-            return { listenerManagers.forEach { managers -> managers.forEach { it.remove() } } }
+            return {
+                listenerManagers.forEach { managers -> managers.forEach { it.remove() } }
+                uuids.forEach { NexusUuidAssigner.deny(it) }
+                uuids.clear()
+            }
         }
 
         fun render(api: DiscordApi): Pair<Unsubscribe, NexusMessage> {
@@ -167,6 +172,7 @@ class React(private val api: DiscordApi) {
 
         fun Button(style: ButtonStyle = ButtonStyle.PRIMARY,
                    label: String,
+                   customId: String? = null,
                    emoji: String? = null,
                    disabled: Boolean = false,
                    onClick: ((event: ButtonClickEvent) -> Unit)? = {}) {
@@ -180,7 +186,11 @@ class React(private val api: DiscordApi) {
 
             button.setDisabled(disabled)
 
-            val uuid = NexusUuidAssigner.request()
+            val uuid = customId ?: run {
+                val id = NexusUuidAssigner.request()
+                uuids.add(id)
+                return@run id
+            }
             button.setCustomId(uuid)
 
             if (onClick != null) {
