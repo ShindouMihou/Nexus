@@ -445,6 +445,9 @@ class React(private val api: DiscordApi) {
             fun codeblock(language: String, vararg nodes: String): String {
                 return "```$language\n${nodes.joinToString("")}\n```"
             }
+            fun blockquote(vararg nodes: String): String {
+                return nodes.joinToString("\n") { "> $it"}
+            }
             fun time(instant: Instant, format: TimeFormat = TimeFormat.RELATIVE) = "<t:${instant.epochSecond}:${format.suffix}>"
             fun time(instant: Writable<Instant>, format: TimeFormat = TimeFormat.RELATIVE) = time(instant.get(), format)
         }
