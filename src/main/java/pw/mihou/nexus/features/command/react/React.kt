@@ -3,12 +3,14 @@ package pw.mihou.nexus.features.command.react
 import org.javacord.api.DiscordApi
 import org.javacord.api.entity.Icon
 import org.javacord.api.entity.message.Message
+import org.javacord.api.entity.message.MessageAuthor
 import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.ButtonBuilder
 import org.javacord.api.entity.message.component.ButtonStyle
 import org.javacord.api.entity.message.component.LowLevelComponent
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import org.javacord.api.entity.user.User
 import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.listener.GloballyAttachableListener
 import org.javacord.api.listener.interaction.ButtonClickListener
@@ -330,6 +332,42 @@ class React(private val api: DiscordApi) {
             }
             fun Footer(text: String, icon: BufferedImage, fileType: String) {
                 embed.setFooter(text, icon, fileType)
+            }
+            fun Author(name: String) {
+                embed.setAuthor(name)
+            }
+            fun Author(author: MessageAuthor) {
+                embed.setAuthor(author)
+            }
+            fun Author(author: User) {
+                embed.setAuthor(author)
+            }
+            fun Author(name: String, url: String, iconUrl: String) {
+                embed.setAuthor(name, url, iconUrl)
+            }
+            fun Author(name: String, url: String, icon: Icon) {
+                embed.setAuthor(name, url, icon)
+            }
+            fun Author(name: String, url: String, icon: File) {
+                embed.setAuthor(name, url, icon)
+            }
+            fun Author(name: String, url: String, icon: InputStream) {
+                embed.setAuthor(name, url, icon)
+            }
+            fun Author(name: String, url: String, icon: InputStream, fileType: String) {
+                embed.setAuthor(name, url, icon, fileType)
+            }
+            fun Author(name: String, url: String, icon: ByteArray) {
+                embed.setAuthor(name, url, icon)
+            }
+            fun Author(name: String, url: String, icon: ByteArray, fileType: String) {
+                embed.setAuthor(name, url, icon, fileType)
+            }
+            fun Author(name: String, url: String, icon: BufferedImage) {
+                embed.setAuthor(name, url, icon)
+            }
+            fun Author(name: String, url: String, icon: BufferedImage, fileType: String) {
+                embed.setAuthor(name, url, icon, fileType)
             }
         }
 
