@@ -20,12 +20,15 @@ import java.util.function.Function
 class NexusCommandEventCore(override val event: SlashCommandCreateEvent, override val command: NexusCommand) : NexusCommandEvent {
     private val store: MutableMap<String, Any> = HashMap()
     var updater: AtomicReference<CompletableFuture<InteractionOriginalResponseUpdater>?> = AtomicReference(null)
-    override fun R(ephemeral: Boolean, react: React.() -> Unit) {
-        autoDefer(ephemeral) {
-            val r = React(this)
+    override fun R(ephemeral: Boolean, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
+        val r = React(this)
+        return autoDefer(ephemeral) {
             react(r)
 
             return@autoDefer r.view()
+        }.thenApply {
+            r.__private__message = it
+            return@thenApply it
         }
     }
 

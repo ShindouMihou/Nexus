@@ -1,5 +1,7 @@
 package pw.mihou.nexus.features.command.react
 
+import org.javacord.api.DiscordApi
+import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.ButtonBuilder
 import org.javacord.api.entity.message.component.ButtonStyle
@@ -8,21 +10,110 @@ import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.listener.GloballyAttachableListener
 import org.javacord.api.listener.interaction.ButtonClickListener
+import org.javacord.api.util.event.ListenerManager
+import pw.mihou.nexus.Nexus
+import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
+import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.awt.Color
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantLock
 
-class React(private val ev: NexusCommandEvent) {
+typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
+typealias Unsubscribe = () -> Unit
+
+class React(private val api: DiscordApi) {
     private var message: NexusMessage = NexusMessage()
+    private var unsubscribe: Unsubscribe = {}
+    private var component: (Component.() -> Unit)? = null
+
+    private var debounceTask: Cancellable? = null
+    private var mutex = ReentrantLock()
+
+    internal var __private__message: NexusAutoResponse? = null
+
     fun view() = message
 
     fun render(component: Component.() -> Unit) {
+        val element =  apply(component)
+
+        val (unsubscribe, message) = element.render(api)
+        this.message = message
+        this.unsubscribe = unsubscribe
+    }
+
+    private fun apply(component: Component.() -> Unit): Component {
+        this.component = component
         val element = Component()
         component(element)
+        return element
+    }
 
-        message = element.render(ev)
+    fun <T> writable(value: T): Writable<T> {
+        val element = Writable(value)
+        element.subscribe { _, _ ->
+            if (!mutex.tryLock()) return@subscribe
+            val component = this.component ?: return@subscribe
+            if (debounceTask == null) {
+                debounceTask = Nexus.launch.scheduler.launch(250) {
+                    this.unsubscribe()
+
+                    debounceTask = null
+
+                    val msg = __private__message
+
+                    val message = msg?.getOrRequestMessage()?.join()
+                    if (message != null) {
+                        val updater = message.createUpdater()
+                        val view = apply(component)
+                        this.unsubscribe = view.render(updater, api)
+                        updater.replaceMessage()
+                    }
+                }
+            }
+            mutex.unlock()
+        }
+        return element
+    }
+
+    class Writable<T>(value: T) {
+        private val subscribers: MutableList<Subscription<T>> = mutableListOf()
+        private val _value: AtomicReference<T> = AtomicReference(value)
+        fun set(value: T) {
+            val oldValue = _value.get()
+            _value.set(value)
+
+            subscribers.forEach { it(oldValue, value) }
+        }
+        fun getAndUpdate(updater: (T) -> T) {
+            val oldValue = _value.get()
+            _value.getAndUpdate(updater)
+
+            val value = _value.get()
+            subscribers.forEach { it(oldValue, value) }
+        }
+        fun get(): T = _value.get()
+        fun subscribe(subscription: Subscription<T>): Unsubscribe {
+            subscribers.add(subscription)
+            return { subscribers.remove(subscription) }
+        }
+        override fun toString(): String {
+            return _value.get().toString()
+        }
+
+        override fun hashCode(): Int {
+            return _value.get().hashCode()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            val value = _value.get()
+            if (other == null && value == null) return true
+            if (other == null) return false
+            return value == other
+        }
     }
 
     class Component {
@@ -31,9 +122,13 @@ class React(private val ev: NexusCommandEvent) {
         private var components: MutableList<LowLevelComponent> = mutableListOf()
         private var listeners: MutableList<GloballyAttachableListener> = mutableListOf()
 
-        fun render(event: NexusCommandEvent): NexusMessage {
-            listeners.forEach { event.api.addListener(it) }
-            return NexusMessage.with {
+        private fun attachListeners(api: DiscordApi): Unsubscribe {
+            val listenerManagers = listeners.map { api.addListener(it) }
+            return { listenerManagers.forEach { managers -> managers.forEach { it.remove() } } }
+        }
+
+        fun render(api: DiscordApi): Pair<Unsubscribe, NexusMessage> {
+            return attachListeners(api) to NexusMessage.with {
                 this.removeAllEmbeds()
                 this.addEmbeds(embeds)
 
@@ -42,6 +137,19 @@ class React(private val ev: NexusCommandEvent) {
                 }
                 components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
             }
+        }
+
+        fun render(updater: MessageUpdater, api: DiscordApi): Unsubscribe {
+            updater.apply {
+                this.removeAllEmbeds()
+                this.addEmbeds(embeds)
+
+                if (contents != null) {
+                    this.setContent(contents)
+                }
+                components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
+            }
+            return attachListeners(api)
         }
 
         fun Embed(embed: Embed.() -> Unit) {
