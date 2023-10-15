@@ -301,6 +301,36 @@ class React(private val api: DiscordApi) {
             fun Timestamp(timestamp: Instant) {
                 embed.setTimestamp(timestamp)
             }
+            fun Footer(text: String) {
+                embed.setFooter(text)
+            }
+            fun Footer(text: String, iconUrl: String) {
+                embed.setFooter(text, iconUrl)
+            }
+            fun Footer(text: String, icon: Icon) {
+                embed.setFooter(text, icon)
+            }
+            fun Footer(text: String, icon: File) {
+                embed.setFooter(text, icon)
+            }
+            fun Footer(text: String, icon: InputStream) {
+                embed.setFooter(text, icon)
+            }
+            fun Footer(text: String, icon: InputStream, fileType: String) {
+                embed.setFooter(text, icon, fileType)
+            }
+            fun Footer(text: String, icon: ByteArray) {
+                embed.setFooter(text, icon)
+            }
+            fun Footer(text: String, icon: ByteArray, fileType: String) {
+                embed.setFooter(text, icon, fileType)
+            }
+            fun Footer(text: String, icon: BufferedImage) {
+                embed.setFooter(text, icon)
+            }
+            fun Footer(text: String, icon: BufferedImage, fileType: String) {
+                embed.setFooter(text, icon, fileType)
+            }
         }
 
         interface TextStyles {
