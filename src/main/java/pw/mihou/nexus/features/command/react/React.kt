@@ -373,7 +373,7 @@ class React(private val api: DiscordApi) {
 
         interface TextStyles {
             private fun renderTextStyles(bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-                                         strikethrough: Boolean = false): Pair<String, String> {
+                                         strikethrough: Boolean = false, spoiler: Boolean): Pair<String, String> {
                 var prefix = ""
                 var suffix = ""
 
@@ -401,20 +401,25 @@ class React(private val api: DiscordApi) {
                     suffix += "~~"
                 }
 
+                if (spoiler) {
+                    prefix += "`"
+                    suffix += "`"
+                }
+
                 return prefix to suffix
             }
 
             fun p(text: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-                  strikethrough: Boolean = false): String {
-                val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough)
+                  strikethrough: Boolean = false, spoiler: Boolean = false): String {
+                val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler)
                 return prefix + text + suffix
             }
 
             fun br(): String = "\n"
 
             fun link(text: String, href: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-                     strikethrough: Boolean = false): String {
-                val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough)
+                     strikethrough: Boolean = false, spoiler: Boolean = false): String {
+                val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler)
                 return "$prefix[$text]($href)$suffix"
             }
 
