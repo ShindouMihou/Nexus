@@ -298,6 +298,18 @@ class React(private val api: DiscordApi) {
                 }
                 return text
             }
+            fun time(instant: Instant, format: TimeFormat = TimeFormat.RELATIVE) = "<t:${instant.epochSecond}:${format.suffix}>"
+            fun time(instant: Writable<Instant>, format: TimeFormat = TimeFormat.RELATIVE) = time(instant.get(), format)
         }
     }
+}
+
+enum class TimeFormat(val suffix: String) {
+    SHORT_TIME("t"),
+    LONG_TIME("T"),
+    SHORT_DATE("d"),
+    LONG_DATE("D"),
+    LONG_DATE_WITH_SHORT_TIME("f"),
+    LONG_DATE_WITH_DAY_OF_WEEK_AND_SHORT_TIME("F"),
+    RELATIVE("R");
 }
