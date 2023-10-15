@@ -188,7 +188,7 @@ class React(private val ev: NexusCommandEvent) {
             fun ol(vararg nodes: String): String {
                 var text = ""
                 for ((index, node) in nodes.withIndex()) {
-                    text += "${index + 1}. $node"
+                    text += "${index + 1}. $node\n"
                 }
                 return text
             }
