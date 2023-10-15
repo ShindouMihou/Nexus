@@ -84,14 +84,14 @@ class React(private val api: DiscordApi) {
             val oldValue = _value.get()
             _value.set(value)
 
-            subscribers.forEach { it(oldValue, value) }
+            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
         }
         fun getAndUpdate(updater: (T) -> T) {
             val oldValue = _value.get()
             _value.getAndUpdate(updater)
 
             val value = _value.get()
-            subscribers.forEach { it(oldValue, value) }
+            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
         }
         fun get(): T = _value.get()
         fun subscribe(subscription: Subscription<T>): Unsubscribe {
