@@ -10,6 +10,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.sharding
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.execute
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.middlewares
+import pw.mihou.nexus.features.command.react.React
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.commons.NexusInteractionEvent
 import pw.mihou.nexus.features.messages.NexusMessage
@@ -48,6 +49,18 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
      * @return The Nexus Shard Manager associated with this Nexus instance.
      */
     val shardManager: NexusShardingManager get() = sharding
+
+    /**
+     * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
+     * with a syntax similar to a template engine. In future versions of this experiment, we plan on supporting
+     * more reactivity (i.e. supporting states via subscribe mechanism).
+     *
+     * This internally uses [autoDefer] to assist in sending the initial update response. In the reactive change,
+     * this will also include its own debounced message updating mechanism to allow for updating the message upon
+     * state changes.
+     */
+    @JvmSynthetic
+    fun R(ephemeral: Boolean, react: React.() -> Unit)
 
     /**
      * Gets the immediate response builder for this command and adds the

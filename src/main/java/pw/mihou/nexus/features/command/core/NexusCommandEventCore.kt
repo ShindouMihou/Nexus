@@ -8,6 +8,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
+import pw.mihou.nexus.features.command.react.React
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.time.Instant
@@ -19,6 +20,14 @@ import java.util.function.Function
 class NexusCommandEventCore(override val event: SlashCommandCreateEvent, override val command: NexusCommand) : NexusCommandEvent {
     private val store: MutableMap<String, Any> = HashMap()
     var updater: AtomicReference<CompletableFuture<InteractionOriginalResponseUpdater>?> = AtomicReference(null)
+    override fun R(ephemeral: Boolean, react: React.() -> Unit) {
+        autoDefer(ephemeral) {
+            val r = React(this)
+            react(r)
+
+            return@autoDefer r.view()
+        }
+    }
 
     override fun store(): MutableMap<String, Any> = store
 
