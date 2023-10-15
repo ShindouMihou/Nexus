@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.react
 
 import org.javacord.api.DiscordApi
+import org.javacord.api.entity.message.Message
 import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.ButtonBuilder
@@ -33,7 +34,7 @@ class React(private val api: DiscordApi) {
     private var debounceTask: Cancellable? = null
     private var mutex = ReentrantLock()
 
-    internal var __private__message: NexusAutoResponse? = null
+    internal var __private__message: Message? = null
 
     fun view() = message
 
@@ -63,9 +64,7 @@ class React(private val api: DiscordApi) {
 
                 debounceTask = null
 
-                val msg = __private__message
-
-                val message = msg?.getOrRequestMessage()?.join()
+                val message = __private__message
                 if (message != null) {
                     val updater = message.createUpdater()
                     val view = apply(component)
