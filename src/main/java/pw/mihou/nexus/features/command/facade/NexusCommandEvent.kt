@@ -60,7 +60,7 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
      * state changes.
      */
     @JvmSynthetic
-    fun R(ephemeral: Boolean, react: React.() -> Unit)
+    fun R(ephemeral: Boolean = false, react: React.() -> Unit)
 
     /**
      * Gets the immediate response builder for this command and adds the

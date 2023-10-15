@@ -3,7 +3,7 @@ package commands
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 
-class TestCommand: NexusHandler {
+class ReactiveTest: NexusHandler {
     val name = "react"
     val description = "A test regarding React"
     override fun onEvent(event: NexusCommandEvent) {
