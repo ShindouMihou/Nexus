@@ -21,7 +21,7 @@ class NexusCommandEventCore(override val event: SlashCommandCreateEvent, overrid
     private val store: MutableMap<String, Any> = HashMap()
     var updater: AtomicReference<CompletableFuture<InteractionOriginalResponseUpdater>?> = AtomicReference(null)
     override fun R(ephemeral: Boolean, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
-        val r = React(this)
+        val r = React(this.api)
         return autoDefer(ephemeral) {
             react(r)
 
