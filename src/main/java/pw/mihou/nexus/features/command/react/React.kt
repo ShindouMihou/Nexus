@@ -100,7 +100,7 @@ class React(private val ev: NexusCommandEvent) {
             private var content: String = ""
             fun view() = content
             fun Body(vararg nodes: String)  {
-                content = nodes.joinToString()
+                content = nodes.joinToString("")
             }
         }
 
@@ -113,10 +113,10 @@ class React(private val ev: NexusCommandEvent) {
             }
 
             fun Body(vararg nodes: String) {
-                embed.setDescription(nodes.joinToString())
+                embed.setDescription(nodes.joinToString(""))
             }
             fun Field(name: String, vararg nodes: String) {
-                embed.addField(name, nodes.joinToString())
+                embed.addField(name, nodes.joinToString(""))
             }
             fun Image(url: String) {
                 embed.setImage(url)
