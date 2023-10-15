@@ -234,8 +234,8 @@ class React(private val api: DiscordApi) {
             fun Body(vararg nodes: String) {
                 embed.setDescription(nodes.joinToString(""))
             }
-            fun Field(name: String, vararg nodes: String) {
-                embed.addField(name, nodes.joinToString(""))
+            fun Field(name: String, inline: Boolean = false, vararg nodes: String) {
+                embed.addField(name, nodes.joinToString(""), inline)
             }
             fun Image(url: String) {
                 embed.setImage(url)
