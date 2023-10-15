@@ -62,7 +62,11 @@ class React(private val api: DiscordApi) {
 
     fun <T> writable(value: T): Writable<T> {
         val element = Writable(value)
-        element.subscribe { _, _ ->
+        return expand(element)
+    }
+
+    fun <T> expand(writable: Writable<T>): Writable<T> {
+        writable.subscribe { _, _ ->
             if (!mutex.tryLock()) return@subscribe
             val component = this.component ?: return@subscribe
             debounceTask?.cancel(false)
@@ -81,7 +85,7 @@ class React(private val api: DiscordApi) {
             }
             mutex.unlock()
         }
-        return element
+        return writable
     }
 
     class Writable<T>(value: T) {
