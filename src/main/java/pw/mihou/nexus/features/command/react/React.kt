@@ -57,21 +57,20 @@ class React(private val api: DiscordApi) {
         element.subscribe { _, _ ->
             if (!mutex.tryLock()) return@subscribe
             val component = this.component ?: return@subscribe
-            if (debounceTask == null) {
-                debounceTask = Nexus.launch.scheduler.launch(250) {
-                    this.unsubscribe()
+            debounceTask?.cancel(false)
+            debounceTask = Nexus.launch.scheduler.launch(250) {
+                this.unsubscribe()
 
-                    debounceTask = null
+                debounceTask = null
 
-                    val msg = __private__message
+                val msg = __private__message
 
-                    val message = msg?.getOrRequestMessage()?.join()
-                    if (message != null) {
-                        val updater = message.createUpdater()
-                        val view = apply(component)
-                        this.unsubscribe = view.render(updater, api)
-                        updater.replaceMessage()
-                    }
+                val message = msg?.getOrRequestMessage()?.join()
+                if (message != null) {
+                    val updater = message.createUpdater()
+                    val view = apply(component)
+                    this.unsubscribe = view.render(updater, api)
+                    updater.replaceMessage()
                 }
             }
             mutex.unlock()
