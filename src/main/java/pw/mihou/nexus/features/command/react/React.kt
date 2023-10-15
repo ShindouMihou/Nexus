@@ -442,6 +442,9 @@ class React(private val api: DiscordApi) {
                 }
                 return text
             }
+            fun codeblock(language: String, vararg nodes: String): String {
+                return "```$language\n${nodes.joinToString("")}\n```"
+            }
             fun time(instant: Instant, format: TimeFormat = TimeFormat.RELATIVE) = "<t:${instant.epochSecond}:${format.suffix}>"
             fun time(instant: Writable<Instant>, format: TimeFormat = TimeFormat.RELATIVE) = time(instant.get(), format)
         }
