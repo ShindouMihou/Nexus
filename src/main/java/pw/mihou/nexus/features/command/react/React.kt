@@ -11,12 +11,9 @@ import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.listener.GloballyAttachableListener
 import org.javacord.api.listener.interaction.ButtonClickListener
-import org.javacord.api.util.event.ListenerManager
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
-import pw.mihou.nexus.features.command.facade.NexusCommandEvent
-import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.awt.Color
 import java.time.Instant
@@ -35,6 +32,10 @@ class React(private val api: DiscordApi) {
     private var mutex = ReentrantLock()
 
     internal var __private__message: Message? = null
+
+    companion object {
+        var debounceMillis = 250L
+    }
 
     fun view() = message
 
@@ -59,7 +60,7 @@ class React(private val api: DiscordApi) {
             if (!mutex.tryLock()) return@subscribe
             val component = this.component ?: return@subscribe
             debounceTask?.cancel(false)
-            debounceTask = Nexus.launch.scheduler.launch(250) {
+            debounceTask = Nexus.launch.scheduler.launch(debounceMillis) {
                 this.unsubscribe()
 
                 debounceTask = null
