@@ -84,7 +84,7 @@ class React(private val ev: NexusCommandEvent) {
                 }
             }
 
-            components += button
+            components += button.build()
         }
 
         fun UrlButton(label: String, url: String, emoji: String? = null) {
@@ -93,7 +93,7 @@ class React(private val ev: NexusCommandEvent) {
             button.setLabel(label)
             button.setUrl(url)
 
-            components += button
+            components += button.build()
         }
 
         inner class Text: TextStyles {
