@@ -11,6 +11,8 @@ import org.javacord.api.listener.interaction.ButtonClickListener
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.messages.NexusMessage
+import java.awt.Color
+import java.time.Instant
 
 class React(private val ev: NexusCommandEvent) {
     private var message: NexusMessage = NexusMessage()
@@ -123,6 +125,12 @@ class React(private val ev: NexusCommandEvent) {
             }
             fun Thumbnail(url: String) {
                 embed.setThumbnail(url)
+            }
+            fun Color(color: Color) {
+                embed.setColor(color)
+            }
+            fun Timestamp(timestamp: Instant) {
+                embed.setTimestamp(timestamp)
             }
         }
 
