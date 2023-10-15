@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.command.react
 
 import org.javacord.api.DiscordApi
+import org.javacord.api.entity.Icon
 import org.javacord.api.entity.message.Message
 import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
@@ -16,6 +17,9 @@ import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.awt.Color
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.InputStream
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
@@ -240,8 +244,56 @@ class React(private val api: DiscordApi) {
             fun Image(url: String) {
                 embed.setImage(url)
             }
+            fun Image(image: Icon) {
+                embed.setImage(image)
+            }
+            fun Image(image: File) {
+                embed.setImage(image)
+            }
+            fun Image(image: InputStream) {
+                embed.setImage(image)
+            }
+            fun Image(image: InputStream, fileType: String) {
+                embed.setImage(image, fileType)
+            }
+            fun Image(image: ByteArray) {
+                embed.setImage(image)
+            }
+            fun Image(image: ByteArray, fileType: String) {
+                embed.setImage(image, fileType)
+            }
+            fun Image(image: BufferedImage) {
+                embed.setImage(image)
+            }
+            fun Image(image: BufferedImage, fileType: String) {
+                embed.setImage(image, fileType)
+            }
             fun Thumbnail(url: String) {
                 embed.setThumbnail(url)
+            }
+            fun Thumbnail(thumbnail: Icon) {
+                embed.setThumbnail(thumbnail)
+            }
+            fun Thumbnail(thumbnail: File) {
+                embed.setThumbnail(thumbnail)
+            }
+            fun Thumbnail(thumbnail: InputStream) {
+                embed.setThumbnail(thumbnail)
+            }
+            fun Thumbnail(thumbnail: InputStream, fileType: String) {
+                embed.setThumbnail(thumbnail, fileType)
+            }
+            fun Thumbnail(thumbnail: ByteArray) {
+                embed.setThumbnail(thumbnail)
+            }
+            fun Thumbnail(thumbnail: ByteArray, fileType: String) {
+                embed.setThumbnail(thumbnail, fileType)
+            }
+            fun Thumbnail(thumbnail: BufferedImage) {
+                embed.setThumbnail(thumbnail)
+            }
+            fun Thumbnail(thumbnail: BufferedImage, fileType: String) {
+                embed.setThumbnail(thumbnail, fileType)
             }
             fun Color(color: Color) {
                 embed.setColor(color)
