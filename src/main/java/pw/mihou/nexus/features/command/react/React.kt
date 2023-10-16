@@ -18,8 +18,10 @@ import kotlin.reflect.KProperty
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
 
+typealias RenderSubscription = () -> Unit
+
 class React internal constructor(private val api: DiscordApi) {
-    private var message: NexusMessage = NexusMessage()
+    private var message: NexusMessage? = null
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
 
@@ -28,14 +30,31 @@ class React internal constructor(private val api: DiscordApi) {
 
     internal var resultingMessage: Message? = null
 
+    internal var firstRenderSubscribers = mutableListOf<RenderSubscription>()
+    internal var renderSubscribers = mutableListOf<RenderSubscription>()
+
     companion object {
         var debounceMillis = 250L
     }
 
-    fun view() = message
+    fun view() = message ?: NexusMessage()
+
+    fun onRender(subscription: RenderSubscription) {
+        renderSubscribers.add(subscription)
+    }
+
+    fun onInitialRender(subscription: RenderSubscription) {
+        firstRenderSubscribers.add(subscription)
+    }
 
     fun render(component: Component.() -> Unit) {
         val element =  apply(component)
+
+        if (message == null) {
+            firstRenderSubscribers.forEach { it() }
+        }
+
+        renderSubscribers.forEach { it() }
 
         val (unsubscribe, message) = element.render(api)
         this.message = message
