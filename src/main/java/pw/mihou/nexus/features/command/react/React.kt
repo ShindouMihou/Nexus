@@ -48,12 +48,6 @@ class React internal constructor(private val api: DiscordApi) {
     }
 
     fun render(component: Component.() -> Unit) {
-        if (message == null) {
-            firstRenderSubscribers.forEach { it() }
-        }
-
-        renderSubscribers.forEach { it() }
-
         val element =  apply(component)
 
         val (unsubscribe, message) = element.render(api)
@@ -64,6 +58,13 @@ class React internal constructor(private val api: DiscordApi) {
     private fun apply(component: Component.() -> Unit): Component {
         this.component = component
         val element = Component()
+
+        if (message == null) {
+            firstRenderSubscribers.forEach { it() }
+        }
+
+        renderSubscribers.forEach { it() }
+
         component(element)
         return element
     }
