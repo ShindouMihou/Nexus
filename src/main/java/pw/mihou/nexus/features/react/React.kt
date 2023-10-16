@@ -193,7 +193,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                     lowLevelComponents += component
                 }
 
-                if (index == components.size && lowLevelComponents.size <= 3) {
+                if (index == (components.size - 1) && lowLevelComponents.size <= 3) {
                     actionRows += ActionRow.of(lowLevelComponents)
                     lowLevelComponents = mutableListOf()
                 }
