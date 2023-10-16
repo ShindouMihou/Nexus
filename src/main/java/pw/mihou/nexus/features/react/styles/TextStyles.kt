@@ -20,22 +20,22 @@ interface TextStyles {
 
         if (underline) {
             prefix += "__"
-            suffix += "__"
+            suffix = "__$suffix"
         }
 
         if (italic && !bold) {
             prefix += "*"
-            suffix += "*"
+            suffix = "*$suffix"
         }
 
         if (strikethrough) {
             prefix += "~~"
-            suffix += "~~"
+            suffix = "~~$suffix"
         }
 
         if (spoiler) {
             prefix += "`"
-            suffix += "`"
+            suffix = "`$suffix"
         }
 
         return prefix to suffix
