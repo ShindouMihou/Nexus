@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture
  */
 @JvmSynthetic
 fun MessageCreateEvent.R(react: React.() -> Unit): CompletableFuture<Message> {
-    val r = React(this.api, React.RenderMode.Interaction)
+    val r = React(this.api, React.RenderMode.Message)
     react(r)
 
     return r.messageBuilder!!.replyTo(message).send(channel)
