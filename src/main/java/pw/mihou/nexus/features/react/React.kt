@@ -200,6 +200,10 @@ class React internal constructor(private val api: DiscordApi, private val render
                 }
             }
 
+            if (lowLevelComponents.isNotEmpty() && lowLevelComponents.size <= 3) {
+                actionRows += ActionRow.of(lowLevelComponents)
+            }
+
             return actionRows
         }
 
