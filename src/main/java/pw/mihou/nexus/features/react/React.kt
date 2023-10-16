@@ -184,6 +184,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             for ((index, component) in components.withIndex()) {
                 if (component.isSelectMenu) {
                     actionRows += ActionRow.of(component)
+                    continue
                 } else {
                     if (lowLevelComponents.size >= 3) {
                         actionRows += ActionRow.of(lowLevelComponents)
