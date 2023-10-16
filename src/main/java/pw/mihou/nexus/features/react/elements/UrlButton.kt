@@ -10,5 +10,9 @@ fun React.Component.UrlButton(label: String, url: String, emoji: String? = null)
     button.setLabel(label)
     button.setUrl(url)
 
+    if (emoji != null) {
+        button.setEmoji(emoji)
+    }
+
     components += button.build()
 }
