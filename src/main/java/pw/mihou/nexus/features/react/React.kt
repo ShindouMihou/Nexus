@@ -14,7 +14,6 @@ import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
-import javax.swing.Action
 import kotlin.reflect.KProperty
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
@@ -40,7 +39,7 @@ class React internal constructor(private val api: DiscordApi, private val render
     internal var renderSubscribers = mutableListOf<RenderSubscription>()
 
     companion object {
-        var debounceMillis = 250L
+        var debounceMillis = 25L
     }
 
     internal enum class RenderMode {
