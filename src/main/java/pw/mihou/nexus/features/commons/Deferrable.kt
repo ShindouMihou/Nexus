@@ -42,7 +42,7 @@ object Deferrable {
                 if (!deferredTaskRan.get() && task != null) {
                     task.cancel(false)
                 }
-                val updater = updater.get()
+                @Suppress("NAME_SHADOWING") val updater = updater.get()
                 if (updater == null) {
                     val responder = event.respondNow()
                     if (ephemeral) {
