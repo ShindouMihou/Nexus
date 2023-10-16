@@ -13,7 +13,7 @@ fun React.Component.Button(
     customId: String? = null,
     emoji: String? = null,
     disabled: Boolean = false,
-    onClick: ((event: ButtonClickEvent) -> Unit)? = {}
+    onClick: ((event: ButtonClickEvent) -> Unit)? = null
 ) {
     val button = ButtonBuilder()
     button.setStyle(style)

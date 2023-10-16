@@ -16,12 +16,11 @@ fun React.Component.Embed(embed: Embed.() -> Unit) {
     val element = Embed()
     embed(element)
 
-    embeds.add(element.view())
+    embeds.add(element.embed)
 }
 
 class Embed: TextStyles {
-    private val embed = EmbedBuilder()
-    fun view() = embed
+    internal val embed = EmbedBuilder()
 
     fun Title(text: String) {
         embed.setTitle(text)

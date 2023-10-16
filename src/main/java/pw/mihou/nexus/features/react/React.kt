@@ -14,6 +14,7 @@ import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
+import javax.swing.Action
 import kotlin.reflect.KProperty
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
@@ -176,6 +177,31 @@ class React internal constructor(private val api: DiscordApi, private val render
             }
         }
 
+        private fun chunkComponents(): List<ActionRow> {
+            val actionRows = mutableListOf<ActionRow>()
+            var lowLevelComponents = mutableListOf<LowLevelComponent>()
+
+            for ((index, component) in components.withIndex()) {
+                if (component.isSelectMenu) {
+                    actionRows += ActionRow.of(component)
+                } else {
+                    if (lowLevelComponents.size >= 3) {
+                        actionRows += ActionRow.of(lowLevelComponents)
+                        lowLevelComponents = mutableListOf()
+                    }
+
+                    lowLevelComponents += component
+                }
+
+                if (index == components.size && lowLevelComponents.size <= 3) {
+                    actionRows += ActionRow.of(lowLevelComponents)
+                    lowLevelComponents = mutableListOf()
+                }
+            }
+
+            return actionRows
+        }
+
         fun render(api: DiscordApi): Pair<Unsubscribe, NexusMessage> {
             return attachListeners(api) to NexusMessage.with {
                 this.removeAllEmbeds()
@@ -184,7 +210,8 @@ class React internal constructor(private val api: DiscordApi, private val render
                 if (contents != null) {
                     this.setContent(contents)
                 }
-                components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
+
+                chunkComponents().forEach { this.addComponents(it) }
             }
         }
 
@@ -198,7 +225,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                 if (contents != null) {
                     this.setContent(contents)
                 }
-                components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
+                chunkComponents().forEach { this.addComponents(it) }
             }
             return attachListeners(api)
         }
@@ -211,7 +238,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                 if (contents != null) {
                     this.setContent(contents)
                 }
-                components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
+                chunkComponents().forEach { this.addComponents(it) }
             }
             return attachListeners(api)
         }
