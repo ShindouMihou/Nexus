@@ -2,6 +2,7 @@ package pw.mihou.nexus.features.command.react
 
 import org.javacord.api.DiscordApi
 import org.javacord.api.entity.message.Message
+import org.javacord.api.entity.message.MessageBuilder
 import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.LowLevelComponent
@@ -20,8 +21,12 @@ typealias Unsubscribe = () -> Unit
 
 typealias RenderSubscription = () -> Unit
 
-class React internal constructor(private val api: DiscordApi) {
-    private var message: NexusMessage? = null
+class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode) {
+    internal var rendered: Boolean = false
+
+    internal var message: NexusMessage? = null
+    internal var messageBuilder: MessageBuilder? = null
+
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
 
@@ -37,7 +42,10 @@ class React internal constructor(private val api: DiscordApi) {
         var debounceMillis = 250L
     }
 
-    fun view() = message ?: NexusMessage()
+    internal enum class RenderMode {
+        Interaction,
+        Message
+    }
 
     fun onRender(subscription: RenderSubscription) {
         renderSubscribers.add(subscription)
@@ -48,18 +56,30 @@ class React internal constructor(private val api: DiscordApi) {
     }
 
     fun render(component: Component.() -> Unit) {
-        val element =  apply(component)
+        val element = apply(component)
 
-        val (unsubscribe, message) = element.render(api)
-        this.message = message
-        this.unsubscribe = unsubscribe
+        when(renderMode) {
+            RenderMode.Interaction -> {
+                val (unsubscribe, message) = element.render(api)
+                this.message = message
+                this.unsubscribe = unsubscribe
+            }
+            RenderMode.Message -> {
+                val builder = MessageBuilder()
+                val unsubscribe = element.render(builder, api)
+
+                this.messageBuilder = builder
+                this.unsubscribe = unsubscribe
+            }
+        }
+        this.rendered = true
     }
 
     private fun apply(component: Component.() -> Unit): Component {
         this.component = component
         val element = Component()
 
-        if (message == null) {
+        if (!rendered) {
             firstRenderSubscribers.forEach { it() }
         }
 
@@ -168,8 +188,23 @@ class React internal constructor(private val api: DiscordApi) {
             }
         }
 
+        // TODO: Reduce code duplication by using MessageBuilderBase (currently package-private)
+        //       https://discord.com/channels/151037561152733184/151326093482262528/1163425854186065951
         fun render(updater: MessageUpdater, api: DiscordApi): Unsubscribe {
             updater.apply {
+                this.removeAllEmbeds()
+                this.addEmbeds(embeds)
+
+                if (contents != null) {
+                    this.setContent(contents)
+                }
+                components.chunked(3).map { ActionRow.of(it) }.forEach { this.addComponents(it) }
+            }
+            return attachListeners(api)
+        }
+
+        fun render(builder: MessageBuilder, api: DiscordApi): Unsubscribe {
+            builder.apply {
                 this.removeAllEmbeds()
                 this.addEmbeds(embeds)
 
