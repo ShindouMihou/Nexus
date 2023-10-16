@@ -27,7 +27,7 @@ class NexusCommandEventCore(override val event: SlashCommandCreateEvent, overrid
 
             return@autoDefer r.view()
         }.thenApply {
-            r.__private__message = it.getOrRequestMessage().join()
+            r.resultingMessage = it.getOrRequestMessage().join()
             return@thenApply it
         }
     }
