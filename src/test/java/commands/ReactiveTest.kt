@@ -8,7 +8,7 @@ class ReactiveTest: NexusHandler {
     val description = "A test regarding React"
     override fun onEvent(event: NexusCommandEvent) {
         event.R {
-            val clicks = writable(0)
+            var clicks by writable(0)
             render {
                 Embed {
                     Title("R.Embeds")
@@ -21,7 +21,7 @@ class ReactiveTest: NexusHandler {
                 }
                 Button(label = "Click to be DM'd") { event ->
                     event.interaction.user.sendMessage("Hi")
-                    clicks.getAndUpdate { it + 1 }
+                    clicks += 1
                 }
             }
         }

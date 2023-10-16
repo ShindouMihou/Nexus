@@ -25,11 +25,13 @@ import java.io.InputStream
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.properties.Delegates
+import kotlin.reflect.KProperty
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
 
-class React(private val api: DiscordApi) {
+class React internal constructor(private val api: DiscordApi) {
     private var message: NexusMessage = NexusMessage()
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
@@ -91,6 +93,12 @@ class React(private val api: DiscordApi) {
     class Writable<T>(value: T) {
         private val subscribers: MutableList<Subscription<T>> = mutableListOf()
         private val _value: AtomicReference<T> = AtomicReference(value)
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            return _value.get()
+        }
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+            set(value)
+        }
         fun set(value: T) {
             val oldValue = _value.get()
             _value.set(value)
