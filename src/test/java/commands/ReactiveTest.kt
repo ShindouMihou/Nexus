@@ -2,6 +2,8 @@ package commands
 
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
+import pw.mihou.nexus.features.command.react.elements.Button
+import pw.mihou.nexus.features.command.react.elements.Embed
 
 class ReactiveTest: NexusHandler {
     val name = "react"
