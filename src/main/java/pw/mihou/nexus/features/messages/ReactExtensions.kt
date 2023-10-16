@@ -2,7 +2,7 @@ package pw.mihou.nexus.features.messages
 
 import org.javacord.api.entity.message.Message
 import org.javacord.api.event.message.MessageCreateEvent
-import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.react.React
 import java.util.concurrent.CompletableFuture
 
 /**

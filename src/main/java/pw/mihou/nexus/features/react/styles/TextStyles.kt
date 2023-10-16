@@ -1,6 +1,6 @@
-package pw.mihou.nexus.features.command.react.styles
+package pw.mihou.nexus.features.react.styles
 
-import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.react.React
 import java.time.Instant
 
 interface TextStyles {

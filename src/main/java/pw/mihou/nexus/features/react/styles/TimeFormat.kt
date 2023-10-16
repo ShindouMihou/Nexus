@@ -1,4 +1,4 @@
-package pw.mihou.nexus.features.command.react.styles
+package pw.mihou.nexus.features.react.styles
 
 enum class TimeFormat(val suffix: String) {
     SHORT_TIME("t"),

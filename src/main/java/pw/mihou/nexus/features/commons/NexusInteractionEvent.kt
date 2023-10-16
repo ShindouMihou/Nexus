@@ -12,7 +12,7 @@ import org.javacord.api.interaction.ApplicationCommandInteraction
 import org.javacord.api.interaction.Interaction
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
-import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.react.React
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.*

@@ -1,11 +1,11 @@
-package pw.mihou.nexus.features.command.react.elements
+package pw.mihou.nexus.features.react.elements
 
 import org.javacord.api.entity.message.component.ButtonBuilder
 import org.javacord.api.entity.message.component.ButtonStyle
 import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.listener.interaction.ButtonClickListener
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
-import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.react.React
 
 fun React.Component.Button(
     style: ButtonStyle = ButtonStyle.PRIMARY,

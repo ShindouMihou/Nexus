@@ -8,7 +8,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
-import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.react.React
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.commons.Deferrable
 import pw.mihou.nexus.features.messages.NexusMessage

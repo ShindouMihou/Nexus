@@ -1,7 +1,7 @@
-package pw.mihou.nexus.features.command.react.elements
+package pw.mihou.nexus.features.react.elements
 
-import pw.mihou.nexus.features.command.react.React
-import pw.mihou.nexus.features.command.react.styles.TextStyles
+import pw.mihou.nexus.features.react.React
+import pw.mihou.nexus.features.react.styles.TextStyles
 
 fun React.Component.Text(text: Text.() -> Unit) {
     val element = Text()

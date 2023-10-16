@@ -1,11 +1,11 @@
-package pw.mihou.nexus.features.command.react.elements
+package pw.mihou.nexus.features.react.elements
 
 import org.javacord.api.entity.Icon
 import org.javacord.api.entity.message.MessageAuthor
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.entity.user.User
-import pw.mihou.nexus.features.command.react.React
-import pw.mihou.nexus.features.command.react.styles.TextStyles
+import pw.mihou.nexus.features.react.React
+import pw.mihou.nexus.features.react.styles.TextStyles
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File

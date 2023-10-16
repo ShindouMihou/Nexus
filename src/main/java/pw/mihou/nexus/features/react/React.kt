@@ -1,4 +1,4 @@
-package pw.mihou.nexus.features.command.react
+package pw.mihou.nexus.features.react
 
 import org.javacord.api.DiscordApi
 import org.javacord.api.entity.message.Message
