@@ -12,8 +12,12 @@ import org.javacord.api.interaction.ApplicationCommandInteraction
 import org.javacord.api.interaction.Interaction
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
+import pw.mihou.nexus.features.command.react.React
+import pw.mihou.nexus.features.command.responses.NexusAutoResponse
+import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
 
@@ -180,4 +184,37 @@ interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org
      * @return The [InteractionOriginalResponseUpdater] for this interaction.
      */
     fun respondLaterEphemerallyIf(predicate: Predicate<Void?>) = respondLaterEphemerallyIf(predicate.test(null))
+
+    /**
+     * Automatically answers either deferred or non-deferred based on circumstances, to configure the time that it should
+     * consider before deferring (this is based on time now - (interaction creation time - auto defer time)), you can
+     * modify [pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration.autoDeferAfterMilliseconds].
+     *
+     * @param ephemeral whether to respond ephemerally or not.
+     * @param response the response to send to Discord.
+     * @return the response from Discord.
+     */
+    fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse>
+
+    /**
+     * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
+     * with a syntax similar to a template engine. In future versions of this experiment, we plan on supporting
+     * more reactivity (i.e. supporting states via subscribe mechanism).
+     *
+     * This internally uses [autoDefer] to assist in sending the initial update response. In the reactive change,
+     * this will also include its own debounced message updating mechanism to allow for updating the message upon
+     * state changes.
+     */
+    @JvmSynthetic
+    fun R(ephemeral: Boolean = false, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
+        val r = React(this.api, React.RenderMode.Interaction)
+        return autoDefer(ephemeral) {
+            react(r)
+
+            return@autoDefer r.message!!
+        }.thenApply {
+            r.resultingMessage = it.getOrRequestMessage().join()
+            return@thenApply it
+        }
+    }
 }

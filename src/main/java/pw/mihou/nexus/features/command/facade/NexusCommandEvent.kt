@@ -51,18 +51,6 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
     val shardManager: NexusShardingManager get() = sharding
 
     /**
-     * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
-     * with a syntax similar to a template engine. In future versions of this experiment, we plan on supporting
-     * more reactivity (i.e. supporting states via subscribe mechanism).
-     *
-     * This internally uses [autoDefer] to assist in sending the initial update response. In the reactive change,
-     * this will also include its own debounced message updating mechanism to allow for updating the message upon
-     * state changes.
-     */
-    @JvmSynthetic
-    fun R(ephemeral: Boolean = false, react: React.() -> Unit): CompletableFuture<NexusAutoResponse>
-
-    /**
      * Gets the immediate response builder for this command and adds the
      * [MessageFlag.EPHEMERAL] flag ahead of time.
      *
@@ -184,15 +172,4 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
             response.into(responder).respond().exceptionally(ExceptionLogger.get())
         }
     }
-
-    /**
-     * Automatically answers either deferred or non-deferred based on circumstances, to configure the time that it should
-     * consider before deferring (this is based on time now - (interaction creation time - auto defer time)), you can
-     * modify [pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration.autoDeferAfterMilliseconds].
-     *
-     * @param ephemeral whether to respond ephemerally or not.
-     * @param response the response to send to Discord.
-     * @return the response from Discord.
-     */
-    fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse>
 }
