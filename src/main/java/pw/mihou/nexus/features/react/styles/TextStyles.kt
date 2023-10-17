@@ -47,6 +47,11 @@ interface TextStyles {
         return prefix + text + suffix
     }
 
+    fun bold(text: String) = "**$text**"
+    fun italic(text: String) = "*$text*"
+    fun mark(text: String) = "`$text`"
+    fun del(text: String) = "~~$text~~"
+
     fun br(): String = "\n"
 
     fun link(text: String, href: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,

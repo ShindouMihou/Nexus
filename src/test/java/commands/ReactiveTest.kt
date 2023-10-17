@@ -20,6 +20,8 @@ class ReactiveTest: NexusHandler {
                         p("Hello World", bold = true, underline = true),
                         br(),
                         p("This is a little experiment over how this would look DX-wise. Discord message components that will also support states."),
+                        br(),
+                        bold("Rendered with Nexus."),
                         link("Test @ Nexus", "https://github.com/ShindouMihou/Nexus")
                     )
                 }
