@@ -25,7 +25,7 @@ class NexusCommandEventCore(override val event: SlashCommandCreateEvent, overrid
     override fun store(): MutableMap<String, Any> = store
 
     override fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> =
-        Deferrable.autoDefer(this, updater, ephemeral, response)
+        Deferrable.autoDefer(event.slashCommandInteraction, updater, ephemeral, response)
 
     override fun respondLater(): CompletableFuture<InteractionOriginalResponseUpdater> {
         return updater.updateAndGet { interaction.respondLater() }!!

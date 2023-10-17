@@ -23,5 +23,5 @@ class NexusContextMenuEvent<Event: ApplicationCommandEvent, Interaction: org.jav
 ): NexusInteractionEvent<Event, Interaction> {
     private var updater: AtomicReference<CompletableFuture<InteractionOriginalResponseUpdater>?> = AtomicReference(null)
     override fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> =
-        Deferrable.autoDefer(this, updater, ephemeral, response)
+        Deferrable.autoDefer(event.interaction, updater, ephemeral, response)
 }

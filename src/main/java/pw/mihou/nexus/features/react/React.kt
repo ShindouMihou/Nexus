@@ -24,8 +24,9 @@ typealias ReactComponent = React.Component.() -> Unit
 
 /**
  * [React] is the React-Svelte inspired method of rendering (or sending) messages as response to various scenarios such
- * as message commands, slash commands, context menus and different kind of magic. We recommend using the available `event.R` method
- * instead as it is mostly designed to enable this to work for your situation.
+ * as message commands, slash commands, context menus and different kind of magic. We recommend using the available
+ * `event.R` method instead as it is mostly designed to enable this to work for your situation, or instead use the
+ * available `interaction.R` method for interactions.
  */
 class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode) {
     private var rendered: Boolean = false

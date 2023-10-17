@@ -200,19 +200,14 @@ interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org
      * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
      * with a syntax similar to a template engine that sports states (writables) that can easily update message
      * upon state changes.
+     *
+     * This internally uses [autoDefer] to handle sending of the response, ensuring that we can handle long-running renders
+     * and others that may happen due to situations such as data fetching, etc.
+     *
      * @param ephemeral whether to send the response as ephemeral or not.
      * @param react the entire procedure over how rendering the response works.
      */
     @JvmSynthetic
-    fun R(ephemeral: Boolean = false, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
-        val r = React(this.api, React.RenderMode.Interaction)
-        return autoDefer(ephemeral) {
-            react(r)
-
-            return@autoDefer r.message!!
-        }.thenApply {
-            r.resultingMessage = it.getOrRequestMessage().join()
-            return@thenApply it
-        }
-    }
+    fun R(ephemeral: Boolean = false, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> =
+        interaction.R(ephemeral, react)
 }
