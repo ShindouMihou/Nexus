@@ -16,4 +16,7 @@ class Text: TextStyles {
     fun Body(vararg nodes: String)  {
         content = nodes.joinToString("")
     }
+    fun SpacedBody(vararg nodes: String) {
+        content = nodes.joinToString("\n")
+    }
 }

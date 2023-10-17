@@ -29,6 +29,9 @@ class Embed: TextStyles {
     fun Body(vararg nodes: String) {
         embed.setDescription(nodes.joinToString(""))
     }
+    fun SpacedBody(vararg nodes: String) {
+        embed.setDescription(nodes.joinToString("\n"))
+    }
     fun Field(name: String, inline: Boolean = false, vararg nodes: String) {
         embed.addField(name, nodes.joinToString(""), inline)
     }
