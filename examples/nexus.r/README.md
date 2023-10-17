@@ -20,11 +20,11 @@ with reactivity, enabling quick and simple re-rendering of messages upon state c
 As Nexus.R is incredibly simple, you can read the examples and pretty much get a gist of how to use it. Here 
 are the examples we think that you should read first though:
 1. [**Starting out with Nexus.R**](): It's all the same, except for how it's started. *Read which one you prefer to see.*
-   2. [Slash Commands](SlashCommand.kt)
-   3. [Context Menus](ContextMenu.kt)
-   4. [Message Events i.e. Message Commands](MessageEvent.kt)
-   5. [Interactions i.e. Buttons and Select  Menus](Interaction.kt)
-6. [**Passing State to Another Function**](%5B1%5D_passing_state): As states are not simply the same regular Kotlin properties, there needs a
+   - [Slash Commands](SlashCommand.kt)
+   - [Context Menus](ContextMenu.kt)
+   - [Message Events i.e. Message Commands](MessageEvent.kt)
+   - [Interactions i.e. Buttons and Select  Menus](Interaction.kt)
+2. [**Passing State to Another Function**](%5B1%5D_passing_state): As states are not simply the same regular Kotlin properties, there needs a
 little bit of a very tiny change when you want to pass state to another function outside of the `Nexus.R` scope.
-7. [**Creating Components**](%5B2%5D_components): Reusing code is also important in coding, and components are just one way to reuse code 
+3. [**Creating Components**](%5B2%5D_components): Reusing code is also important in coding, and components are just one way to reuse code 
 in Nexus.R, but there are drawbacks. It is recommended to read this after reading the above as it talks about important points in Nexus.R.
