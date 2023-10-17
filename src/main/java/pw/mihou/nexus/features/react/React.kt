@@ -20,9 +20,10 @@ typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
 
 typealias RenderSubscription = () -> Unit
+typealias ReactComponent = React.Component.() -> Unit
 
 class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode) {
-    internal var rendered: Boolean = false
+    private var rendered: Boolean = false
 
     internal var message: NexusMessage? = null
     internal var messageBuilder: MessageBuilder? = null
@@ -35,10 +36,19 @@ class React internal constructor(private val api: DiscordApi, private val render
 
     internal var resultingMessage: Message? = null
 
-    internal var firstRenderSubscribers = mutableListOf<RenderSubscription>()
-    internal var renderSubscribers = mutableListOf<RenderSubscription>()
+    private var firstRenderSubscribers = mutableListOf<RenderSubscription>()
+    private var renderSubscribers = mutableListOf<RenderSubscription>()
 
     companion object {
+        /**
+         * Defines how long we should wait before proceeding to re-render the component, this is intended to ensure
+         * that all other states being changed in that period is applied as well, preventing multiple unnecessary re-renders
+         * which can be costly as we send HTTP requests to Discord.
+         *
+         * As a default, we recommend within 25ms to 250ms depending on how long the betweens of your state changes are,
+         * you can go even lower as long as the states are being changed immediately, otherwise, keeping it as default
+         * is recommended.
+         */
         var debounceMillis = 25L
     }
 
@@ -47,15 +57,30 @@ class React internal constructor(private val api: DiscordApi, private val render
         Message
     }
 
+    /**
+     * Subscribes a task to be ran whenever the component is being rendered, this happens on the initial render
+     * and re-renders but takes a lower priority than the ones in [onInitialRender].
+     * @param subscription the subscription to execute on render.
+     */
     fun onRender(subscription: RenderSubscription) {
         renderSubscribers.add(subscription)
     }
 
+    /**
+     * Subscribes a task to be ran whenever the component is being rendered. This happens first before the actual
+     * component being rendered, therefore, you can use this to load data before the component is actually rendered.
+     * @param subscription the subscription to execute on first render.
+     */
     fun onInitialRender(subscription: RenderSubscription) {
         firstRenderSubscribers.add(subscription)
     }
 
-    fun render(component: Component.() -> Unit) {
+    /**
+     * Renders the given component, this will also be used to re-render the component onwards. Note that using two
+     * renders will result in the last executed render being used.
+     * @param component the component to render.
+     */
+    fun render(component: ReactComponent) {
         val element = apply(component)
 
         when(renderMode) {
@@ -89,11 +114,32 @@ class React internal constructor(private val api: DiscordApi, private val render
         return element
     }
 
+    /**
+     * Creates a [Writable] that can react to changes of the value, allowing you to re-render the message
+     * with the new states. Internally, this simply creates a [Writable] then adds a subscriber to re-render
+     * the message whenever the state changes (debounced by [React.debounceMillis] milliseconds).
+     *
+     * We recommend using [Writable]'s constructor and then using [React.expand] to add the subscriber whenever you need
+     * to create a [Writable] outside of the [React] scope. (View the source code of this method to see how it looks).
+     *
+     * To pass a [Writable], we recommend creating another variable that has the [Writable] itself as the value and another
+     * one that uses `by` and then passing the [Writable] instead. (Refer to the wiki for this, as function parameters are not mutable
+     * and delegated variables pass their [Writable.getValue] result, so changes cannot be listened).
+     *
+     * @param value the initial value.
+     * @return a [Writable] with a [Subscription] that will re-render the [ReactComponent] when the state changes.
+     */
     fun <T> writable(value: T): Writable<T> {
         val element = Writable(value)
         return expand(element)
     }
 
+    /**
+     * Adds a [Subscription] that enables the [ReactComponent] to be re-rendered whenever the value of the [Writable]
+     * changes, this is what [writable] uses internally to react to changes.
+     * @param writable the writable to subscribe.
+     * @return the [Writable] with the re-render subscription attached.
+     */
     fun <T> expand(writable: Writable<T>): Writable<T> {
         writable.subscribe { _, _ ->
             if (!mutex.tryLock()) return@subscribe
@@ -117,21 +163,62 @@ class React internal constructor(private val api: DiscordApi, private val render
         return writable
     }
 
+    /**
+     * Writable are the equivalent to state in React.js, or [writable] in Svelte (otherwise known as `$state` in Svelte Runes),
+     * these are simply properties that will execute subscribed tasks whenever the property changes, enabling reactivity.
+     * [React] uses this to support re-rendering the [ReactComponent] whenever a state changes, allowing developers to write
+     * incredibly reactive yet beautifully simple code that are similar to Svelte.
+     *
+     * We recommend using the constructor method to create a [Writable] for use cases outside of [React] scope, otherwise
+     * use the [writable] method to create a [Writable] inside of [React] scope which will have a re-render subscription.
+     * (Read the wiki for more information).
+     *
+     */
     class Writable<T>(value: T) {
         private val subscribers: MutableList<Subscription<T>> = mutableListOf()
         private val _value: AtomicReference<T> = AtomicReference(value)
+
+        /**
+         * Gets the value of this [Writable]. This is intended to be used for delegation. You may be looking for
+         * [get] instead which allows you to directly get the value.
+         */
         operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
             return _value.get()
         }
+
+        /**
+         * Sets the value of this [Writable]. This is intended to be used for delegation. You may be looking for
+         * [set] or [getAndUpdate] instead which allows you to manipulate the [Writable]'s value.
+         */
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             set(value)
         }
+
+        /**
+         * Manipulates the value of the [Writable].
+         * This will run all the subscriptions asynchronously after the value has been changed, ensuring that
+         * all subscriptions are executed without interfering or delaying one another.
+         *
+         * When performing things such as increment, decrements, or anything that requires the current value, we
+         * recommend using [getAndUpdate] instead which will allow you to atomically update the value.
+         *
+         * @param value the new value of the [Writable].
+         */
         fun set(value: T) {
             val oldValue = _value.get()
             _value.set(value)
 
             subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
         }
+
+        /**
+         * Atomically updates the value of the [Writable]. This is recommended to use when manipulating the value of, say
+         * a numerical value, for instance, incrementing, decrementing, multiplying, etc. as this is performed atomically
+         * which stops a lot of thread-unsafety.
+         *
+         * Similar to [set], this executes all the subscriptions asynchronously.
+         * @param updater the updater to update the value of the [Writable].
+         */
         fun getAndUpdate(updater: (T) -> T) {
             val oldValue = _value.get()
             _value.getAndUpdate(updater)
@@ -139,11 +226,27 @@ class React internal constructor(private val api: DiscordApi, private val render
             val value = _value.get()
             subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
         }
+
+        /**
+         * Gets the current value of the [Writable]. If you need to listen to changes to the value,
+         * use the [subscribe] method instead to subscribe to changes.
+         *
+         * @return the value of the [Writable].
+         */
         fun get(): T = _value.get()
+
+        /**
+         * Subscribes to changes to the value of the [Writable]. This is ran asynchronously after the value has
+         * been changed.
+         *
+         * @param subscription the task to execute upon a change to the value is detected.
+         * @return an [Unsubscribe] method to unsubscribe the [Subscription].
+         */
         fun subscribe(subscription: Subscription<T>): Unsubscribe {
             subscribers.add(subscription)
             return { subscribers.remove(subscription) }
         }
+
         override fun toString(): String {
             return _value.get().toString()
         }
@@ -160,7 +263,11 @@ class React internal constructor(private val api: DiscordApi, private val render
         }
     }
 
-    class Component {
+    /**
+     * An internal class of [React]. You do not need to touch this at all, and it is not recommended to even create
+     * this by yourself as it will do nothing.
+     */
+    class Component internal constructor() {
         internal var embeds: MutableList<EmbedBuilder> = mutableListOf()
         internal var contents: String? = null
         internal var components: MutableList<LowLevelComponent> = mutableListOf()
