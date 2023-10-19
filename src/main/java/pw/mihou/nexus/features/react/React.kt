@@ -215,7 +215,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             val oldValue = _value.get()
             _value.set(value)
 
-            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
+            this.react(oldValue, value)
         }
 
         /**
@@ -231,7 +231,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             _value.getAndUpdate(updater)
 
             val value = _value.get()
-            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
+            this.react(oldValue, value)
         }
 
         /**
@@ -252,6 +252,17 @@ class React internal constructor(private val api: DiscordApi, private val render
         fun subscribe(subscription: Subscription<T>): Unsubscribe {
             subscribers.add(subscription)
             return { subscribers.remove(subscription) }
+        }
+
+        /**
+         * Reacts to the change and executes all the subscriptions that were subscribed at the
+         * time of execution.
+         *
+         * @param oldValue the old value.
+         * @param value the current value.
+         */
+        internal fun react(oldValue: T, value: T) {
+            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
         }
 
         override fun toString(): String {
