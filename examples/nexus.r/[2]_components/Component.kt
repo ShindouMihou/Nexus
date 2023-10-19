@@ -6,16 +6,13 @@ import pw.mihou.nexus.features.messages.R
 import pw.mihou.nexus.features.react.React
 import pw.mihou.nexus.features.react.elements.Button
 import pw.mihou.nexus.features.react.elements.Embed
+import pw.mihou.nexus.features.react.writable.plusAssign
 import java.time.Instant
 
 // Creating components can be done by simply creating an extension function over [React.Component],
 // note once more that since we don't have access to the `Nexus.R` scope, we need to pass states like
 // a regular function. Read the `[1]_passing_state` example if you haven't.
-fun React.Component.Example(clicksDelegate: React.Writable<Int>) {
-    // Theoretically, you can create a [Writable] instance here, but it is not recommended
-    // as these are also called once again upon re-rendering.
-    var clicks by clicksDelegate
-
+fun React.Component.Example(clicks: React.Writable<Int>) {
     Embed {
         Title("Rendered with Nexus.R")
         SpacedBody(

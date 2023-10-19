@@ -3,6 +3,7 @@ import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.react.React
 import pw.mihou.nexus.features.react.elements.Button
 import pw.mihou.nexus.features.react.elements.Embed
+import pw.mihou.nexus.features.react.writable.plusAssign
 import java.time.Instant
 
 /**
@@ -52,7 +53,13 @@ object PassingState: NexusHandler {
      * causing a re-render. Generally, unless you perform a ton of manipulation, you can live with this.
      */
     private fun increment(clicks: React.Writable<Int>)  {
-        clicks.getAndUpdate { it + 1 }
+        // Newer version after a recent commit adding operator overloads over primitive types
+        // and lists.
+        clicks += 1
+
+        // Older method and more optimal for cases that are not supported with the operator overloads
+        // such as types that are not supported.
+        // clicks.getAndUpdate { it + 1 }
     }
 
     /**
