@@ -89,12 +89,13 @@ class React internal constructor(private val api: DiscordApi, private val render
     fun render(component: ReactComponent) {
         val element = apply(component)
 
-        when(renderMode) {
+        when (renderMode) {
             RenderMode.Interaction -> {
                 val (unsubscribe, message) = element.render(api)
                 this.message = message
                 this.unsubscribe = unsubscribe
             }
+
             RenderMode.Message -> {
                 val builder = MessageBuilder()
                 val unsubscribe = element.render(builder, api)
@@ -360,8 +361,4 @@ class React internal constructor(private val api: DiscordApi, private val render
             return attachListeners(api)
         }
     }
-}
-
-operator fun React.Writable<String>.plusAssign(text: String) {
-    this.getAndUpdate { it + text }
 }
