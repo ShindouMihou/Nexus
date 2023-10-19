@@ -361,3 +361,7 @@ class React internal constructor(private val api: DiscordApi, private val render
         }
     }
 }
+
+operator fun React.Writable<String>.plusAssign(text: String) {
+    this.getAndUpdate { it + text }
+}
