@@ -42,3 +42,22 @@ fun Messageable.R(api: DiscordApi, react: React.() -> Unit): CompletableFuture<M
         return@thenApply it
     }
 }
+
+
+/**
+ * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
+ * with a syntax similar to a template engine that sports states (writable) that can easily update message
+ * upon state changes.
+ *
+ * @param react the entire procedure over how rendering the response works.
+ */
+fun Message.R(react: React.() -> Unit): CompletableFuture<Message> {
+    val r = React(api, React.RenderMode.Message)
+    react(r)
+
+    r.resultingMessage = this
+    return r.messageUpdater!!.replaceMessage().thenApply {
+        r.resultingMessage = it
+        return@thenApply it
+    }
+}

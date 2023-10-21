@@ -33,6 +33,7 @@ class React internal constructor(private val api: DiscordApi, private val render
 
     internal var message: NexusMessage? = null
     internal var messageBuilder: MessageBuilder? = null
+    internal var messageUpdater: MessageUpdater? = null
 
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
@@ -60,7 +61,8 @@ class React internal constructor(private val api: DiscordApi, private val render
 
     internal enum class RenderMode {
         Interaction,
-        Message
+        Message,
+        UpdateMessage
     }
 
     /**
@@ -101,6 +103,16 @@ class React internal constructor(private val api: DiscordApi, private val render
                 val unsubscribe = element.render(builder, api)
 
                 this.messageBuilder = builder
+                this.unsubscribe = unsubscribe
+            }
+            RenderMode.UpdateMessage -> {
+                if (resultingMessage == null) {
+                    throw IllegalStateException("Updating a message with React needs `resultingMessage` to not be null.")
+                }
+                val updater = MessageUpdater(resultingMessage)
+                val unsubscribe = element.render(updater, api)
+
+                this.messageUpdater = updater
                 this.unsubscribe = unsubscribe
             }
         }
