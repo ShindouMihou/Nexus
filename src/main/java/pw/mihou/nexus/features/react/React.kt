@@ -309,7 +309,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             return {
                 listenerManagers.forEach { managers -> managers.forEach { it.remove() } }
                 uuids.forEach { NexusUuidAssigner.deny(it) }
-                uuids.clear()
+                uuids = mutableListOf()
             }
         }
 
