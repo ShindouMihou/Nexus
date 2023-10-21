@@ -3,7 +3,7 @@ package pw.mihou.nexus.features.react.writable
 import pw.mihou.nexus.features.react.React
 
 operator fun <List, T> React.Writable<List>.plus(element: T): React.Writable<List> where List : MutableCollection<T> {
-    this.getAndUpdate {
+    this.update {
         it += element
         it
     }
@@ -15,7 +15,7 @@ operator fun <List, T> React.Writable<List>.plusAssign(element: T) where List : 
 }
 
 operator fun <List, T> React.Writable<List>.minus(element: T): React.Writable<List> where List : MutableCollection<T> {
-    this.getAndUpdate {
+    this.update {
         it.remove(element)
         it
     }

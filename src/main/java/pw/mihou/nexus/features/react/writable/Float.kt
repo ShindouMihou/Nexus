@@ -3,7 +3,7 @@ package pw.mihou.nexus.features.react.writable
 import pw.mihou.nexus.features.react.React
 
 operator fun React.Writable<Float>.plus(number: Float): React.Writable<Float> {
-    this.getAndUpdate { it + number }
+    this.update { it + number }
     return this
 }
 
@@ -12,7 +12,7 @@ operator fun React.Writable<Float>.plusAssign(number: Float) {
 }
 
 operator fun React.Writable<Float>.minus(number: Float): React.Writable<Float> {
-    this.getAndUpdate { it - number }
+    this.update { it - number }
     return this
 }
 
@@ -21,7 +21,7 @@ operator fun React.Writable<Float>.minusAssign(number: Float) {
 }
 
 operator fun React.Writable<Float>.times(number: Float): React.Writable<Float> {
-    this.getAndUpdate { it * number }
+    this.update { it * number }
     return this
 }
 
@@ -31,7 +31,7 @@ operator fun React.Writable<Float>.timesAssign(number: Float) {
 }
 
 operator fun React.Writable<Float>.div(number: Float): React.Writable<Float> {
-    this.getAndUpdate { it / number }
+    this.update { it / number }
     return this
 }
 
@@ -41,7 +41,7 @@ operator fun React.Writable<Float>.divAssign(number: Float) {
 
 
 operator fun React.Writable<Float>.rem(number: Float): React.Writable<Float> {
-    this.getAndUpdate { it % number }
+    this.update { it % number }
     return this
 }
 
@@ -62,11 +62,11 @@ operator fun React.Writable<Float>.inc(): React.Writable<Float> {
 }
 
 operator fun React.Writable<Float>.unaryPlus(): React.Writable<Float> {
-    this.getAndUpdate { +it }
+    this.update { +it }
     return this
 }
 
 operator fun React.Writable<Float>.unaryMinus(): React.Writable<Float> {
-    this.getAndUpdate { -it }
+    this.update { -it }
     return this
 }

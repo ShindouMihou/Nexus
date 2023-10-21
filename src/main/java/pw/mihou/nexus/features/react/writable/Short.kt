@@ -3,7 +3,7 @@ package pw.mihou.nexus.features.react.writable
 import pw.mihou.nexus.features.react.React
 
 operator fun React.Writable<Short>.plus(number: Short): React.Writable<Short> {
-    this.getAndUpdate { (it + number).toShort() }
+    this.update { (it + number).toShort() }
     return this
 }
 
@@ -12,7 +12,7 @@ operator fun React.Writable<Short>.plusAssign(number: Short) {
 }
 
 operator fun React.Writable<Short>.minus(number: Short): React.Writable<Short> {
-    this.getAndUpdate { (it - number).toShort() }
+    this.update { (it - number).toShort() }
     return this
 }
 
@@ -21,7 +21,7 @@ operator fun React.Writable<Short>.minusAssign(number: Short) {
 }
 
 operator fun React.Writable<Short>.times(number: Short): React.Writable<Short> {
-    this.getAndUpdate { (it * number).toShort() }
+    this.update { (it * number).toShort() }
     return this
 }
 
@@ -31,7 +31,7 @@ operator fun React.Writable<Short>.timesAssign(number: Short) {
 }
 
 operator fun React.Writable<Short>.div(number: Short): React.Writable<Short> {
-    this.getAndUpdate { (it / number).toShort() }
+    this.update { (it / number).toShort() }
     return this
 }
 
@@ -41,7 +41,7 @@ operator fun React.Writable<Short>.divAssign(number: Short) {
 
 
 operator fun React.Writable<Short>.rem(number: Short): React.Writable<Short> {
-    this.getAndUpdate { (it % number).toShort() }
+    this.update { (it % number).toShort() }
     return this
 }
 
@@ -62,11 +62,11 @@ operator fun React.Writable<Short>.inc(): React.Writable<Short> {
 }
 
 operator fun React.Writable<Short>.unaryPlus(): React.Writable<Short> {
-    this.getAndUpdate { (+it).toShort() }
+    this.update { (+it).toShort() }
     return this
 }
 
 operator fun React.Writable<Short>.unaryMinus(): React.Writable<Short> {
-    this.getAndUpdate { (-it).toShort() }
+    this.update { (-it).toShort() }
     return this
 }

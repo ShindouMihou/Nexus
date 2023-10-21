@@ -59,7 +59,7 @@ object PassingState: NexusHandler {
 
         // Older method and more optimal for cases that are not supported with the operator overloads
         // such as types that are not supported.
-        // clicks.getAndUpdate { it + 1 }
+        // clicks.update { it + 1 }
     }
 
     /**

@@ -3,7 +3,7 @@ package pw.mihou.nexus.features.react.writable
 import pw.mihou.nexus.features.react.React
 
 operator fun React.Writable<UByte>.plus(number: UByte): React.Writable<UByte> {
-    this.getAndUpdate { (it + number).toUByte() }
+    this.update { (it + number).toUByte() }
     return this
 }
 
@@ -12,7 +12,7 @@ operator fun React.Writable<UByte>.plusAssign(number: UByte) {
 }
 
 operator fun React.Writable<UByte>.minus(number: UByte): React.Writable<UByte> {
-    this.getAndUpdate { (it - number).toUByte() }
+    this.update { (it - number).toUByte() }
     return this
 }
 
@@ -21,7 +21,7 @@ operator fun React.Writable<UByte>.minusAssign(number: UByte) {
 }
 
 operator fun React.Writable<UByte>.times(number: UByte): React.Writable<UByte> {
-    this.getAndUpdate { (it * number).toUByte() }
+    this.update { (it * number).toUByte() }
     return this
 }
 
@@ -31,7 +31,7 @@ operator fun React.Writable<UByte>.timesAssign(number: UByte) {
 }
 
 operator fun React.Writable<UByte>.div(number: UByte): React.Writable<UByte> {
-    this.getAndUpdate { (it / number).toUByte() }
+    this.update { (it / number).toUByte() }
     return this
 }
 
@@ -41,7 +41,7 @@ operator fun React.Writable<UByte>.divAssign(number: UByte) {
 
 
 operator fun React.Writable<UByte>.rem(number: UByte): React.Writable<UByte> {
-    this.getAndUpdate { (it % number).toUByte() }
+    this.update { (it % number).toUByte() }
     return this
 }
 

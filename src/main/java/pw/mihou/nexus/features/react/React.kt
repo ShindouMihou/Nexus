@@ -207,7 +207,7 @@ class React internal constructor(private val api: DiscordApi, private val render
 
         /**
          * Sets the value of this [Writable]. This is intended to be used for delegation. You may be looking for
-         * [set] or [getAndUpdate] instead which allows you to manipulate the [Writable]'s value.
+         * [set] or [update] instead which allows you to manipulate the [Writable]'s value.
          */
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             set(value)
@@ -219,7 +219,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * all subscriptions are executed without interfering or delaying one another.
          *
          * When performing things such as increment, decrements, or anything that requires the current value, we
-         * recommend using [getAndUpdate] instead which will allow you to atomically update the value.
+         * recommend using [update] instead which will allow you to atomically update the value.
          *
          * @param value the new value of the [Writable].
          */
@@ -238,7 +238,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * Similar to [set], this executes all the subscriptions asynchronously.
          * @param updater the updater to update the value of the [Writable].
          */
-        fun getAndUpdate(updater: (T) -> T) {
+        fun update(updater: (T) -> T) {
             val oldValue = _value.get()
             _value.getAndUpdate(updater)
 
