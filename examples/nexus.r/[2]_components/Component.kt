@@ -18,7 +18,7 @@ fun React.Component.Example(clicks: React.Writable<Int>) {
         SpacedBody(
             p("This message was rendered with Nexus.R."),
             p("The button has been clicked ") + bold("$clicks times.")
-        )ge
+        )
         Color(java.awt.Color.YELLOW)
         Timestamp(Instant.now())
     }
