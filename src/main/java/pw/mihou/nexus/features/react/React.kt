@@ -21,6 +21,7 @@ typealias Unsubscribe = () -> Unit
 
 typealias RenderSubscription = () -> Unit
 typealias ReactComponent = React.Component.() -> Unit
+typealias Derive<T, K> = (T) -> K
 
 /**
  * [React] is the React-Svelte inspired method of rendering (or sending) messages as response to various scenarios such
@@ -183,6 +184,58 @@ class React internal constructor(private val api: DiscordApi, private val render
     }
 
     /**
+     * Creates a new [ReadOnly] state that has a value derived of this [Writable], which means that the value
+     * of the new [ReadOnly] state changes whenever the value of the current [Writable] changes.
+     *
+     * Note: This does not inherit the subscriptions of the [Writable].
+     *
+     * Different from [Writable.derive] itself, this has the re-render subscription which will make changes to the
+     * origin [Writable] also signal the system to re-render. This is intended to be used for cases where the origin
+     * [Writable] is not subscribed to the re-render subscription, for some reason.
+     *
+     * @param modifier the action to do to mutate the value into the desired value.
+     * @return a new [ReadOnly] state that is derived from the current [Writable].
+     */
+    fun <T, K> derive(writable: Writable<T>, modifier: Derive<T, K>) = writable.derive(modifier).apply {
+        expand(this.writable)
+    }
+
+    /**
+     * [ReadOnly] is a state similar to [Writable], but instead, only the getters are exposed to the public. It's a
+     * simple wrapper around [Writable] and is used by [Writable.derive] to enable read-only states. As it is of
+     * no-use to external code, [ReadOnly] can only be created internally by Nexus.
+     */
+    class ReadOnly<T> internal constructor(value: T) {
+        internal val writable = Writable(value)
+        internal fun set(value: T) = writable.set(value)
+
+        /**
+         * Gets the value of this [Writable]. This is intended to be used for delegation. You may be looking for
+         * [get] instead which allows you to directly get the value.
+         */
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            return writable.get()
+        }
+
+        /**
+         * Gets the current value of the [Writable]. If you need to listen to changes to the value,
+         * use the [subscribe] method instead to subscribe to changes.
+         *
+         * @return the value of the [Writable].
+         */
+        fun get(): T = writable.get()
+
+        /**
+         * Subscribes to changes to the value of the [Writable]. This is ran asynchronously after the value has
+         * been changed.
+         *
+         * @param subscription the task to execute upon a change to the value is detected.
+         * @return an [Unsubscribe] method to unsubscribe the [Subscription].
+         */
+        fun subscribe(subscription: Subscription<T>): Unsubscribe = writable.subscribe(subscription)
+    }
+
+    /**
      * Writable are the equivalent to state in React.js, or [writable] in Svelte (otherwise known as `$state` in Svelte Runes),
      * these are simply properties that will execute subscribed tasks whenever the property changes, enabling reactivity.
      * [React] uses this to support re-rendering the [ReactComponent] whenever a state changes, allowing developers to write
@@ -275,6 +328,26 @@ class React internal constructor(private val api: DiscordApi, private val render
          */
         internal fun react(oldValue: T, value: T) {
             subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
+        }
+
+        /**
+         * Creates a new [ReadOnly] state that has a value derived of this [Writable], which means that the value
+         * of the new [ReadOnly] state changes whenever the value of the current [Writable] changes.
+         *
+         * Note: This does not inherit the subscriptions of the [Writable], which means that subscriptions such as
+         * re-rendering is not inherited, but it's not as needed as the value
+         *
+         * @param modifier the action to do to mutate the value into the desired value.
+         * @return a new [ReadOnly] state that is derived from the current [Writable].
+         */
+        fun <K> derive(modifier: Derive<T, K>): ReadOnly<K> {
+            val currentValue = get()
+            val state = ReadOnly(modifier(currentValue))
+
+            this.subscribe { _, newValue ->
+                state.set(modifier(newValue))
+            }
+            return state
         }
 
         override fun toString(): String {
