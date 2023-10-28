@@ -7,6 +7,38 @@ import org.javacord.api.listener.interaction.ButtonClickListener
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.react.React
 
+fun React.Component.PrimaryButton(
+    label: String,
+    customId: String? = null,
+    emoji: String? = null,
+    disabled: Boolean = false,
+    onClick: ((event: ButtonClickEvent) -> Unit)? = null
+) = Button(ButtonStyle.PRIMARY, label, customId, emoji, disabled, onClick)
+
+fun React.Component.SecondaryButton(
+    label: String,
+    customId: String? = null,
+    emoji: String? = null,
+    disabled: Boolean = false,
+    onClick: ((event: ButtonClickEvent) -> Unit)? = null
+) = Button(ButtonStyle.SECONDARY, label, customId, emoji, disabled, onClick)
+
+fun React.Component.SuccessButton(
+    label: String,
+    customId: String? = null,
+    emoji: String? = null,
+    disabled: Boolean = false,
+    onClick: ((event: ButtonClickEvent) -> Unit)? = null
+) = Button(ButtonStyle.SUCCESS, label, customId, emoji, disabled, onClick)
+
+fun React.Component.DangerButton(
+    label: String,
+    customId: String? = null,
+    emoji: String? = null,
+    disabled: Boolean = false,
+    onClick: ((event: ButtonClickEvent) -> Unit)? = null
+) = Button(ButtonStyle.DANGER, label, customId, emoji, disabled, onClick)
+
 fun React.Component.Button(
     style: ButtonStyle = ButtonStyle.PRIMARY,
     label: String,
