@@ -90,34 +90,38 @@ class React internal constructor(private val api: DiscordApi, private val render
      * @param component the component to render.
      */
     fun render(component: ReactComponent) {
-        val element = apply(component)
+        try {
+            val element = apply(component)
 
-        when (renderMode) {
-            RenderMode.Interaction -> {
-                val (unsubscribe, message) = element.render(api)
-                this.message = message
-                this.unsubscribe = unsubscribe
-            }
-
-            RenderMode.Message -> {
-                val builder = MessageBuilder()
-                val unsubscribe = element.render(builder, api)
-
-                this.messageBuilder = builder
-                this.unsubscribe = unsubscribe
-            }
-            RenderMode.UpdateMessage -> {
-                if (resultingMessage == null) {
-                    throw IllegalStateException("Updating a message with React needs `resultingMessage` to not be null.")
+            when (renderMode) {
+                RenderMode.Interaction -> {
+                    val (unsubscribe, message) = element.render(api)
+                    this.message = message
+                    this.unsubscribe = unsubscribe
                 }
-                val updater = MessageUpdater(resultingMessage)
-                val unsubscribe = element.render(updater, api)
 
-                this.messageUpdater = updater
-                this.unsubscribe = unsubscribe
+                RenderMode.Message -> {
+                    val builder = MessageBuilder()
+                    val unsubscribe = element.render(builder, api)
+
+                    this.messageBuilder = builder
+                    this.unsubscribe = unsubscribe
+                }
+                RenderMode.UpdateMessage -> {
+                    if (resultingMessage == null) {
+                        throw IllegalStateException("Updating a message with React needs `resultingMessage` to not be null.")
+                    }
+                    val updater = MessageUpdater(resultingMessage)
+                    val unsubscribe = element.render(updater, api)
+
+                    this.messageUpdater = updater
+                    this.unsubscribe = unsubscribe
+                }
             }
+            this.rendered = true
+        } catch (err: Exception) {
+            Nexus.logger.error("An uncaught exception was received by Nexus.R's renderer with the following stacktrace.", err)
         }
-        this.rendered = true
     }
 
     private fun apply(component: Component.() -> Unit): Component {
@@ -125,10 +129,22 @@ class React internal constructor(private val api: DiscordApi, private val render
         val element = Component()
 
         if (!rendered) {
-            firstRenderSubscribers.forEach { it() }
+            firstRenderSubscribers.forEach {
+                try {
+                    it()
+                } catch (err: Exception) {
+                    Nexus.logger.error("An uncaught exception was received by Nexus.R's initial render subscription dispatcher with the following stacktrace.", err)
+                }
+            }
         }
 
-        renderSubscribers.forEach { it() }
+        renderSubscribers.forEach {
+            try {
+                it()
+            } catch (err: Exception) {
+                Nexus.logger.error("An uncaught exception was received by Nexus.R's render subscription dispatcher with the following stacktrace.", err)
+            }
+        }
 
         component(element)
         return element
@@ -162,23 +178,30 @@ class React internal constructor(private val api: DiscordApi, private val render
      */
     fun <T> expand(writable: Writable<T>): Writable<T> {
         writable.subscribe { _, _ ->
-            if (!mutex.tryLock()) return@subscribe
-            val component = this.component ?: return@subscribe
-            debounceTask?.cancel(false)
-            debounceTask = Nexus.launch.scheduler.launch(debounceMillis) {
-                this.unsubscribe()
+            try {
+                if (!mutex.tryLock()) return@subscribe
+                val component = this.component ?: return@subscribe
+                debounceTask?.cancel(false)
+                debounceTask = Nexus.launch.scheduler.launch(debounceMillis) {
+                    this.unsubscribe()
 
-                debounceTask = null
+                    debounceTask = null
 
-                val message = resultingMessage
-                if (message != null) {
-                    val updater = message.createUpdater()
-                    val view = apply(component)
-                    this.unsubscribe = view.render(updater, api)
-                    updater.replaceMessage()
+                    val message = resultingMessage
+                    if (message != null) {
+                        val updater = message.createUpdater()
+                        val view = apply(component)
+                        this.unsubscribe = view.render(updater, api)
+                        updater.replaceMessage().exceptionally {
+                            Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", it)
+                            return@exceptionally null
+                        }
+                    }
                 }
+                mutex.unlock()
+            } catch (err: Exception) {
+                Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", err)
             }
-            mutex.unlock()
         }
         return writable
     }
@@ -327,7 +350,13 @@ class React internal constructor(private val api: DiscordApi, private val render
          * @param value the current value.
          */
         internal fun react(oldValue: T, value: T) {
-            subscribers.forEach { Nexus.launcher.launch { it(oldValue, value) } }
+            subscribers.forEach { Nexus.launcher.launch {
+                try {
+                    it(oldValue, value)
+                } catch (err: Exception) {
+                    Nexus.logger.error("An uncaught exception was received by Nexus.R's writable subscriptions with the following stacktrace.", err)
+                }
+            } }
         }
 
         /**
