@@ -27,5 +27,5 @@ are the examples we think that you should read first though:
 2. [**Passing State to Another Function**](%5B1%5D_passing_state): As states are not simply the same regular Kotlin properties, there needs a
 little bit of a very tiny change when you want to pass state to another function outside of the `Nexus.R` scope.
 3. [**Creating Components**](%5B2%5D_components): Reusing code is also important in coding, and components are just one way to reuse code 
-4. [**Data Fetching**](%5B3%5D_data_fetching/DataFetching.kt): Data fetching is also an important factor in many bots, this is how you can load data 
-before rendering the message! 
+4. [**Data Fetching**](%5B3%5D_data_fetching/DataFetching.kt): Data fetching is also an important factor in many bots, this is how you can load data before rending the message!
+5. [**Hooks**](%5B4%5D_hooks): Hooks are vital to be able to reuse a lot of code, unlike components, hooks are not affected by rerenders and is a great place to define writables and related!
