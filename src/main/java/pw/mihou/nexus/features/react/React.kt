@@ -286,7 +286,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * @param subscription the task to execute upon a change to the value is detected.
          * @return an [Unsubscribe] method to unsubscribe the [Subscription].
          */
-        fun subscribe(subscription: Subscription<T>): Unsubscribe = writable.subscribe(subscription)
+        infix fun subscribe(subscription: Subscription<T>): Unsubscribe = writable.subscribe(subscription)
     }
 
     /**
@@ -330,7 +330,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          *
          * @param value the new value of the [Writable].
          */
-        fun set(value: T) {
+        infix fun set(value: T) {
             val oldValue = _value.get()
             _value.set(value)
 
@@ -345,7 +345,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * Similar to [set], this executes all the subscriptions asynchronously.
          * @param updater the updater to update the value of the [Writable].
          */
-        fun update(updater: (T) -> T) {
+        infix fun update(updater: (T) -> T) {
             val oldValue = _value.get()
             _value.getAndUpdate(updater)
 
@@ -368,7 +368,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * @param subscription the task to execute upon a change to the value is detected.
          * @return an [Unsubscribe] method to unsubscribe the [Subscription].
          */
-        fun subscribe(subscription: Subscription<T>): Unsubscribe {
+        infix fun subscribe(subscription: Subscription<T>): Unsubscribe {
             subscribers.add(subscription)
             return { subscribers.remove(subscription) }
         }
@@ -400,7 +400,7 @@ class React internal constructor(private val api: DiscordApi, private val render
          * @param modifier the action to do to mutate the value into the desired value.
          * @return a new [ReadOnly] state that is derived from the current [Writable].
          */
-        fun <K> derive(modifier: Derive<T, K>): ReadOnly<K> {
+        infix fun <K> derive(modifier: Derive<T, K>): ReadOnly<K> {
             val currentValue = get()
             val state = ReadOnly(modifier(currentValue))
 
