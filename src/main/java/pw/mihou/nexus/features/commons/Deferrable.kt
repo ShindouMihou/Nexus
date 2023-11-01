@@ -86,7 +86,7 @@ object Deferrable {
  * @return the response from Discord.
  */
 fun <Interaction: InteractionBase> Interaction.autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse> =
-    Deferrable.autoDefer(this, AtomicReference(null), ephemeral, response)
+    Deferrable.autoDefer<Interaction>(this, AtomicReference(null), ephemeral, response)
 
 /**
  * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
@@ -107,7 +107,8 @@ fun <Interaction: InteractionBase> Interaction.R(ephemeral: Boolean, react: Reac
 
         return@autoDefer r.message!!
     }.thenApply {
-        r.resultingMessage = it.getOrRequestMessage().join()
+        val message = it.getOrRequestMessage().join()
+        r.acknowledgeUpdate(message)
         return@thenApply it
     }
 }

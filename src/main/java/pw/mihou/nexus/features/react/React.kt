@@ -20,6 +20,7 @@ typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
 
 typealias RenderSubscription = () -> Unit
+typealias UpdateSubscription = (message: Message) -> Unit
 typealias ReactComponent = React.Component.() -> Unit
 typealias Derive<T, K> = (T) -> K
 
@@ -46,6 +47,8 @@ class React internal constructor(private val api: DiscordApi, private val render
 
     private var firstRenderSubscribers = mutableListOf<RenderSubscription>()
     private var renderSubscribers = mutableListOf<RenderSubscription>()
+
+    private var updateSubscribers = mutableListOf<UpdateSubscription>()
 
     companion object {
         /**
@@ -82,6 +85,34 @@ class React internal constructor(private val api: DiscordApi, private val render
      */
     fun onInitialRender(subscription: RenderSubscription) {
         firstRenderSubscribers.add(subscription)
+    }
+
+    /**
+     * Subscribes a task to be ran whenever the message itself updates, this can be when a re-render
+     * is successfully acknowledged by Discord, or when the message was sent for the first time.
+     *
+     * Not to be confused with [onRender] which executes before the message is updated and even before
+     * the message is rendered.
+     *
+     * @param subscription the subscription to execute on update.
+     */
+    fun onUpdate(subscription: UpdateSubscription) {
+        updateSubscribers.add(subscription)
+    }
+
+    /**
+     * An internal function to update the [resultingMessage] and run all the [updateSubscribers].
+     * @param message the message resulting from a render.
+     */
+    internal fun acknowledgeUpdate(message: Message) {
+        this.resultingMessage =  message
+        updateSubscribers.forEach {
+            try {
+                it(message)
+            } catch (err: Exception) {
+                Nexus.logger.error("An uncaught exception was received by Nexus.R's update subscription dispatcher with the following stacktrace.", err)
+            }
+        }
     }
 
     /**
@@ -195,7 +226,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                         updater.replaceMessage().exceptionally {
                             Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", it)
                             return@exceptionally null
-                        }
+                        }.thenAccept(::acknowledgeUpdate)
                     }
                 }
                 mutex.unlock()
