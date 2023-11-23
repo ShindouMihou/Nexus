@@ -53,6 +53,7 @@ Nexus is used in production by Discord bots, such as:
 - [Beemo](https://beemo.gg): An anti-raid Discord bot that prevents raids on many large servers.
 - [Amelia-chan](https://github.com/Amelia-chan/Amelia): A simple RSS Discord bot for the novel site, ScribbleHub.
 - [Threadscore](https://threadscore.mihou.pw): Gamifying Q&A for Discord.
+- [Flyght](https://flyght.mihou.pw): Adds Know-Your-Member to Discord. Powered by [Nexus.R](https://github.com/ShindouMihou/Nexus/wiki/Nexus.R/).
 
 If you want to add your bot to the list, feel free to add it by creating a pull request!
 
