@@ -533,6 +533,8 @@ class React internal constructor(private val api: DiscordApi, private val render
         fun render(updater: InteractionOriginalResponseUpdater, api: DiscordApi): Unsubscribe{
             updater.apply {
                 this.removeAllEmbeds()
+                this.removeAllComponents()
+
                 this.addEmbeds(embeds)
 
                 if (contents != null) {
