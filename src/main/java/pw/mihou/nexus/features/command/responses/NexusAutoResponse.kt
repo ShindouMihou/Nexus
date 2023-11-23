@@ -5,10 +5,10 @@ import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import java.util.concurrent.CompletableFuture
 
 data class NexusAutoResponse internal constructor(
-    val updater: InteractionOriginalResponseUpdater?,
+    val updater: InteractionOriginalResponseUpdater,
     val message: Message?
 ) {
     fun getOrRequestMessage(): CompletableFuture<Message> =
-        if (message == null && updater != null) updater.update()
+        if (message == null) updater.update()
         else CompletableFuture.completedFuture(message)
 }

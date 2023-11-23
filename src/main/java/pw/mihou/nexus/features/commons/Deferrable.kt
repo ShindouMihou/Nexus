@@ -59,7 +59,7 @@ object Deferrable {
                 } else {
                     val completedUpdater = updater.join()
                     message.into(completedUpdater).update()
-                        .thenAccept { r -> future.complete(NexusAutoResponse(null, r)) }
+                        .thenAccept { r -> future.complete(NexusAutoResponse(completedUpdater, r)) }
                         .exceptionally { exception ->
                             future.completeExceptionally(exception)
                             return@exceptionally null
@@ -108,7 +108,10 @@ fun <Interaction: InteractionBase> Interaction.R(ephemeral: Boolean, react: Reac
         return@autoDefer r.message!!
     }.thenApply {
         val message = it.getOrRequestMessage().join()
+
+        r.interactionUpdater = it.updater
         r.acknowledgeUpdate(message)
+
         return@thenApply it
     }
 }

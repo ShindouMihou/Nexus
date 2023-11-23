@@ -7,6 +7,7 @@ import org.javacord.api.entity.message.MessageUpdater
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.LowLevelComponent
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.listener.GloballyAttachableListener
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
@@ -36,6 +37,7 @@ class React internal constructor(private val api: DiscordApi, private val render
     internal var message: NexusMessage? = null
     internal var messageBuilder: MessageBuilder? = null
     internal var messageUpdater: MessageUpdater? = null
+    internal var interactionUpdater: InteractionOriginalResponseUpdater? = null
 
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
@@ -218,15 +220,25 @@ class React internal constructor(private val api: DiscordApi, private val render
 
                     debounceTask = null
 
-                    val message = resultingMessage
-                    if (message != null) {
-                        val updater = message.createUpdater()
+                    val interactionUpdater = interactionUpdater
+                    if (interactionUpdater != null) {
                         val view = apply(component)
-                        this.unsubscribe = view.render(updater, api)
-                        updater.replaceMessage().exceptionally {
+                        this.unsubscribe = view.render(interactionUpdater, api)
+                        interactionUpdater.update().exceptionally {
                             Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", it)
                             return@exceptionally null
                         }.thenAccept(::acknowledgeUpdate)
+                    } else {
+                        val message = resultingMessage
+                        if (message != null) {
+                            val updater = message.createUpdater()
+                            val view = apply(component)
+                            this.unsubscribe = view.render(updater, api)
+                            updater.replaceMessage().exceptionally {
+                                Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", it)
+                                return@exceptionally null
+                            }.thenAccept(::acknowledgeUpdate)
+                        }
                     }
                 }
                 mutex.unlock()
@@ -506,6 +518,20 @@ class React internal constructor(private val api: DiscordApi, private val render
 
         fun render(builder: MessageBuilder, api: DiscordApi): Unsubscribe {
             builder.apply {
+                this.removeAllEmbeds()
+                this.addEmbeds(embeds)
+
+                if (contents != null) {
+                    this.setContent(contents)
+                }
+                chunkComponents().forEach { this.addComponents(it) }
+            }
+            return attachListeners(api)
+        }
+
+
+        fun render(updater: InteractionOriginalResponseUpdater, api: DiscordApi): Unsubscribe{
+            updater.apply {
                 this.removeAllEmbeds()
                 this.addEmbeds(embeds)
 
