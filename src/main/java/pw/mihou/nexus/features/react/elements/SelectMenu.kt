@@ -4,6 +4,7 @@ import org.javacord.api.entity.channel.ChannelType
 import org.javacord.api.entity.message.component.ComponentType
 import org.javacord.api.entity.message.component.SelectMenuBuilder
 import org.javacord.api.entity.message.component.SelectMenuOption
+import org.javacord.api.entity.message.component.SelectMenuOptionBuilder
 import org.javacord.api.event.interaction.SelectMenuChooseEvent
 import org.javacord.api.listener.interaction.SelectMenuChooseListener
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
@@ -45,6 +46,12 @@ class SelectMenu(internal val selectMenu: SelectMenuBuilder) {
 
     fun Option(option: SelectMenuOption) {
         selectMenu.addOption(option)
+    }
+
+    fun Option(builder: SelectMenuOptionBuilder.() -> Unit) {
+        val original = SelectMenuOptionBuilder()
+        builder(original)
+        selectMenu.addOption(original.build())
     }
 
     fun Placeholder(text: String) {
