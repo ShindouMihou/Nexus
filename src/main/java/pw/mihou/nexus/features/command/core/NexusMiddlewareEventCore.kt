@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.hours
 class NexusMiddlewareEventCore(private val _event: NexusCommandEvent, private val gate: NexusMiddlewareGateCore): NexusMiddlewareEvent {
     override val event: SlashCommandCreateEvent get() = _event.event
     override val command: NexusCommand get() = _event.command
-    override fun R(ephemeral: Boolean, lifetime: Duration = 1.hours, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
+    override fun R(ephemeral: Boolean, lifetime: Duration, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
         return _event.R(ephemeral, lifetime, react)
     }
 
