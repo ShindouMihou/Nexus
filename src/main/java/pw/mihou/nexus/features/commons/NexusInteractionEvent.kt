@@ -20,6 +20,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 @JvmDefaultWithCompatibility
 interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org.javacord.api.interaction.InteractionBase> {
@@ -205,9 +207,10 @@ interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org
      * and others that may happen due to situations such as data fetching, etc.
      *
      * @param ephemeral whether to send the response as ephemeral or not.
+     * @param lifetime the time before the [React] instance self-destructs to free memory.
      * @param react the entire procedure over how rendering the response works.
      */
     @JvmSynthetic
-    fun R(ephemeral: Boolean = false, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> =
-        interaction.R(ephemeral, react)
+    fun R(ephemeral: Boolean = false, lifetime: Duration = 1.hours, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> =
+        interaction.R(ephemeral, lifetime, react)
 }

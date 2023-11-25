@@ -16,6 +16,9 @@ import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.KProperty
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
@@ -31,7 +34,7 @@ typealias Derive<T, K> = (T) -> K
  * `event.R` method instead as it is mostly designed to enable this to work for your situation, or instead use the
  * available `interaction.R` method for interactions.
  */
-class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode) {
+class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode, lifetime: Duration = 1.hours) {
     private var rendered: Boolean = false
 
     internal var message: NexusMessage? = null
@@ -51,6 +54,11 @@ class React internal constructor(private val api: DiscordApi, private val render
     private var renderSubscribers = mutableListOf<RenderSubscription>()
 
     private var updateSubscribers = mutableListOf<UpdateSubscription>()
+    private var expansions = mutableListOf<Unsubscribe>()
+
+    private var destroyJob: Cancellable? = Nexus.launch.scheduler.launch(lifetime.inWholeMilliseconds) {
+        destroy()
+    }
 
     companion object {
         /**
@@ -115,6 +123,27 @@ class React internal constructor(private val api: DiscordApi, private val render
                 Nexus.logger.error("An uncaught exception was received by Nexus.R's update subscription dispatcher with the following stacktrace.", err)
             }
         }
+    }
+
+    /**
+     * Destroys any references to this [React] instance. It is recommended to do this when
+     * you no longer need the interactivity as this will free up a ton of unused memory that should've
+     * been free.
+     */
+    fun destroy() {
+        unsubscribe()
+        component = null
+        this.resultingMessage = null
+        this.interactionUpdater = null
+        this.updateSubscribers = mutableListOf()
+        this.messageUpdater = null
+        this.messageBuilder = null
+        this.renderSubscribers = mutableListOf()
+        this.message = null
+        this.debounceTask = null
+        this.destroyJob = null
+        this.expansions.forEach(Unsubscribe::invoke)
+        this.expansions = mutableListOf()
     }
 
     /**
@@ -210,7 +239,7 @@ class React internal constructor(private val api: DiscordApi, private val render
      * @return the [Writable] with the re-render subscription attached.
      */
     fun <T> expand(writable: Writable<T>): Writable<T> {
-        writable.subscribe { _, _ ->
+        val stateUnsubscribe = writable.subscribe { _, _ ->
             try {
                 if (!mutex.tryLock()) return@subscribe
                 val component = this.component ?: return@subscribe
@@ -219,7 +248,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                     this.unsubscribe()
 
                     debounceTask = null
-
+                    if (this.component == null) return@launch
                     val interactionUpdater = interactionUpdater
                     if (interactionUpdater != null) {
                         val view = apply(component)
@@ -246,6 +275,7 @@ class React internal constructor(private val api: DiscordApi, private val render
                 Nexus.logger.error("Failed to re-render message using Nexus.R with the following stacktrace.", err)
             }
         }
+        expansions.add(stateUnsubscribe)
         return writable
     }
 

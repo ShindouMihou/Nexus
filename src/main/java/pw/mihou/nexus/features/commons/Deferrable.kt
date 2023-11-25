@@ -15,6 +15,9 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 object Deferrable {
     internal fun <Interaction: InteractionBase> autoDefer(
@@ -97,11 +100,12 @@ fun <Interaction: InteractionBase> Interaction.autoDefer(ephemeral: Boolean, res
  * and others that may happen due to situations such as data fetching, etc.
  *
  * @param ephemeral whether to send the response as ephemeral or not.
+ * @param lifetime indicates how long before the [React] instance self-destructs to free up references.
  * @param react the entire procedure over how rendering the response works.
  */
 @JvmSynthetic
-fun <Interaction: InteractionBase> Interaction.R(ephemeral: Boolean, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
-    val r = React(this.api, React.RenderMode.Interaction)
+fun <Interaction: InteractionBase> Interaction.R(ephemeral: Boolean, lifetime: Duration = 1.hours, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> {
+    val r = React(this.api, React.RenderMode.Interaction, lifetime)
     return autoDefer(ephemeral) {
         react(r)
 
