@@ -9,6 +9,8 @@ import org.javacord.api.entity.message.component.LowLevelComponent
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.listener.GloballyAttachableListener
+import org.javacord.api.listener.message.MessageDeleteListener
+import org.javacord.api.util.event.ListenerManager
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
@@ -61,6 +63,7 @@ class React internal constructor(private val api: DiscordApi, private val render
         destroy()
     }
 
+    private var messageDeleteListenerManager: ListenerManager<MessageDeleteListener>? = null
     private var destroySubscribers = mutableListOf<DestroySubscription>()
 
     companion object {
@@ -129,7 +132,10 @@ class React internal constructor(private val api: DiscordApi, private val render
      * @param message the message resulting from a render.
      */
     internal fun acknowledgeUpdate(message: Message) {
-        this.resultingMessage =  message
+        this.resultingMessage = message
+        messageDeleteListenerManager = this.resultingMessage?.addMessageDeleteListener {
+            this.destroy()
+        }
         updateSubscribers.forEach {
             try {
                 it(message)
@@ -160,6 +166,7 @@ class React internal constructor(private val api: DiscordApi, private val render
         this.destroyJob = null
         this.expansions.forEach(Unsubscribe::invoke)
         this.expansions = mutableListOf()
+        this.messageDeleteListenerManager?.remove()
     }
 
     /**

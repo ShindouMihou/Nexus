@@ -65,6 +65,6 @@ fun Message.R(react: React.() -> Unit): CompletableFuture<Message> {
     val r = React(api, React.RenderMode.Message)
     react(r)
 
-    r.resultingMessage = this
+    r.acknowledgeUpdate(this)
     return r.messageUpdater!!.replaceMessage().ack(r)
 }
