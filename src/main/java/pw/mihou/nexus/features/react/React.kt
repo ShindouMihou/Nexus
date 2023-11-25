@@ -24,6 +24,7 @@ typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
 typealias Unsubscribe = () -> Unit
 
 typealias RenderSubscription = () -> Unit
+typealias DestroySubscription = () -> Unit
 typealias UpdateSubscription = (message: Message) -> Unit
 typealias ReactComponent = React.Component.() -> Unit
 typealias Derive<T, K> = (T) -> K
@@ -59,6 +60,8 @@ class React internal constructor(private val api: DiscordApi, private val render
     private var destroyJob: Cancellable? = Nexus.launch.scheduler.launch(lifetime.inWholeMilliseconds) {
         destroy()
     }
+
+    private var destroySubscribers = mutableListOf<DestroySubscription>()
 
     companion object {
         /**
@@ -111,6 +114,17 @@ class React internal constructor(private val api: DiscordApi, private val render
     }
 
     /**
+     * Subscribes a task to be ran when the [React] instance is destroyed. This can be when the lifetime
+     * ends or the message is deleted. This is ran all synchronous and will block the destruction thread
+     * until it completes.
+     *
+     * @param subscription the subscription to execute.
+     */
+    fun onDestroy(subscription: DestroySubscription) {
+        destroySubscribers.add(subscription)
+    }
+
+    /**
      * An internal function to update the [resultingMessage] and run all the [updateSubscribers].
      * @param message the message resulting from a render.
      */
@@ -131,6 +145,8 @@ class React internal constructor(private val api: DiscordApi, private val render
      * been free.
      */
     fun destroy() {
+        destroySubscribers.forEach(DestroySubscription::invoke)
+
         unsubscribe()
         component = null
         this.resultingMessage = null
