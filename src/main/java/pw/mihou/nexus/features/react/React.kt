@@ -169,6 +169,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             this.expansions.forEach(Unsubscribe::invoke)
             this.expansions = mutableListOf()
             this.messageDeleteListenerManager?.remove()
+            this.messageDeleteListenerManager = null
         }
     }
 
