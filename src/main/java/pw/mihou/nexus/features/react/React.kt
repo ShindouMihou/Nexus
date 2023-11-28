@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
@@ -151,22 +150,26 @@ class React internal constructor(private val api: DiscordApi, private val render
      * been free.
      */
     fun destroy() {
-        destroySubscribers.forEach(DestroySubscription::invoke)
+        synchronized(destroySubscribers) {
+            destroySubscribers.forEach(DestroySubscription::invoke)
 
-        unsubscribe()
-        component = null
-        this.resultingMessage = null
-        this.interactionUpdater = null
-        this.updateSubscribers = mutableListOf()
-        this.messageUpdater = null
-        this.messageBuilder = null
-        this.renderSubscribers = mutableListOf()
-        this.message = null
-        this.debounceTask = null
-        this.destroyJob = null
-        this.expansions.forEach(Unsubscribe::invoke)
-        this.expansions = mutableListOf()
-        this.messageDeleteListenerManager?.remove()
+            unsubscribe()
+            component = null
+            this.unsubscribe = {}
+            this.destroySubscribers = mutableListOf()
+            this.resultingMessage = null
+            this.interactionUpdater = null
+            this.updateSubscribers = mutableListOf()
+            this.messageUpdater = null
+            this.messageBuilder = null
+            this.renderSubscribers = mutableListOf()
+            this.message = null
+            this.debounceTask = null
+            this.destroyJob = null
+            this.expansions.forEach(Unsubscribe::invoke)
+            this.expansions = mutableListOf()
+            this.messageDeleteListenerManager?.remove()
+        }
     }
 
     /**
