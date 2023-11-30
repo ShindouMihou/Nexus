@@ -15,6 +15,8 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.messages.NexusMessage
+import java.time.Instant
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.KProperty
@@ -43,6 +45,11 @@ class React internal constructor(private val api: DiscordApi, private val render
     internal var messageBuilder: MessageBuilder? = null
     internal var messageUpdater: MessageUpdater? = null
     internal var interactionUpdater: InteractionOriginalResponseUpdater? = null
+
+    // Used for debugging purposes
+    // TODO: Remove once we've identified memory consumption issues.
+    @Suppress("UNUSED", "PrivatePropertyName")
+    private val `react$creationDate` = Instant.now()
 
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
@@ -132,8 +139,11 @@ class React internal constructor(private val api: DiscordApi, private val render
      */
     internal fun acknowledgeUpdate(message: Message) {
         this.resultingMessage = message
-        messageDeleteListenerManager = this.resultingMessage?.addMessageDeleteListener {
-            this.destroy()
+        messageDeleteListenerManager?.remove()
+        messageDeleteListenerManager = this.resultingMessage?.run {
+            api.addMessageDeleteListener {
+                destroy()
+            }
         }
         updateSubscribers.forEach {
             try {
