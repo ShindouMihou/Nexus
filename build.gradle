@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'pw.mihou'
-version = '1.0.1'
+version = '1.1.0'
 description = 'Nexus is the next-generation Javacord framework that aims to create Discord bots with less code, dynamic, more simplicity and beauty.'
 
 repositories {
