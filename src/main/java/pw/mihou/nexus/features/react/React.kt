@@ -514,7 +514,15 @@ class React internal constructor(private val api: DiscordApi, private val render
         private fun attachListeners(api: DiscordApi): Unsubscribe {
             val listenerManagers = listeners.map { api.addListener(it) }
             return {
-                listenerManagers.forEach { managers -> managers.forEach { it.remove() } }
+                listenerManagers.forEach { managers ->
+                    managers.forEach { it.remove() }
+                }
+                listeners = mutableListOf()
+
+                components = mutableListOf()
+                contents = null
+                embeds = mutableListOf()
+
                 uuids.forEach { NexusUuidAssigner.deny(it) }
                 uuids = mutableListOf()
             }
