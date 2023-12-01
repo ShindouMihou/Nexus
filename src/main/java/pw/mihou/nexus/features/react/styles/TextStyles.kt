@@ -166,7 +166,7 @@ interface TextStyles {
      * @param nodes the nodes to include in the codeblock.
      */
     fun codeblock(language: String, vararg nodes: String): String {
-        return "```$language\n${nodes.joinToString("")}\n```"
+        return "```$language\n${nodes.joinToString("\n")}\n```"
     }
 
     /**
