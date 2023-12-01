@@ -54,6 +54,10 @@ class SelectMenu(internal val selectMenu: SelectMenuBuilder) {
         selectMenu.addOption(original.build())
     }
 
+    fun Options(vararg options: SelectMenuOption) {
+        selectMenu.addOptions(options.toList())
+    }
+
     fun Placeholder(text: String) {
         selectMenu.setPlaceholder(text)
     }
