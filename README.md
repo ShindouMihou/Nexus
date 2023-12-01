@@ -37,6 +37,9 @@ object ReportUserContextMenu: NexusUserContextMenu() {
 }
 ```
 
+For Kotlin users who are looking to build highly reactive, or interactive bots, you may be interested in our new rendering mechanism 
+called [Nexus.R], read more at [GitHub Wiki](https://github.com/ShindouMihou/Nexus/wiki/Nexus.R).
+
 ## Getting Started
 
 To get started with Nexus, we recommend reading the wiki in its chronological order:
@@ -62,6 +65,7 @@ Nexus was created from the ground up to power Discord bots with a simplistic yet
 on performance, allowing developers to build their Discord bots fast and clean.
 - [x] **Object-based commands**
 - [x] **Object-based context menus**
+- [x] **Supports an innovative, React+Svelte-like Rendering Mechanism**
 - [x] **Middlewares, Afterwares**
 - [x] **Supports auto-deferring of responses**
 - [x] **Flexible command synchronization system**
