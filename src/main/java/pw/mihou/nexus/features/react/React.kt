@@ -46,11 +46,6 @@ class React internal constructor(private val api: DiscordApi, private val render
     internal var messageUpdater: MessageUpdater? = null
     internal var interactionUpdater: InteractionOriginalResponseUpdater? = null
 
-    // Used for debugging purposes
-    // TODO: Remove once we've identified memory consumption issues.
-    @Suppress("UNUSED", "PrivatePropertyName")
-    private val `react$creationDate` = Instant.now()
-
     private var unsubscribe: Unsubscribe = {}
     private var component: (Component.() -> Unit)? = null
 
