@@ -32,8 +32,18 @@ class Embed: TextStyles {
     fun SpacedBody(vararg nodes: String) {
         embed.setDescription(nodes.joinToString("\n"))
     }
+    fun Body(spaced: Boolean = false, builder: MutableList<String>.() -> Unit) {
+        val backing = mutableListOf<String>()
+        builder(backing)
+        embed.setDescription(if (spaced) backing.joinToString("\n") else backing.joinToString())
+    }
     fun Field(name: String, inline: Boolean = false, vararg nodes: String) {
         embed.addField(name, nodes.joinToString(""), inline)
+    }
+    fun Field(name: String, inline: Boolean = false, spaced: Boolean = false, builder: MutableList<String>.() -> Unit) {
+        val backing = mutableListOf<String>()
+        builder(backing)
+        embed.addField(name, if (spaced) backing.joinToString("\n") else backing.joinToString(), inline)
     }
     fun Image(url: String) {
         embed.setImage(url)

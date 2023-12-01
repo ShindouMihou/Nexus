@@ -19,4 +19,9 @@ class Text: TextStyles {
     fun SpacedBody(vararg nodes: String) {
         content = nodes.joinToString("\n")
     }
+    fun Body(spaced: Boolean = false, builder: MutableList<String>.() -> Unit) {
+        val backing = mutableListOf<String>()
+        builder(backing)
+        content = if (spaced) backing.joinToString("\n") else backing.joinToString()
+    }
 }
