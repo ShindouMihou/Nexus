@@ -5,7 +5,8 @@ import java.time.Instant
 
 interface TextStyles {
     private fun renderTextStyles(bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-                                 strikethrough: Boolean = false, spoiler: Boolean): Pair<String, String> {
+                                 strikethrough: Boolean = false, spoiler: Boolean = false,
+                                 highlighted: Boolean = false): Pair<String, String> {
         var prefix = ""
         var suffix = ""
 
@@ -33,9 +34,14 @@ interface TextStyles {
             suffix = "~~$suffix"
         }
 
-        if (spoiler) {
+        if (highlighted) {
             prefix += "`"
             suffix = "`$suffix"
+        }
+
+        if (spoiler) {
+            prefix += "||"
+            suffix = "$suffix||"
         }
 
         return prefix to suffix
@@ -75,12 +81,20 @@ interface TextStyles {
     fun italic(text: String) = "*$text*"
 
     /**
-     * Renders a spoiled (hidden) text. We recommend using [p] when you want to stack different
+     * Renders a highlighted text. We recommend using [p] when you want to stack different
      * styling over one another.
      *
      * @param text the text to render.
      */
     fun mark(text: String) = "`$text`"
+
+    /**
+     * Renders a spoiler text. We recommend using [p] when you want to stack different
+     * styling over one another.
+     *
+     * @param text the text to render.
+     */
+    fun spoiler(text: String) = "||$text||"
 
     /**
      * Renders a text with a strikethrough. We recommend using [p] when you want to stack different
@@ -104,10 +118,11 @@ interface TextStyles {
      * @param italic whether to make the text italic.
      * @param strikethrough whether to add a strikethrough to the text.
      * @param spoiler whether to hide the text behind a spoiler.
+     * @param highlighted whether to make the text highlighted.
      */
     fun link(text: String, href: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-             strikethrough: Boolean = false, spoiler: Boolean = false): String {
-        val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler)
+             strikethrough: Boolean = false, spoiler: Boolean = false, highlighted: Boolean): String {
+        val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler, highlighted)
         return "$prefix[$text]($href)$suffix"
     }
 
