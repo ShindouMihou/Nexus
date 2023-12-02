@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 typealias Subscription<T> = (oldValue: T, newValue: T) -> Unit
@@ -38,7 +39,7 @@ typealias Derive<T, K> = (T) -> K
  * `event.R` method instead as it is mostly designed to enable this to work for your situation, or instead use the
  * available `interaction.R` method for interactions.
  */
-class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode, lifetime: Duration = 1.hours) {
+class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode, lifetime: Duration = 1.days) {
     private var rendered: Boolean = false
 
     internal var message: NexusMessage? = null
@@ -60,7 +61,7 @@ class React internal constructor(private val api: DiscordApi, private val render
     private var updateSubscribers = mutableListOf<UpdateSubscription>()
     private var expansions = mutableListOf<Unsubscribe>()
 
-    private var destroyJob: Cancellable? = Nexus.launch.scheduler.launch(lifetime.inWholeMilliseconds) {
+    private var destroyJob: Cancellable? = if (lifetime.isInfinite()) null else Nexus.launch.scheduler.launch(lifetime.inWholeMilliseconds) {
         destroy()
     }
 
