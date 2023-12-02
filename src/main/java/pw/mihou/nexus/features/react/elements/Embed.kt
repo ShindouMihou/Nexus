@@ -108,6 +108,9 @@ class Embed: TextStyles {
     fun Timestamp(timestamp: Instant) {
         embed.setTimestamp(timestamp)
     }
+    fun CurrentTimestamp() {
+        embed.setTimestampToNow()
+    }
     fun Footer(text: String) {
         embed.setFooter(text)
     }
