@@ -59,8 +59,8 @@ interface TextStyles {
      * @param spoiler whether to hide the text behind a spoiler.
      */
     fun p(text: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-          strikethrough: Boolean = false, spoiler: Boolean = false): String {
-        val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler)
+          strikethrough: Boolean = false, spoiler: Boolean = false, highlighted: Boolean = false): String {
+        val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler, highlighted)
         return prefix + text + suffix
     }
 
@@ -121,7 +121,7 @@ interface TextStyles {
      * @param highlighted whether to make the text highlighted.
      */
     fun link(text: String, href: String, bold: Boolean = false, underline: Boolean = false, italic: Boolean = false,
-             strikethrough: Boolean = false, spoiler: Boolean = false, highlighted: Boolean): String {
+             strikethrough: Boolean = false, spoiler: Boolean = false, highlighted: Boolean = false): String {
         val (prefix, suffix) = renderTextStyles(bold, underline, italic, strikethrough, spoiler, highlighted)
         return "$prefix[$text]($href)$suffix"
     }
