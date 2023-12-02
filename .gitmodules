@@ -1,3 +1,7 @@
 [submodule "addons/nexus.entour"]
 	path = addons/nexus.entour
 	url = https://github.com/ShindouMihou/nexus.entour
+
+[submodule "addons/nexus.coroutines"]
+	path = addons/nexus.coroutines
+	url = https://github.com/ShindouMihou/nexus.coroutines
