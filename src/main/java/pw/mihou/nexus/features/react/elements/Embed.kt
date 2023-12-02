@@ -102,6 +102,9 @@ class Embed: TextStyles {
     fun Color(color: Color) {
         embed.setColor(color)
     }
+    fun Color(hex: Int) {
+        embed.setColor(java.awt.Color(hex))
+    }
     fun Timestamp(timestamp: Instant) {
         embed.setTimestamp(timestamp)
     }
