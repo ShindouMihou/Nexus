@@ -1,6 +1,7 @@
 package pw.mihou.nexus.features.react
 
 import org.javacord.api.DiscordApi
+import org.javacord.api.entity.intent.Intent
 import org.javacord.api.entity.message.Message
 import org.javacord.api.entity.message.MessageBuilder
 import org.javacord.api.entity.message.MessageUpdater
@@ -135,10 +136,12 @@ class React internal constructor(private val api: DiscordApi, private val render
      */
     internal fun acknowledgeUpdate(message: Message) {
         this.resultingMessage = message
-        messageDeleteListenerManager?.remove()
-        messageDeleteListenerManager = this.resultingMessage?.run {
-            api.addMessageDeleteListener {
-                destroy()
+        if (api.intents.contains(Intent.GUILD_MESSAGES) || api.intents.contains(Intent.DIRECT_MESSAGES)) {
+            messageDeleteListenerManager?.remove()
+            messageDeleteListenerManager = this.resultingMessage?.run {
+                api.addMessageDeleteListener {
+                    destroy()
+                }
             }
         }
         updateSubscribers.forEach {
