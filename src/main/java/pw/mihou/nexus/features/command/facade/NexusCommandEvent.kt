@@ -10,6 +10,7 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.sharding
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.execute
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.middlewares
+import pw.mihou.nexus.features.react.React
 import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.commons.NexusInteractionEvent
 import pw.mihou.nexus.features.messages.NexusMessage
@@ -171,15 +172,4 @@ interface NexusCommandEvent : NexusInteractionEvent<SlashCommandCreateEvent, Sla
             response.into(responder).respond().exceptionally(ExceptionLogger.get())
         }
     }
-
-    /**
-     * Automatically answers either deferred or non-deferred based on circumstances, to configure the time that it should
-     * consider before deferring (this is based on time now - (interaction creation time - auto defer time)), you can
-     * modify [pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration.autoDeferAfterMilliseconds].
-     *
-     * @param ephemeral whether to respond ephemerally or not.
-     * @param response the response to send to Discord.
-     * @return the response from Discord.
-     */
-    fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse>
 }

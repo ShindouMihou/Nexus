@@ -12,10 +12,16 @@ import org.javacord.api.interaction.ApplicationCommandInteraction
 import org.javacord.api.interaction.Interaction
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
+import pw.mihou.nexus.features.react.React
+import pw.mihou.nexus.features.command.responses.NexusAutoResponse
+import pw.mihou.nexus.features.messages.NexusMessage
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 @JvmDefaultWithCompatibility
 interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org.javacord.api.interaction.InteractionBase> {
@@ -180,4 +186,31 @@ interface NexusInteractionEvent<Event: ApplicationCommandEvent, Interaction: org
      * @return The [InteractionOriginalResponseUpdater] for this interaction.
      */
     fun respondLaterEphemerallyIf(predicate: Predicate<Void?>) = respondLaterEphemerallyIf(predicate.test(null))
+
+    /**
+     * Automatically answers either deferred or non-deferred based on circumstances, to configure the time that it should
+     * consider before deferring (this is based on time now - (interaction creation time - auto defer time)), you can
+     * modify [pw.mihou.nexus.configuration.modules.NexusGlobalConfiguration.autoDeferAfterMilliseconds].
+     *
+     * @param ephemeral whether to respond ephemerally or not.
+     * @param response the response to send to Discord.
+     * @return the response from Discord.
+     */
+    fun autoDefer(ephemeral: Boolean, response: Function<Void?, NexusMessage>): CompletableFuture<NexusAutoResponse>
+
+    /**
+     * An experimental feature to use the new Nexus.R rendering mechanism to render Discord messages
+     * with a syntax similar to a template engine that sports states (writables) that can easily update message
+     * upon state changes.
+     *
+     * This internally uses [autoDefer] to handle sending of the response, ensuring that we can handle long-running renders
+     * and others that may happen due to situations such as data fetching, etc.
+     *
+     * @param ephemeral whether to send the response as ephemeral or not.
+     * @param lifetime the time before the [React] instance self-destructs to free memory.
+     * @param react the entire procedure over how rendering the response works.
+     */
+    @JvmSynthetic
+    fun R(ephemeral: Boolean = false, lifetime: Duration = 1.hours, react: React.() -> Unit): CompletableFuture<NexusAutoResponse> =
+        interaction.R(ephemeral, lifetime, react)
 }
