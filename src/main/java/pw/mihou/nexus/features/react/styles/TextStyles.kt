@@ -40,7 +40,7 @@ interface TextStyles {
         }
 
         if (spoiler) {
-            prefix += "||"
+            prefix = "||$prefix"
             suffix = "$suffix||"
         }
 
