@@ -1,3 +1,4 @@
+@file:Suppress("FunctionName")
 package pw.mihou.nexus.features.react.elements
 
 import org.javacord.api.entity.channel.ChannelType
@@ -37,6 +38,100 @@ fun React.Component.SelectMenu(
     }
 
     components += element.selectMenu.build()
+}
+
+fun React.Component.ChannelSelectMenu(
+    types: Set<ChannelType>,
+    placeholder: String? = null,
+    customId: String = NexusUuidAssigner.request(),
+    minimumValues: Int = 1,
+    maximumValues: Int = 1,
+    disabled: Boolean = false,
+    onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
+) = SelectMenu(
+    componentType = ComponentType.SELECT_MENU_CHANNEL,
+    customId = customId,
+    minimumValues = minimumValues,
+    maximumValues = maximumValues,
+    disabled = disabled,
+    onSelect = onSelect
+) {
+    types.forEach(::ChannelType)
+    placeholder?.let { Placeholder(it) }
+}
+
+fun React.Component.ChannelSelectMenu(
+    placeholder: String? = null,
+    customId: String = NexusUuidAssigner.request(),
+    minimumValues: Int = 1,
+    maximumValues: Int = 1,
+    disabled: Boolean = false,
+    onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
+) = SelectMenu(
+    componentType = ComponentType.SELECT_MENU_CHANNEL,
+    customId = customId,
+    minimumValues = minimumValues,
+    maximumValues = maximumValues,
+    disabled = disabled,
+    onSelect = onSelect
+) {
+    placeholder?.let { Placeholder(it) }
+}
+
+fun React.Component.UserSelectMenu(
+    placeholder: String? = null,
+    customId: String = NexusUuidAssigner.request(),
+    minimumValues: Int = 1,
+    maximumValues: Int = 1,
+    disabled: Boolean = false,
+    onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
+) = SelectMenu(
+    componentType = ComponentType.SELECT_MENU_USER,
+    customId = customId,
+    minimumValues = minimumValues,
+    maximumValues = maximumValues,
+    disabled = disabled,
+    onSelect = onSelect
+) {
+    placeholder?.let { Placeholder(it) }
+}
+
+fun React.Component.MentionableSelectMenu(
+    placeholder: String? = null,
+    customId: String = NexusUuidAssigner.request(),
+    minimumValues: Int = 1,
+    maximumValues: Int = 1,
+    disabled: Boolean = false,
+    onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
+) = SelectMenu(
+    componentType = ComponentType.SELECT_MENU_MENTIONABLE,
+    customId = customId,
+    minimumValues = minimumValues,
+    maximumValues = maximumValues,
+    disabled = disabled,
+    onSelect = onSelect
+) {
+    placeholder?.let { Placeholder(it) }
+}
+
+fun React.Component.SelectMenu(
+    options: List<SelectMenuOption>,
+    placeholder: String? = null,
+    customId: String = NexusUuidAssigner.request(),
+    minimumValues: Int = 1,
+    maximumValues: Int = 1,
+    disabled: Boolean = false,
+    onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
+) = SelectMenu(
+    componentType = ComponentType.SELECT_MENU_CHANNEL,
+    customId = customId,
+    minimumValues = minimumValues,
+    maximumValues = maximumValues,
+    disabled = disabled,
+    onSelect = onSelect
+) {
+    options.forEach(::Option)
+    placeholder?.let { Placeholder(it) }
 }
 
 class SelectMenu(internal val selectMenu: SelectMenuBuilder) {
