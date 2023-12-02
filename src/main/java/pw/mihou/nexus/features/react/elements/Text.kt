@@ -7,12 +7,11 @@ fun React.Component.Text(text: Text.() -> Unit) {
     val element = Text()
     text(element)
 
-    contents = element.view()
+    contents = element.content
 }
 
 class Text: TextStyles {
-    private var content: String = ""
-    fun view() = content
+    internal var content: String = ""
     fun Body(vararg nodes: String)  {
         content = nodes.joinToString("")
     }
