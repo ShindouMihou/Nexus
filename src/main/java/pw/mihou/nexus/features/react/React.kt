@@ -16,7 +16,11 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.configuration.modules.Cancellable
 import pw.mihou.nexus.core.assignment.NexusUuidAssigner
 import pw.mihou.nexus.features.messages.NexusMessage
+import pw.mihou.nexus.features.react.channels.Endpoint
 import java.time.Instant
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
@@ -330,6 +334,98 @@ class React internal constructor(private val api: DiscordApi, private val render
      */
     fun <T, K> derive(writable: Writable<T>, modifier: Derive<T, K>) = writable.derive(modifier).apply {
         expand(this.writable)
+    }
+
+    /**
+     * React [Channel] is a special FIFO (First In, First Out) linked queue-based tool that is best
+     * applied with natives such as [Writable]. It enables developers to write better reactive code
+     * outside the [React] scope.
+     */
+    class Channel<T> {
+        private val levers: MutableMap<Any, Lever<T>> = mutableMapOf()
+
+        internal class Lever<T> internal constructor() {
+            private val queue: ConcurrentLinkedQueue<T> = ConcurrentLinkedQueue()
+            internal val endpoints: MutableList<Endpoint<T>> = mutableListOf()
+            private var lock = ReentrantLock()
+
+            fun send(element: T) {
+                queue.add(element)
+
+                if (queue.isEmpty()) {
+                    process()
+                }
+            }
+
+
+            private fun process() = Nexus.launcher.launch {
+                val locked = lock.tryLock()
+                if (!locked) return@launch
+
+                while(queue.isNotEmpty()) {
+                    val element = queue.poll()
+                    if (element != null) {
+                        // synchronous wait
+                        for (endpoint in endpoints) {
+                            endpoint(element)
+                        }
+                    }
+                }
+
+                lock.unlock()
+            }
+        }
+
+        private fun lever(key: Any) =  levers.computeIfAbsent(key) { Lever() }
+
+        /**
+         * [send] enqueues an element update to a specific [key] queue. Each [key] queue
+         * has their own thread and queue, allowing [Channel] to remain thread-safe and be
+         * a single instance for each big task.
+         *
+         * @param key the name of the queue task.
+         * @param element the element to enqueue.
+         */
+        fun send(key: Any, element: T) {
+            lever(key).send(element)
+        }
+
+        /**
+         * [listen] subscribes an [Endpoint] into a [key] endpoints that will be triggered synchronous
+         * with each update. Each [Endpoint] is executed synchronously one-by-one for each [key], therefore,
+         * to prevent slowdowns, each [Endpoint] shouldn't be blocking to prevent the [key] queue from being
+         * blocked.
+         *
+         * @param key the name of the queue task.
+         * @param endpoint the endpoint to subscribe.
+         */
+        fun listen(key: Any, endpoint: Endpoint<T>): Unsubscribe {
+            lever(key).endpoints.add(endpoint)
+            return {
+                levers[key]?.endpoints?.remove(endpoint)
+                levers[key]?.let {
+                    if (it.endpoints.isEmpty()) {
+                        levers.remove(key)
+                    }
+                }
+            }
+        }
+
+        /**
+         * [once] subscribes a once-only task that will dequeue as soon after the first element update executes.
+         * Recommended for one-time state updates, but better to use the auxiliary methods such as `awaits once`
+         * instead.
+         *
+         * @param key the name of the queue task.
+         * @param endpoint the endpoint to subscribe.
+         */
+        fun once(key: Any, endpoint: Endpoint<T>) {
+            var unsubscribe: Unsubscribe? = null
+            unsubscribe = listen(key) {
+                endpoint(it)
+                unsubscribe?.invoke()
+            }
+        }
     }
 
     /**
