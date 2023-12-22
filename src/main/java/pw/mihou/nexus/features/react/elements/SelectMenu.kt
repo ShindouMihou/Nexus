@@ -123,7 +123,7 @@ fun React.Component.SelectMenu(
     disabled: Boolean = false,
     onSelect: ((event: SelectMenuChooseEvent) -> Unit)? = null
 ) = SelectMenu(
-    componentType = ComponentType.SELECT_MENU_CHANNEL,
+    componentType = ComponentType.SELECT_MENU_STRING,
     customId = customId,
     minimumValues = minimumValues,
     maximumValues = maximumValues,
