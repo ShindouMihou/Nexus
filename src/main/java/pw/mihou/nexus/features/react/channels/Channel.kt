@@ -60,8 +60,9 @@ fun <T> channel(): React.Channel<T> = React.Channel()
  *
  * @param keyedChannel the key and the channel to subscribe into.
  */
-infix fun <T> React.Writable<T>.awaits(keyedChannel: KeyedChannel<T>) {
+infix fun <T> React.Writable<T>.awaits(keyedChannel: KeyedChannel<T>): React.Writable<T> {
     routine<T> { this.set(it) } awaits keyedChannel
+    return this
 }
 
 /**
@@ -71,8 +72,9 @@ infix fun <T> React.Writable<T>.awaits(keyedChannel: KeyedChannel<T>) {
  *
  * @param keyedChannel the key and the channel to subscribe into.
  */
-infix fun <T> React.Writable<T>.`awaits once`(keyedChannel: KeyedChannel<T>) {
+infix fun <T> React.Writable<T>.`awaits once`(keyedChannel: KeyedChannel<T>): React.Writable<T> {
     routine<T> { this.set(it) } `awaits once` keyedChannel
+    return this
 }
 
 /**
