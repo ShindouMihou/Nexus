@@ -24,6 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -346,19 +347,15 @@ class React internal constructor(private val api: DiscordApi, private val render
 
         internal class Lever<T> internal constructor() {
             private val queue: ConcurrentLinkedQueue<T> = ConcurrentLinkedQueue()
-            internal val endpoints: MutableList<Endpoint<T>> = mutableListOf()
+            internal var endpoints: MutableList<Endpoint<T>> = mutableListOf()
             private var lock = ReentrantLock()
 
             fun send(element: T) {
                 queue.add(element)
-
-                if (queue.isEmpty()) {
-                    process()
-                }
+                process()
             }
 
-
-            private fun process() = Nexus.launcher.launch {
+            internal fun process() = Nexus.launcher.launch {
                 val locked = lock.tryLock()
                 if (!locked) return@launch
 
@@ -374,6 +371,12 @@ class React internal constructor(private val api: DiscordApi, private val render
 
                 lock.unlock()
             }
+
+            internal fun close() = Nexus.launcher.launch {
+                lock.withLock {
+                    endpoints = mutableListOf()
+                }
+            }
         }
 
         private fun lever(key: Any) =  levers.computeIfAbsent(key) { Lever() }
@@ -388,6 +391,21 @@ class React internal constructor(private val api: DiscordApi, private val render
          */
         fun send(key: Any, element: T) {
             lever(key).send(element)
+        }
+
+        /**
+         * [close] closes the [key] queue, disallowing any further processing from happening
+         * within that queue instance, it will process all remaining events and then detaches
+         * all endpoints.
+         *
+         * @param key the queue to close.
+         */
+        fun close(key: Any) {
+            levers[key]?.let {
+                it.process() // locks first to process remaining entities (if not already running)
+                it.close()   // locks second to remove all endpoints
+            }
+            levers.remove(key)
         }
 
         /**
