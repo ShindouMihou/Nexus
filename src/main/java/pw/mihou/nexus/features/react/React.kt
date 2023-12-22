@@ -20,6 +20,7 @@ import pw.mihou.nexus.features.react.channels.Endpoint
 import java.time.Instant
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -347,7 +348,7 @@ class React internal constructor(private val api: DiscordApi, private val render
 
         internal class Lever<T> internal constructor() {
             private val queue: ConcurrentLinkedQueue<T> = ConcurrentLinkedQueue()
-            internal var endpoints: MutableList<Endpoint<T>> = mutableListOf()
+            internal val endpoints: CopyOnWriteArrayList<Endpoint<T>> = CopyOnWriteArrayList()
             private var lock = ReentrantLock()
 
             fun send(element: T) {
@@ -358,7 +359,6 @@ class React internal constructor(private val api: DiscordApi, private val render
             internal fun process() = Nexus.launcher.launch {
                 val locked = lock.tryLock()
                 if (!locked) return@launch
-
                 while(queue.isNotEmpty()) {
                     val element = queue.poll()
                     if (element != null) {
@@ -373,9 +373,7 @@ class React internal constructor(private val api: DiscordApi, private val render
             }
 
             internal fun close() = Nexus.launcher.launch {
-                lock.withLock {
-                    endpoints = mutableListOf()
-                }
+                endpoints.clear()
             }
         }
 
