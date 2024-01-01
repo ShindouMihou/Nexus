@@ -46,7 +46,7 @@ typealias Derive<T, K> = (T) -> K
  * `event.R` method instead as it is mostly designed to enable this to work for your situation, or instead use the
  * available `interaction.R` method for interactions.
  */
-class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode, lifetime: Duration = 1.days) {
+class React internal constructor(private val api: DiscordApi, private val renderMode: RenderMode, private val lifetime: Duration = 1.days) {
     private var rendered: Boolean = false
 
     internal var message: NexusMessage? = null
@@ -310,6 +310,11 @@ class React internal constructor(private val api: DiscordApi, private val render
                                 return@exceptionally null
                             }.thenAccept(::acknowledgeUpdate)
                         }
+                    }
+
+                    destroyJob?.cancel(true)
+                    destroyJob = if (lifetime.isInfinite()) null else Nexus.launch.scheduler.launch(lifetime.inWholeMilliseconds) {
+                        destroy()
                     }
                 }
                 mutex.unlock()
