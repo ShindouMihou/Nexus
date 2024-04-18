@@ -10,14 +10,10 @@ import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.Nexus.sharding
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.execute
 import pw.mihou.nexus.features.command.interceptors.core.NexusCommandInterceptorCore.middlewares
-import pw.mihou.nexus.features.react.React
-import pw.mihou.nexus.features.command.responses.NexusAutoResponse
 import pw.mihou.nexus.features.commons.NexusInteractionEvent
-import pw.mihou.nexus.features.messages.NexusMessage
 import pw.mihou.nexus.sharding.NexusShardingManager
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.function.Predicate
 
 @JvmDefaultWithCompatibility

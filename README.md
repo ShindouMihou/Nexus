@@ -37,8 +37,9 @@ object ReportUserContextMenu: NexusUserContextMenu() {
 }
 ```
 
-For Kotlin users who are looking to build highly reactive, or interactive bots, you may be interested in our new rendering mechanism 
-called [Nexus.R], read more at [GitHub Wiki](https://github.com/ShindouMihou/Nexus/wiki/Nexus.R).
+For Kotlin users looking to create interactive or highly reactive bots, you may be interested in checking our web development-inspired 
+rendering mechanism called [Reakt.Discord](https://github.com/ShindouMihou/reakt.discord) which has states, reactivity and many more cool 
+things that will help you build a bot super quickly!
 
 ## Getting Started
 
@@ -56,7 +57,7 @@ Nexus is used in production by Discord bots, such as:
 - [Beemo](https://beemo.gg): An anti-raid Discord bot that prevents raids on many large servers.
 - [Amelia-chan](https://github.com/Amelia-chan/Amelia): A simple RSS Discord bot for the novel site, ScribbleHub.
 - [Threadscore](https://threadscore.mihou.pw): Gamifying Q&A for Discord.
-- [Flyght](https://flyght.mihou.pw): Adds Know-Your-Member to Discord. Powered by [Nexus.R](https://github.com/ShindouMihou/Nexus/wiki/Nexus.R/).
+- [Flyght](https://flyght.mihou.pw): Adds Know-Your-Member to Discord. Powered together with [Reakt.Discord](https://github.com/ShindouMihou/reakt.discord).
 
 If you want to add your bot to the list, feel free to add it by creating a pull request!
 
@@ -65,7 +66,6 @@ Nexus was created from the ground up to power Discord bots with a simplistic yet
 on performance, allowing developers to build their Discord bots fast and clean.
 - [x] **Object-based commands**
 - [x] **Object-based context menus**
-- [x] **Supports an innovative, React+Svelte-like Rendering Mechanism**
 - [x] **Middlewares, Afterwares**
 - [x] **Supports auto-deferring of responses**
 - [x] **Flexible command synchronization system**
